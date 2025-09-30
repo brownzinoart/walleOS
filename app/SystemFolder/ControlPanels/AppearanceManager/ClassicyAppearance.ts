@@ -1,7 +1,7 @@
 import { intToHex } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyColors'
 import { intToPct, intToPx } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicySize'
 import themesData from '@/app/SystemFolder/ControlPanels/AppearanceManager/styles/themes.json'
-import {
+import type {
     ClassicyStoreSystemManager,
     UnknownRecord,
 } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
@@ -80,6 +80,42 @@ const isPlainObject = (value: unknown): value is UnknownRecord => {
     return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+type RawTheme = (typeof themesData)[number]
+
+const ensurePalette = (
+    values: unknown,
+    themeId: string,
+    paletteName: 'system' | 'theme'
+): ClassicyThemeColorPalette => {
+    if (!Array.isArray(values)) {
+        throw new Error(`Theme "${themeId}" is missing a ${paletteName} color palette.`)
+    }
+    if (values.length !== 7) {
+        throw new Error(`Theme "${themeId}" ${paletteName} palette must contain 7 values; received ${values.length}.`)
+    }
+    const palette = values as number[]
+    return [
+        palette[0],
+        palette[1],
+        palette[2],
+        palette[3],
+        palette[4],
+        palette[5],
+        palette[6],
+    ]
+}
+
+const hydrateTheme = (theme: RawTheme): ClassicyTheme => ({
+    ...theme,
+    color: {
+        ...theme.color,
+        system: ensurePalette(theme.color.system, theme.id, 'system'),
+        theme: ensurePalette(theme.color.theme, theme.id, 'theme'),
+    },
+})
+
+const hydratedThemes: ClassicyTheme[] = themesData.map(hydrateTheme)
+
 const makeThemeStyle = (theme: ClassicyTheme): Record<string, string> => {
     return {
         '--color-black': intToHex(theme.color.black),
@@ -137,7 +173,7 @@ export const getThemeVars = (theme: ClassicyTheme): Record<string, string> => {
 }
 
 export const getAllThemes = (): ClassicyTheme[] => {
-    return themesData
+    return hydratedThemes
 }
 
 export const mergeDeep = (target: UnknownRecord, ...sources: UnknownRecord[]): UnknownRecord => {
@@ -161,7 +197,7 @@ export const mergeDeep = (target: UnknownRecord, ...sources: UnknownRecord[]): U
 }
 
 export const getTheme = (theme: string, overrides?: UnknownRecord): ClassicyTheme => {
-    const namedThemeData = themesData.find((item) => item.id === theme) ?? themesData[0]
+    const namedThemeData = hydratedThemes.find((item) => item.id === theme) ?? hydratedThemes[0]
 
     if (!overrides) {
         return namedThemeData

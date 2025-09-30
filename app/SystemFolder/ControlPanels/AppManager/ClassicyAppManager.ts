@@ -1,8 +1,9 @@
 import {
     ClassicyStoreSystemAppearanceManager,
     ClassicyTheme,
+    ClassicyThemeColorPalette,
+    getAllThemes,
 } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyAppearance'
-import themesData from '@/app/SystemFolder/ControlPanels/AppearanceManager/styles/themes.json'
 import { classicyDateTimeManagerEventHandler } from '@/app/SystemFolder/ControlPanels/DateAndTimeManager/ClassicyDateAndTimeManager.app'
 import { ClassicyStoreSystemSoundManager } from '@/app/SystemFolder/ControlPanels/SoundManager/ClassicySoundManagerContext'
 import { classicyFinderEventHandler } from '@/app/SystemFolder/Finder/FinderContext'
@@ -288,6 +289,32 @@ export const classicyDesktopStateEventReducer = (ds: ClassicyStore, action: Clas
     return { ...ds }
 }
 
+const clonePalette = (palette: ClassicyThemeColorPalette): ClassicyThemeColorPalette => ([
+    palette[0],
+    palette[1],
+    palette[2],
+    palette[3],
+    palette[4],
+    palette[5],
+    palette[6],
+] as ClassicyThemeColorPalette)
+
+const cloneTheme = (theme: ClassicyTheme): ClassicyTheme => ({
+    ...theme,
+    color: {
+        ...theme.color,
+        system: clonePalette(theme.color.system),
+        theme: clonePalette(theme.color.theme),
+        window: { ...theme.color.window },
+    },
+    typography: { ...theme.typography },
+    measurements: { window: { ...theme.measurements.window } },
+    desktop: { ...theme.desktop },
+    sound: { ...theme.sound },
+})
+
+const defaultThemes = getAllThemes().map(cloneTheme)
+
 export const DefaultDesktopState: ClassicyStore = {
     System: {
         Manager: {
@@ -352,8 +379,8 @@ export const DefaultDesktopState: ClassicyStore = {
                 },
             },
             Appearance: {
-                availableThemes: themesData as unknown as ClassicyTheme[],
-                activeTheme: themesData.find((t) => t.id === 'walleos-terminal') as unknown as ClassicyTheme,
+                availableThemes: defaultThemes,
+                activeTheme: defaultThemes.find((t) => t.id === 'walleos-terminal') ?? defaultThemes[0],
             },
         },
     },
