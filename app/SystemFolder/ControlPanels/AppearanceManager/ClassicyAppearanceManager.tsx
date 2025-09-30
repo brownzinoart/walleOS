@@ -1,6 +1,6 @@
 'use client'
 
-import { ClassicyTheme, getTheme } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyAppearance'
+import { ClassicyTheme, getAllThemes, getTheme } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyAppearance'
 import { useDesktop, useDesktopDispatch } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
 import { useSoundDispatch } from '@/app/SystemFolder/ControlPanels/SoundManager/ClassicySoundManagerContext'
 import { getClassicyAboutWindow } from '@/app/SystemFolder/SystemResources/AboutWindow/ClassicyAboutWindow'
@@ -32,13 +32,21 @@ export const ClassicyAppearanceManager: React.FC = () => {
         player = useSoundDispatch()
 
     const [showAbout, setShowAbout] = useState(false)
-    const [bg, setBg] = useState<string>(
-        desktopContext.System.Manager.Appearance.activeTheme.desktop.backgroundImage ||
-            `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/img/wallpapers/default.png`
-    )
 
     const availableThemes: ClassicyTheme[] =
-        desktopContext.System.Manager.Appearance.availableThemes ?? []
+        desktopContext.System.Manager.Appearance.availableThemes?.length
+            ? desktopContext.System.Manager.Appearance.availableThemes
+            : getAllThemes()
+
+    const activeTheme =
+        desktopContext.System.Manager.Appearance.activeTheme ?? availableThemes[0]
+
+    const initialBackground =
+        activeTheme?.desktop.backgroundImage ||
+        `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/img/wallpapers/default.png`
+
+    const [bg, setBg] = useState<string>(initialBackground)
+
     const themesList = availableThemes.map(({ id, name }) => ({ value: id, label: name }))
 
     const fonts = [
@@ -204,7 +212,7 @@ export const ClassicyAppearanceManager: React.FC = () => {
                         label={'Selected Theme'}
                         options={themesList}
                         onChangeFunc={switchTheme}
-                        selected={desktopContext.System.Manager.Appearance.activeTheme.id || 'default'}
+                        selected={activeTheme?.id || "default"}
                     />
                     <br />
                 </>
@@ -299,7 +307,7 @@ export const ClassicyAppearanceManager: React.FC = () => {
                         <ClassicyPopUpMenu
                             id={'ui'}
                             options={fonts}
-                            selected={desktopContext.System.Manager.Appearance.activeTheme.typography.ui}
+                            selected={activeTheme?.typography.ui || ""}
                             onChangeFunc={changeFont}
                         ></ClassicyPopUpMenu>
                     </div>
@@ -310,7 +318,7 @@ export const ClassicyAppearanceManager: React.FC = () => {
                         <ClassicyPopUpMenu
                             id={'body'}
                             options={fonts}
-                            selected={desktopContext.System.Manager.Appearance.activeTheme.typography.body}
+                            selected={activeTheme?.typography.body || ""}
                             onChangeFunc={changeFont}
                         ></ClassicyPopUpMenu>
                     </div>
@@ -321,7 +329,7 @@ export const ClassicyAppearanceManager: React.FC = () => {
                         <ClassicyPopUpMenu
                             id={'header'}
                             options={fonts}
-                            selected={desktopContext.System.Manager.Appearance.activeTheme.typography.header}
+                            selected={activeTheme?.typography.header || ""}
                             onChangeFunc={changeFont}
                         ></ClassicyPopUpMenu>
                     </div>
