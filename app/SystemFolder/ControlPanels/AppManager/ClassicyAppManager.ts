@@ -114,11 +114,11 @@ export class ClassicyAppManagerHandler {
         if (focusedWindow >= 0) {
             ds.System.Manager.App.apps[appId].windows[focusedWindow].closed = false
             ds.System.Manager.App.apps[appId].windows[focusedWindow].focused = true
-            ds.System.Manager.Desktop.appMenu = ds.System.Manager.App.apps[appId].appMenu
+        ds.System.Manager.Desktop.appMenu = ds.System.Manager.App.apps[appId].appMenu ?? []
         } else if (ds.System.Manager.App.apps[appId]?.windows.length > 0) {
             ds.System.Manager.App.apps[appId].windows[0].closed = false
             ds.System.Manager.App.apps[appId].windows[0].focused = true
-            ds.System.Manager.Desktop.appMenu = ds.System.Manager.App.apps[appId].appMenu
+        ds.System.Manager.Desktop.appMenu = ds.System.Manager.App.apps[appId].appMenu ?? []
         }
     }
 
