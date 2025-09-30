@@ -1,0 +1,152 @@
+@use '../../ControlPanels/AppearanceManager/styles/appearance';
+@use '../../ControlPanels/AppearanceManager/styles/assets';
+@use 'sass:list';
+
+.classicyDesktopIcon {
+  position: absolute;
+  z-index: 10 !important;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: calc(var(--desktop-icon-size) * 2);
+  height: calc(var(--desktop-icon-size) * 2);
+  user-select: none;
+  text-align: center;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  transition: filter 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 0 8px color-mix(in oklch, var(--color-theme-03) 20%, transparent 80%));
+  }
+
+  img {
+    width: var(--desktop-icon-size);
+    height: var(--desktop-icon-size);
+    margin: auto;
+    user-select: none;
+    user-drag: none;
+    -webkit-user-drag: none;
+    transition: filter 0.2s ease;
+  }
+
+  p {
+    font-family: var(--body-font), monospace; // Ensure monospace fallback
+    font-size: var(--desktop-icon-font-size);
+    width: fit-content;
+    margin-top: calc(var(--desktop-icon-font-size) / 2);
+    padding: calc(var(--desktop-icon-font-size) / 4) calc(var(--desktop-icon-font-size) / 2);
+    color: var(--color-white);
+    background: color-mix(in oklch, var(--color-black) 70%, transparent 30%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 2px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    transition: all 0.2s ease;
+  }
+}
+
+.classicyDesktopIconDragging {
+  z-index: 500 !important;
+  margin: calc(var(--desktop-icon-size) * -4);
+  padding: calc(var(--desktop-icon-size) * 4);
+  user-select: none;
+  filter: drop-shadow(0 0 20px color-mix(in oklch, var(--color-theme-03) 40%, transparent 60%));
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.classicyDesktopIconMask {
+  width: calc(var(--desktop-icon-size) - var(--window-border-size) * 2);
+  height: calc(var(--desktop-icon-size) - var(--window-border-size) * 2);
+  margin: 0 auto;
+  mask-mode: alpha !important;
+  mask-size: calc(100% - var(--window-border-size)) !important;
+  mask-repeat: no-repeat !important;
+  @include appearance.theme-halftone(var(--color-theme-07), 7%);
+  transition: backdrop-filter 0.2s ease, filter 0.2s ease;
+}
+
+.classicyDesktopIconMaskOuter {
+  width: calc(var(--desktop-icon-size) + var(--window-border-size));
+  height: calc(var(--desktop-icon-size) + var(--window-border-size));
+  margin: 0 auto;
+  background: black !important;
+  mask-mode: alpha !important;
+  mask-size: cover !important;
+  mask-repeat: no-repeat !important;
+}
+
+.classicyDesktopIconOpen {
+  z-index: 99;
+
+  .classicyDesktopIconMaskOuter {
+    .classicyDesktopIconMask {
+      backdrop-filter: grayscale(1) invert(1) brightness(1.2) !important;
+      background-blend-mode: overlay;
+      filter: drop-shadow(0 0 6px var(--color-theme-03));
+
+      * {
+        opacity: 0;
+      }
+    }
+  }
+
+  p {
+    box-shadow: 0 0 8px color-mix(in oklch, var(--color-theme-03) 30%, transparent 70%);
+  }
+}
+
+.classicyDesktopIconActive {
+  .classicyDesktopIconMaskOuter {
+    img {
+      filter: brightness(50%) drop-shadow(0 0 4px var(--color-theme-03));
+    }
+  }
+
+  p {
+    color: var(--color-window-document);
+    background: linear-gradient(
+      135deg,
+      var(--color-theme-03) 0%,
+      color-mix(in oklch, var(--color-theme-03) 80%, var(--color-theme-04) 20%) 100%
+    );
+    font-weight: 600;
+    box-shadow: 0 0 12px color-mix(in oklch, var(--color-theme-03) 40%, transparent 60%),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+    border: 1px solid color-mix(in oklch, var(--color-theme-03) 60%, var(--color-white) 40%);
+  }
+}
+
+.classicyDesktopIconActiveAndOpen {
+  z-index: 99;
+
+  .classicyDesktopIconMaskOuter {
+    background: var(--color-theme-07);
+    filter: brightness(0.5) drop-shadow(0 0 8px var(--color-theme-03));
+
+    .classicyDesktopIconMask {
+      filter: brightness(50%);
+      backdrop-filter: grayscale(1) invert(1) brightness(1.2) !important;
+
+      * {
+        opacity: 0;
+      }
+    }
+  }
+
+  p {
+    color: var(--color-window-document);
+    background: linear-gradient(
+      135deg,
+      var(--color-theme-03) 0%,
+      color-mix(in oklch, var(--color-theme-03) 80%, var(--color-theme-04) 20%) 100%
+    );
+    font-weight: 600;
+    box-shadow: 0 0 16px color-mix(in oklch, var(--color-theme-03) 50%, transparent 50%),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+    border: 1px solid color-mix(in oklch, var(--color-theme-03) 60%, var(--color-white) 40%);
+  }
+}

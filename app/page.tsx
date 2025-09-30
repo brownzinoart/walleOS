@@ -1,13 +1,7 @@
-import ProjectsGrid from '@/components/ProjectsGrid'
-import Hero from '@/components/Hero'
-import WebGLBackground from '@/components/WebGLBackground'
+'use client'
+
+import ClassicyDesktop from '@/app/SystemFolder/SystemResources/Desktop/ClassicyDesktop'
 
 export default function Home() {
-  return (
-    <>
-      <WebGLBackground />
-      <Hero />
-      <ProjectsGrid />
-    </>
-  )
+  return <ClassicyDesktop />
 }

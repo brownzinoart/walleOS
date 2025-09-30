@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { JetBrains_Mono } from 'next/font/google'
 import LenisProvider from '@/components/LenisProvider'
+import { ClassicyDesktopProvider } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
 import './globals.css'
 
 const jetbrainsMono = JetBrains_Mono({
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={jetbrainsMono.variable}>
-        <LenisProvider>{children}</LenisProvider>
+        <LenisProvider>
+          <ClassicyDesktopProvider>{children}</ClassicyDesktopProvider>
+        </LenisProvider>
       </body>
     </html>
   )

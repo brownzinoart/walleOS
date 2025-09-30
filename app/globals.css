@@ -10,6 +10,93 @@
   --breakpoint-3xl: 96rem;
 }
 
+/* Terminal Theme Bridge - Maps terminal colors to desktop elements */
+:root {
+  --terminal-glow-sm: 0 0 10px color-mix(in oklch, var(--color-terminal-accent) 20%, transparent 80%);
+  --terminal-glow-md: 0 0 20px color-mix(in oklch, var(--color-terminal-accent) 30%, transparent 70%);
+  --terminal-glow-lg: 0 0 40px color-mix(in oklch, var(--color-terminal-accent) 40%, transparent 60%);
+  --terminal-scanline-opacity: 0.06;
+  --terminal-grid-opacity: 0.03;
+}
+
+/* Desktop Terminal Enhancements */
+.classicyDesktop {
+  /* Add subtle scanline effect over desktop */
+  position: relative;
+}
+
+.classicyDesktop::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(100, 200, 180, var(--terminal-scanline-opacity)),
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 9999;
+}
+
+/* Add subtle grid pattern to desktop background */
+.classicyDesktop::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(100, 200, 180, var(--terminal-grid-opacity)) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 200, 180, var(--terminal-grid-opacity)) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Active Window Glow */
+.classicyWindowActive {
+  filter: drop-shadow(var(--terminal-glow-md));
+  transition: filter 0.3s ease;
+}
+
+/* Window Border Accent */
+.classicyWindow {
+  transition: filter 0.3s ease;
+}
+
+.classicyWindowInactive {
+  filter: brightness(0.8) contrast(0.9);
+}
+
+/* Menu Bar Terminal Enhancement */
+.classicyDesktopMenuBar {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(100, 200, 180, 0.1);
+}
+
+/* Desktop Icon Terminal Effects */
+.classicyDesktopIconActive,
+.classicyDesktopIconActiveAndOpen {
+  filter: drop-shadow(var(--terminal-glow-sm));
+}
+
+.classicyDesktopIconActive p,
+.classicyDesktopIconActiveAndOpen p {
+  background: color-mix(in oklch, var(--color-terminal-accent) 80%, transparent 20%) !important;
+  color: var(--color-terminal-bg) !important;
+  font-weight: 600;
+  box-shadow: var(--terminal-glow-sm);
+}
+
+/* Tailwind Utility Compatibility
+ * - Tailwind utilities work normally outside .classicyDesktop
+ * - Inside .classicyDesktop, Classicy theme variables take precedence
+ * - Terminal color utilities (bg-terminal-*, text-terminal-*) work everywhere
+ * - Use data-lenis-prevent on scrollable desktop elements to prevent conflicts
+ */
+
 :root {
   color-scheme: dark;
 }
