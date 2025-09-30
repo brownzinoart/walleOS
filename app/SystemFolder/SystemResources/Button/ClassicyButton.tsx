@@ -1,13 +1,13 @@
 import classicyButtonStyles from '@/app/SystemFolder/SystemResources/Button/ClassicyButton.module.scss'
 import { useSoundDispatch } from '@/app/SystemFolder/ControlPanels/SoundManager/ClassicySoundManagerContext'
 import classNames from 'classnames'
-import React from 'react'
+import React, { MouseEventHandler, ReactNode } from 'react'
 
 type ClassicyButtonProps = {
     isDefault?: boolean
     disabled?: boolean
-    onClickFunc?: any
-    children?: any
+    onClickFunc?: MouseEventHandler<HTMLButtonElement>
+    children?: ReactNode
     buttonShape?: 'rectangle' | 'square'
     buttonSize?: 'medium' | 'small'
     buttonType?: 'button' | 'submit' | 'reset'
@@ -19,7 +19,7 @@ const ClassicyButton: React.FC<ClassicyButtonProps> = ({
     buttonShape = 'rectangle',
     buttonSize,
     disabled = false,
-    onClickFunc = null,
+    onClickFunc,
     children,
 }) => {
     const player = useSoundDispatch()

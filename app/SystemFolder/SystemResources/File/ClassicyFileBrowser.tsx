@@ -10,8 +10,8 @@ type ClassicyFileBrowserProps = {
     path: string
     appId: string
     display?: 'icons' | 'list'
-    dirOnClickFunc?: any
-    fileOnClickFunc?: any
+    dirOnClickFunc?: (path: string) => void
+    fileOnClickFunc?: (path: string) => void
 }
 
 const ClassicyFileBrowser: React.FC<ClassicyFileBrowserProps> = ({
@@ -19,10 +19,10 @@ const ClassicyFileBrowser: React.FC<ClassicyFileBrowserProps> = ({
     display = 'icons',
     path,
     appId,
-    dirOnClickFunc = () => {},
-    fileOnClickFunc = () => {},
+    dirOnClickFunc = () => undefined,
+    fileOnClickFunc = () => undefined,
 }) => {
-    const holderRef = useRef(null)
+    const holderRef = useRef<HTMLDivElement | null>(null)
 
     return (
         <div style={{ position: 'absolute', width: '100%', height: '100%' }} ref={holderRef}>

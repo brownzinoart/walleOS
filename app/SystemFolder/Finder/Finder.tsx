@@ -36,7 +36,7 @@ const Finder = () => {
     }, [])
 
     const handlePathSettingsChange = (path: string, settings: PathSettingsProps) => {
-        let updatedPathSettings = { ...pathSettings }
+        const updatedPathSettings = { ...pathSettings }
         updatedPathSettings[path] = settings
         setPathSettings(updatedPathSettings)
     }

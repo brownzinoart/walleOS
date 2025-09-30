@@ -26,7 +26,7 @@ const ClassicyDesktopMenuBar: React.FC = () => {
         })
     }
 
-    let activeAppObject = Object.values(desktopContext.System.Manager.App.apps).filter((app) => app.focused)
+    const activeAppObject = Object.values(desktopContext.System.Manager.App.apps).filter((app) => app.focused)
 
     const appSwitcherMenuMenuItem: ClassicyMenuItem = {
         id: 'app-switcher',

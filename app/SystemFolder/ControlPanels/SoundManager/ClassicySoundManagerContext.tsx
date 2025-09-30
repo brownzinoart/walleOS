@@ -1,14 +1,14 @@
 'use client'
 
-import { ClassicyStoreSystemManager } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
-import { Howl } from 'howler'
-import React, { createContext, useContext, useReducer } from 'react'
+import {
+    ClassicyStoreSystemManager,
+    UnknownRecord,
+} from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
+import { Howl, HowlOptions } from 'howler'
+import React, { createContext, ReactNode, useContext, useReducer } from 'react'
 import fetch from 'sync-fetch'
 import soundData from './platinum.json'
 import soundLabels from './ClassicySoundManagerLabels.json'
-
-export const ClassicySoundManagerContext = createContext(null)
-export const ClassicySoundDispatchContext = createContext(null)
 
 export interface ClassicyStoreSystemSoundManager extends ClassicyStoreSystemManager {
     volume: number
@@ -29,155 +29,184 @@ export type ClassicySoundInfo = {
 }
 
 type ClassicySoundState = {
-    soundPlayer: Howl | null
+    soundPlayer: Howl
     disabled: string[]
     labels: ClassicySoundInfo[]
-    volume?: number
+    volume: number
 }
 
-enum ClassicySoundActionTypes {
-    ClassicySoundStop,
-    ClassicySoundPlay,
-    ClassicySoundPlayInterrupt,
-    ClassicySoundPlayError,
-    ClassicySoundLoad,
-    ClassicySoundSet,
-    ClassicySoundDisable,
-    ClassicySoundDisableOne,
-    ClassicySoundEnableOne,
-    ClassicyVolumeSet,
-}
+type ClassicySoundActionType =
+    | 'ClassicySoundStop'
+    | 'ClassicySoundPlay'
+    | 'ClassicySoundPlayInterrupt'
+    | 'ClassicySoundPlayError'
+    | 'ClassicySoundLoad'
+    | 'ClassicySoundSet'
+    | 'ClassicySoundDisable'
+    | 'ClassicySoundDisableOne'
+    | 'ClassicySoundEnableOne'
+    | 'ClassicyVolumeSet'
 
-interface ClassicySoundAction {
-    type: ClassicySoundActionTypes
+interface ClassicySoundAction extends UnknownRecord {
+    type: ClassicySoundActionType
     sound?: string
     file?: string
     disabled?: string | string[]
     enabled?: string | string[]
-    soundPlayer?: any
+    soundPlayer?: Howl
+    debug?: boolean
 }
 
-export const createSoundPlayer = ({ soundData, options }: SoundPlayer): Howl => {
-    if ('src' in soundData && 'sprite' in soundData) {
-        return new Howl({
-            src: soundData.src.map((i) => process.env.NEXT_PUBLIC_BASE_PATH + i),
-            sprite: soundData.sprite,
-            ...options,
-        })
+interface SoundThemeData {
+    src: string[]
+    sprite: Record<string, [number, number]>
+}
+
+interface SoundPlayerConfig {
+    soundData: SoundThemeData
+    options?: HowlOptions
+}
+
+const ensureContext = <T,>(value: T | null, name: string): T => {
+    if (value === null) {
+        throw new Error(`${name} must be used within a provider`)
     }
+    return value
 }
 
-export const initialPlayer = {
-    soundPlayer: createSoundPlayer({ soundData: soundData }),
+const createSoundPlayer = ({ soundData, options }: SoundPlayerConfig): Howl => {
+    if (!soundData.src || !soundData.sprite) {
+        throw new Error('Invalid sound data configuration')
+    }
+
+    return new Howl({
+        src: soundData.src.map((item) => `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}${item}`),
+        sprite: soundData.sprite,
+        ...options,
+    })
+}
+
+const valueToArray = (value: string | string[] | undefined): string[] => {
+    if (!value) {
+        return []
+    }
+    return Array.isArray(value) ? value : [value]
+}
+
+const getSoundTheme = (soundThemeURL: string): SoundThemeData => {
+    return fetch(soundThemeURL).json() as SoundThemeData
+}
+
+const loadSoundTheme = (soundThemeURL: string): Howl => {
+    const data = getSoundTheme(soundThemeURL)
+    return createSoundPlayer({ soundData: data })
+}
+
+const initialPlayer: ClassicySoundState = {
+    soundPlayer: createSoundPlayer({ soundData }),
     disabled: [],
     labels: soundLabels,
     volume: 100,
 }
 
-export const getSoundTheme = (soundThemeURL: string) => {
-    return fetch(soundThemeURL).json()
-}
+export const ClassicySoundManagerContext = createContext<ClassicySoundState | null>(null)
+export const ClassicySoundDispatchContext = createContext<React.Dispatch<ClassicySoundAction> | null>(null)
 
-interface SoundPlayer {
-    soundData: {
-        src: string[]
-        sprite: Record<string, any>
+const playerCanPlayInterrupt = (
+    { disabled, soundPlayer }: ClassicySoundState,
+    sound: string | undefined
+): boolean => {
+    if (!sound) {
+        return false
     }
-    options?: Record<string, any>
+    if (disabled.includes('*') || disabled.includes(sound)) {
+        return false
+    }
+    return Boolean(soundPlayer)
 }
 
-export const loadSoundTheme = (soundThemeURL: string): Howl => {
-    const data = getSoundTheme(soundThemeURL)
-    return createSoundPlayer({ soundData: data })
+const playerCanPlay = (state: ClassicySoundState, sound: string | undefined): boolean => {
+    return playerCanPlayInterrupt(state, sound) && !state.soundPlayer.playing()
 }
 
-export function useSound() {
-    return useContext(ClassicySoundManagerContext)
-}
-
-export function useSoundDispatch() {
-    return useContext(ClassicySoundDispatchContext)
-}
-
-const playerCanPlayInterrupt = ({ disabled, soundPlayer }: ClassicySoundState, sound: string) => {
-    return !disabled.includes('*') && !disabled.includes(sound) && soundPlayer
-}
-
-const playerCanPlay = (ss: ClassicySoundState, sound: string) => {
-    return playerCanPlayInterrupt(ss, sound) && !ss.soundPlayer.playing()
-}
-
-export const ClassicySoundStateEventReducer = (ss: ClassicySoundState, action: ClassicySoundAction) => {
-    if ('debug' in action) {
+const ClassicySoundStateEventReducer = (state: ClassicySoundState, action: ClassicySoundAction): ClassicySoundState => {
+    if (action.debug) {
         console.group('Sound Event')
         console.log('Action: ', action)
-        console.log('Start State: ', ss)
+        console.log('Start State: ', state)
     }
 
-    const validatedAction = ClassicySoundActionTypes[action.type as unknown as keyof typeof ClassicySoundActionTypes]
-    switch (validatedAction) {
-        case ClassicySoundActionTypes.ClassicySoundStop: {
-            ss.soundPlayer.stop()
+    const nextState: ClassicySoundState = { ...state }
+
+    switch (action.type) {
+        case 'ClassicySoundStop': {
+            nextState.soundPlayer.stop()
             break
         }
-        case ClassicySoundActionTypes.ClassicySoundPlay: {
-            if (playerCanPlay(ss, action.sound)) {
-                ss.soundPlayer.play(action.sound)
+        case 'ClassicySoundPlay': {
+            if (action.sound && playerCanPlay(nextState, action.sound)) {
+                nextState.soundPlayer.play(action.sound)
             }
             break
         }
-        case ClassicySoundActionTypes.ClassicySoundPlayInterrupt: {
-            if (playerCanPlayInterrupt(ss, action.sound)) {
-                ss.soundPlayer.stop()
-                ss.soundPlayer.play(action.sound)
+        case 'ClassicySoundPlayInterrupt': {
+            if (action.sound && playerCanPlayInterrupt(nextState, action.sound)) {
+                nextState.soundPlayer.stop()
+                nextState.soundPlayer.play(action.sound)
             }
             break
         }
-        case ClassicySoundActionTypes.ClassicySoundPlayError: {
-            if (playerCanPlayInterrupt(ss, action.sound)) {
-                ss.soundPlayer.stop()
-                ss.soundPlayer.play(action.sound || 'ClassicyAlertWildEep')
+        case 'ClassicySoundPlayError': {
+            if (playerCanPlayInterrupt(nextState, action.sound)) {
+                nextState.soundPlayer.stop()
+                nextState.soundPlayer.play(action.sound ?? 'ClassicyAlertWildEep')
             }
             break
         }
-        case ClassicySoundActionTypes.ClassicySoundLoad: {
-            ss.soundPlayer = loadSoundTheme(process.env.NEXT_PUBLIC_BASE_PATH + action.file)
-            ss.disabled = Array.isArray(action.disabled) ? action.disabled : [action.disabled]
+        case 'ClassicySoundLoad': {
+            if (action.file) {
+                nextState.soundPlayer = loadSoundTheme(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}${action.file}`)
+            }
+            nextState.disabled = valueToArray(action.disabled)
             break
         }
-        case ClassicySoundActionTypes.ClassicySoundSet: {
-            ss.soundPlayer = action.soundPlayer
+        case 'ClassicySoundSet': {
+            if (action.soundPlayer) {
+                nextState.soundPlayer = action.soundPlayer
+            }
             break
         }
-        case ClassicySoundActionTypes.ClassicyVolumeSet: {
-            ss.soundPlayer = action.soundPlayer
+        case 'ClassicyVolumeSet': {
+            if (action.soundPlayer) {
+                nextState.soundPlayer = action.soundPlayer
+            }
             break
         }
-        case ClassicySoundActionTypes.ClassicySoundDisable: {
-            ss.disabled = Array.isArray(action.disabled) ? action.disabled : [action.disabled]
+        case 'ClassicySoundDisable': {
+            nextState.disabled = valueToArray(action.disabled)
             break
         }
-        case ClassicySoundActionTypes.ClassicySoundDisableOne: {
-            let disabled = Array.isArray(action.disabled) ? action.disabled : [action.disabled]
-            ss.disabled.push(...disabled)
-            ss.disabled = Array.from(new Set(ss.disabled))
+        case 'ClassicySoundDisableOne': {
+            const disabled = valueToArray(action.disabled)
+            nextState.disabled = Array.from(new Set([...nextState.disabled, ...disabled]))
             break
         }
-        case ClassicySoundActionTypes.ClassicySoundEnableOne: {
-            let enabled = Array.isArray(action.enabled) ? action.enabled : [action.enabled]
-            ss.disabled = ss.disabled.filter((item) => !enabled.includes(item))
+        case 'ClassicySoundEnableOne': {
+            const enabled = valueToArray(action.enabled)
+            nextState.disabled = nextState.disabled.filter((item) => !enabled.includes(item))
             break
         }
     }
-    if ('debug' in action) {
-        console.log('End State: ', ss)
+
+    if (action.debug) {
+        console.log('End State: ', nextState)
         console.groupEnd()
     }
 
-    return ss
+    return nextState
 }
 
-export const ClassicySoundManagerProvider: React.FC<{ children: any }> = ({ children }) => {
+export const ClassicySoundManagerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [sound, soundDispatch] = useReducer(ClassicySoundStateEventReducer, initialPlayer)
 
     return (
@@ -187,4 +216,12 @@ export const ClassicySoundManagerProvider: React.FC<{ children: any }> = ({ chil
             </ClassicySoundDispatchContext.Provider>
         </ClassicySoundManagerContext.Provider>
     )
+}
+
+export function useSound(): ClassicySoundState {
+    return ensureContext(useContext(ClassicySoundManagerContext), 'ClassicySoundManagerContext')
+}
+
+export function useSoundDispatch(): React.Dispatch<ClassicySoundAction> {
+    return ensureContext(useContext(ClassicySoundDispatchContext), 'ClassicySoundDispatchContext')
 }

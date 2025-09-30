@@ -1,14 +1,14 @@
 import ClassicyControlLabel from '@/app/SystemFolder/SystemResources/ControlLabel/ClassicyControlLabel'
 import classicyDisclosureStyles from '@/app/SystemFolder/SystemResources/Disclosure/ClassicyDisclosure.module.scss'
 import classNames from 'classnames'
-import React, { useState } from 'react'
+import React, { KeyboardEvent, ReactNode, useState } from 'react'
 
 type ClassicyDisclosureTriangleDirections = 'up' | 'right' | 'down' | 'left'
 
 type ClassicyDisclosureProps = {
     direction?: ClassicyDisclosureTriangleDirections
     label?: string
-    children?: any
+    children?: ReactNode
 }
 
 const ClassicyDisclosure: React.FC<ClassicyDisclosureProps> = ({ direction = 'right', label = '', children }) => {
@@ -33,10 +33,10 @@ const ClassicyDisclosure: React.FC<ClassicyDisclosureProps> = ({ direction = 'ri
             <div
                 className={classicyDisclosureStyles.classicyDisclosureHeader}
                 onClick={() => {
-                    setOpen(!open)
+                    setOpen((prev) => !prev)
                 }}
                 tabIndex={0}
-                onKeyDown={(e) => handleKeyPress(e)}
+                onKeyDown={handleKeyPress}
             >
                 <svg
                     id="a"

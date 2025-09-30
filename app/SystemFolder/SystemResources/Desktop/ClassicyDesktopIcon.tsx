@@ -1,6 +1,7 @@
 'use client'
 
 import { useDesktop, useDesktopDispatch } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
+import { UnknownRecord } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
 import classicyDesktopIconStyles from '@/app/SystemFolder/SystemResources/Desktop/ClassicyDesktopIcon.module.scss'
 import classNames from 'classnames'
 import React, { useRef, useState } from 'react'
@@ -11,9 +12,9 @@ interface ClassicyDesktopIconProps {
     icon: string
     label?: string
     kind: string
-    onClickFunc?: any
+    onClickFunc?: () => void
     event?: string
-    eventData?: any
+    eventData?: UnknownRecord
 }
 
 const ClassicyDesktopIcon: React.FC<ClassicyDesktopIconProps> = ({
@@ -32,7 +33,7 @@ const ClassicyDesktopIcon: React.FC<ClassicyDesktopIconProps> = ({
     const desktopContext = useDesktop()
     const desktopEventDispatch = useDesktopDispatch()
 
-    const iconRef = useRef(null)
+    const iconRef = useRef<HTMLDivElement | null>(null)
 
     const id = appId + '.shortcut'
 
@@ -43,7 +44,7 @@ const ClassicyDesktopIcon: React.FC<ClassicyDesktopIconProps> = ({
         })
     }
 
-    const changeIcon = (e) => {
+    const changeIcon = (event: React.MouseEvent<HTMLDivElement>) => {
         if (dragging) {
             clickFocus()
 
@@ -52,24 +53,22 @@ const ClassicyDesktopIcon: React.FC<ClassicyDesktopIconProps> = ({
                 app: {
                     id: appId,
                 },
-                location: [e.clientX - clickPosition[0], e.clientY - clickPosition[1]],
+                location: [event.clientX - clickPosition[0], event.clientY - clickPosition[1]],
             })
         }
     }
 
-    const isActive = (id) => {
-        const idx = desktopContext.System.Manager.Desktop.selectedIcons.findIndex((o) => o === id)
+    const isActive = (iconId: string) => {
+        const idx = desktopContext.System.Manager.Desktop.selectedIcons.findIndex((o) => o === iconId)
         return idx > -1
     }
 
     const launchIcon = () => {
-        if (onClickFunc) {
-            onClickFunc()
-        }
+        onClickFunc?.()
         if (event && eventData) {
             desktopEventDispatch({
                 type: event,
-                ...eventData,
+                ...(eventData ?? {}),
             })
         }
         desktopEventDispatch({
@@ -84,26 +83,25 @@ const ClassicyDesktopIcon: React.FC<ClassicyDesktopIconProps> = ({
     }
 
     const getIconLocation = () => {
-        let iconIdx = desktopContext.System.Manager.Desktop.icons.findIndex((i) => i.appId === appId)
-
-        let leftValue: number = 0
-        let topValue: number = 0
-        if (iconIdx > -1) {
-            leftValue = desktopContext.System.Manager.Desktop.icons[iconIdx].location[0]
-            topValue = desktopContext.System.Manager.Desktop.icons[iconIdx].location[1]
-        }
-        return [topValue, leftValue]
+        const iconEntry = desktopContext.System.Manager.Desktop.icons.find((i) => i.appId === appId)
+        const leftValue = iconEntry?.location?.[0] ?? 0
+        const topValue = iconEntry?.location?.[1] ?? 0
+        return [topValue, leftValue] as [number, number]
     }
 
-    let thisLocation = getIconLocation()
+    const thisLocation = getIconLocation()
 
     const isLaunched = () => {
         // Check if a Finder window is open
         if (appId.startsWith('Finder.app')) {
-            const a = desktopContext.System.Manager.App.apps['Finder.app'].windows.findIndex(
-                (w) => w.id === eventData.path && w.closed === false
+            const path = (eventData as { path?: string })?.path
+            if (!path) {
+                return false
+            }
+            const finderWindowIndex = desktopContext.System.Manager.App.apps['Finder.app'].windows.findIndex(
+                (w) => w.id === path && w.closed === false
             )
-            return a >= 0
+            return finderWindowIndex >= 0
         }
         return desktopContext.System.Manager.App.apps[appId]?.open
     }
@@ -113,18 +111,20 @@ const ClassicyDesktopIcon: React.FC<ClassicyDesktopIconProps> = ({
         setClickPosition([0, 0])
     }
 
-    const startDrag = (e) => {
-        setClickPosition([
-            e.clientX - iconRef.current.getBoundingClientRect().left,
-            e.clientY - iconRef.current.getBoundingClientRect().top,
-        ])
+    const startDrag = (event: React.MouseEvent<HTMLDivElement>) => {
+        const element = iconRef.current
+        if (!element) {
+            return
+        }
+        const rect = element.getBoundingClientRect()
+        setClickPosition([event.clientX - rect.left, event.clientY - rect.top])
         setDragging(true)
     }
 
-    const getClass = (id) => {
-        if (isActive(id) && isLaunched()) {
+    const getClass = (iconId: string) => {
+        if (isActive(iconId) && isLaunched()) {
             return classicyDesktopIconStyles.classicyDesktopIconActiveAndOpen
-        } else if (isActive(id)) {
+        } else if (isActive(iconId)) {
             return classicyDesktopIconStyles.classicyDesktopIconActive
         } else if (isLaunched()) {
             return classicyDesktopIconStyles.classicyDesktopIconOpen

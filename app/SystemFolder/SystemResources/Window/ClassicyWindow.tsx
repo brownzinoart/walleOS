@@ -28,7 +28,7 @@ interface ClassicyWindowProps {
     header?: ReactNode
     appMenu?: ClassicyMenuItem[]
     contextMenu?: ClassicyMenuItem[]
-    onCloseFunc?: any
+    onCloseFunc?: () => void
     children?: ReactNode
     type?: string
 }
@@ -63,9 +63,9 @@ const ClassicyWindow: React.FC<ClassicyWindowProps> = ({
 
     const desktopContext = useDesktop()
     const desktopEventDispatch = useDesktopDispatch()
-    let player = useSoundDispatch()
+    const player = useSoundDispatch()
 
-    const windowRef = useRef(null)
+    const windowRef = useRef<HTMLDivElement | null>(null)
 
     const ws = useMemo(() => {
         const initialWindowState: ClassicyWindowState = {

@@ -1,5 +1,5 @@
 import classicyTabStyles from '@/app/SystemFolder/SystemResources/Tabs/ClassicyTabs.module.scss'
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import tabMaskImage from './tab.svg'
 import { useSoundDispatch } from '@/app/SystemFolder/ControlPanels/SoundManager/ClassicySoundManagerContext'
 
@@ -9,17 +9,17 @@ interface TabProps {
 
 interface TabIndividual {
     title: string
-    children: any
+    children: ReactNode
 }
 
 const ClassicyTabs: React.FC<TabProps> = ({ tabs }) => {
     const [activeTab, setActiveTab] = useState(0)
     const player = useSoundDispatch()
 
-    const handleTabClick = (e) => {
-        e.stopPropagation()
+    const handleTabClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation()
         player({ type: 'ClassicySoundPlay', sound: 'ClassicyTabClick' })
-        setActiveTab(parseInt(e.target.id))
+        setActiveTab(Number.parseInt(event.currentTarget.id, 10))
     }
 
     return (
@@ -30,11 +30,11 @@ const ClassicyTabs: React.FC<TabProps> = ({ tabs }) => {
                         <div
                             key={'button_' + index.toString()}
                             className={classicyTabStyles.classicyTabButtonWrapper}
-                            style={{ maskImage: `url('${tabMaskImage.src}` }}
+                            style={{ maskImage: `url(${tabMaskImage.src})` }}
                         >
                             <button
                                 id={index.toString()}
-                                style={{ maskImage: `url('${tabMaskImage.src}` }}
+                                style={{ maskImage: `url(${tabMaskImage.src})` }}
                                 className={
                                     classicyTabStyles.classicyTabButton +
                                     ' ' +

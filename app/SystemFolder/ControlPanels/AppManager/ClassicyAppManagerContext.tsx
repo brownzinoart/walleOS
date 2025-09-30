@@ -1,19 +1,28 @@
 'use client'
 
 import { ClassicySoundManagerProvider } from '@/app/SystemFolder/ControlPanels/SoundManager/ClassicySoundManagerContext'
-import React, { createContext, useContext, useEffect, useReducer } from 'react'
-import { classicyDesktopStateEventReducer, ClassicyStore, DefaultDesktopState } from './ClassicyAppManager'
+import React, { createContext, ReactNode, useContext, useEffect, useReducer } from 'react'
+import {
+    classicyDesktopStateEventReducer,
+    ClassicyAction,
+    ClassicyStore,
+    DefaultDesktopState,
+} from './ClassicyAppManager'
 
-const ClassicyDesktopContext = createContext<ClassicyStore>(null)
-const ClassicyDesktopDispatchContext = createContext(null)
+const ClassicyDesktopContext = createContext<ClassicyStore | null>(null)
+const ClassicyDesktopDispatchContext = createContext<React.Dispatch<ClassicyAction> | null>(null)
 
-export const ClassicyDesktopProvider = ({ children }) => {
+interface ClassicyDesktopProviderProps {
+    children: ReactNode
+}
+
+export const ClassicyDesktopProvider: React.FC<ClassicyDesktopProviderProps> = ({ children }) => {
     let desktopState: ClassicyStore
 
     if (typeof window !== 'undefined') {
         try {
             const storedState = localStorage.getItem('classicyDesktopState')
-            desktopState = storedState ? JSON.parse(storedState) : DefaultDesktopState
+            desktopState = storedState ? (JSON.parse(storedState) as ClassicyStore) : DefaultDesktopState
         } catch (error) {
             console.error('Error parsing desktop state:', error)
             desktopState = DefaultDesktopState
@@ -37,10 +46,17 @@ export const ClassicyDesktopProvider = ({ children }) => {
     )
 }
 
-export function useDesktop() {
-    return useContext(ClassicyDesktopContext)
+const ensureContext = <T,>(value: T | null, name: string): T => {
+    if (value === null) {
+        throw new Error(`${name} must be used within a provider`)
+    }
+    return value
 }
 
-export function useDesktopDispatch() {
-    return useContext(ClassicyDesktopDispatchContext)
+export function useDesktop(): ClassicyStore {
+    return ensureContext(useContext(ClassicyDesktopContext), 'ClassicyDesktopContext')
+}
+
+export function useDesktopDispatch(): React.Dispatch<ClassicyAction> {
+    return ensureContext(useContext(ClassicyDesktopDispatchContext), 'ClassicyDesktopDispatchContext')
 }

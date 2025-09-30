@@ -1,12 +1,16 @@
 'use client'
 
-import { useDesktop, useDesktopDispatch } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
+import { useDesktop } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
+import {
+    ClassicyFileSystemEntry,
+    ClassicyFileSystemEntryFileType,
+} from '@/app/SystemFolder/SystemResources/File/ClassicyFileSystemModel'
 import { ClassicyFileSystem } from '@/app/SystemFolder/SystemResources/File/ClassicyFileSystem'
 import ClassicyIcon from '@/app/SystemFolder/SystemResources/Icon/ClassicyIcon'
-import React, { RefObject, useEffect, useState } from 'react'
+import React, { RefObject, useCallback, useEffect, useState } from 'react'
 import { cleanupIcon, iconImageByType } from '@/app/SystemFolder/SystemResources/File/ClassicyFileBrowserUtils'
 
-type ClassicyFileBrowserViewIconsProps = {
+interface ClassicyFileBrowserViewIconsProps {
     fs: ClassicyFileSystem
     path: string
     appId: string
@@ -15,65 +19,96 @@ type ClassicyFileBrowserViewIconsProps = {
     holderRef: RefObject<HTMLDivElement>
 }
 
+interface BrowserIconItem {
+    appId: string
+    name: string
+    icon: string
+    label?: string
+    invisible?: boolean
+    holder: RefObject<HTMLDivElement>
+    initialPosition: [number, number]
+    onClickFunc: () => void
+}
+
 const ClassicyFileBrowserViewIcons: React.FC<ClassicyFileBrowserViewIconsProps> = ({
     fs,
     path,
     appId,
-    dirOnClickFunc = () => {},
-    fileOnClickFunc = () => {},
+    dirOnClickFunc = () => undefined,
+    fileOnClickFunc = () => undefined,
     holderRef,
 }) => {
-    const desktopContext = useDesktop(),
-        desktopEventDispatch = useDesktopDispatch()
+    const desktopContext = useDesktop()
+    const [items, setItems] = useState<BrowserIconItem[]>([])
 
-    const [items, setItems] = useState([])
-
-    const openFileOrFolder = (properties, path: string, filename: string) => {
-        switch (properties['_type']) {
-            case 'directory': {
-                return dirOnClickFunc(path + ':' + filename)
+    const openFileOrFolder = useCallback(
+        (properties: ClassicyFileSystemEntry, basePath: string, filename: string) => {
+            switch (properties._type) {
+                case ClassicyFileSystemEntryFileType.Directory:
+                case 'directory':
+                    return dirOnClickFunc(`${basePath}:${filename}`)
+                case ClassicyFileSystemEntryFileType.File:
+                case 'file':
+                    return fileOnClickFunc(`${basePath}:${filename}`)
+                default:
+                    return undefined
             }
-            case 'file': {
-                return fileOnClickFunc(path + ':' + filename)
-            }
-            default: {
-                return () => {}
-            }
-        }
-    }
+        },
+        [dirOnClickFunc, fileOnClickFunc]
+    )
 
     useEffect(() => {
-        const containerMeasure: [number, number] = [
-            holderRef.current.getBoundingClientRect().width,
-            holderRef.current.getBoundingClientRect().height,
-        ]
-        const directoryListing = fs.filterByType(path, ['file', 'directory'])
+        const container = holderRef.current
+        if (!container) {
+            return
+        }
 
-        let icons = []
-        Object.entries(directoryListing).forEach(([filename, properties], index) => {
-            icons.push({
-                appId: appId,
+        const containerMeasure: [number, number] = [
+            container.getBoundingClientRect().width,
+            container.getBoundingClientRect().height,
+        ]
+
+        const directoryListing = fs.filterByType(path, ['file', 'directory'])
+        const entryCount = Object.entries(directoryListing).length
+
+        const icons = Object.entries(directoryListing).map(([filename, properties], index) => {
+            const entry = properties as ClassicyFileSystemEntry
+            const typeKey = entry._type ? String(entry._type) : ClassicyFileSystemEntryFileType.File
+            const iconPath = (entry._icon as string | undefined) ?? iconImageByType(typeKey)
+            const initialPosition = cleanupIcon(
+                desktopContext.System.Manager.Appearance.activeTheme,
+                index,
+                entryCount,
+                containerMeasure
+            )
+
+            return {
+                appId,
                 name: filename,
-                invisible: properties['_invisible'],
-                icon: properties['_icon'] || iconImageByType(properties['_type']),
-                onClickFunc: () => openFileOrFolder(properties, path, filename),
+                icon: iconPath,
+                invisible: entry._invisible === true,
                 holder: holderRef,
-                initialPosition: cleanupIcon(
-                    desktopContext.System.Manager.Appearance.activeTheme,
-                    index,
-                    Object.entries(directoryListing).length,
-                    containerMeasure
-                ),
-            })
+                initialPosition,
+                onClickFunc: () => openFileOrFolder(entry, path, filename),
+                label: entry._label as string | undefined,
+            }
         })
-        setItems((_) => [...icons])
-    }, [path, fs, desktopContext.System.Manager.Appearance.activeTheme, holderRef])
+
+        setItems(icons)
+    }, [
+        appId,
+        desktopContext.System.Manager.Appearance.activeTheme,
+        fs,
+        holderRef,
+        openFileOrFolder,
+        path,
+    ])
 
     return (
         <div style={{ position: 'absolute', width: '100%', height: '100%' }} ref={holderRef}>
-            {items.map((item) => {
-                return <ClassicyIcon {...item} key={item.name} />
-            })}
+            {items.map((item) => (
+                <ClassicyIcon {...item} key={item.name} />
+            ))}
         </div>
     )
 }

@@ -13,8 +13,10 @@ import {
     classicyDesktopEventHandler,
     ClassicyStoreSystemDesktopManager,
 } from '@/app/SystemFolder/SystemResources/Desktop/ClassicyDesktopManager'
-import { classicyWindowEventHandler } from '@/app/SystemFolder/SystemResources/Desktop/ClassicyDesktopWindowManagerContext'
+import { classicyWindowEventHandler, ClassicyWindowAction } from '@/app/SystemFolder/SystemResources/Desktop/ClassicyDesktopWindowManagerContext'
 import { ClassicyMenuItem } from '@/app/SystemFolder/SystemResources/Menu/ClassicyMenu'
+
+export type UnknownRecord = Record<string, unknown>
 
 export interface ClassicyStoreSystemAppManager extends ClassicyStoreSystemManager {
     apps: Record<string, ClassicyStoreSystemApp>
@@ -26,12 +28,12 @@ export interface ClassicyStoreSystemApp {
     icon: string
     windows: ClassicyStoreSystemAppWindow[]
     open: boolean
-    data?: Record<string, any>
+    data?: UnknownRecord
     focused?: boolean
     noDesktopIcon?: boolean
     debug?: boolean
     openOnBoot?: boolean
-    options?: Record<string, any>[]
+    options?: UnknownRecord[]
     appMenu?: ClassicyMenuItem[]
 }
 
@@ -55,13 +57,13 @@ export interface ClassicyStoreSystemAppWindow {
     menuBar?: ClassicyMenuItem[]
     contextMenu?: ClassicyMenuItem[]
     showContextMenu?: boolean
-    options?: Record<string, any>[]
+    options?: UnknownRecord[]
 }
 
 export interface ClassicyStore {
     System: ClassicyStoreSystem
     Resource?: {
-        App: Record<string, any>
+        App: Record<string, UnknownRecord>
     }
 }
 
@@ -87,7 +89,30 @@ export interface ClassicyStoreSystemDateAndTimeManager extends ClassicyStoreSyst
     show: boolean
 }
 
-export interface ClassicyStoreSystemManager {}
+export type ClassicyStoreSystemManager = UnknownRecord
+
+export type ClassicyAction = {
+    type: string
+    debug?: boolean
+} & UnknownRecord
+
+type BasicAppReference = Pick<ClassicyStoreSystemApp, 'id' | 'name' | 'icon'>
+
+type AppActionBase<T extends string, TApp extends BasicAppReference = BasicAppReference> = ClassicyAction & {
+    type: T
+    app: TApp
+}
+
+export type ClassicyAppAction =
+    | AppActionBase<'ClassicyAppOpen'>
+    | AppActionBase<'ClassicyAppLoad'>
+    | AppActionBase<'ClassicyAppClose', Pick<BasicAppReference, 'id'>>
+    | AppActionBase<'ClassicyAppFocus', Pick<BasicAppReference, 'id'>>
+    | AppActionBase<'ClassicyAppActivate', Pick<BasicAppReference, 'id'>>
+
+const isClassicyAppAction = (action: ClassicyAction): action is ClassicyAppAction => {
+    return action.type.startsWith('ClassicyApp') && typeof action.app === 'object' && action.app !== null
+}
 
 export class ClassicyAppManagerHandler {
     public getAppIndex(ds: ClassicyStore, appId: string) {
@@ -111,14 +136,14 @@ export class ClassicyAppManagerHandler {
             ds.System.Manager.App.apps[appId].focused = true
         }
         const focusedWindow = ds.System.Manager.App.apps[appId]?.windows.findIndex((w) => w.default)
-        if (focusedWindow >= 0) {
+        if (focusedWindow !== undefined && focusedWindow >= 0) {
             ds.System.Manager.App.apps[appId].windows[focusedWindow].closed = false
             ds.System.Manager.App.apps[appId].windows[focusedWindow].focused = true
-        ds.System.Manager.Desktop.appMenu = ds.System.Manager.App.apps[appId].appMenu ?? []
-        } else if (ds.System.Manager.App.apps[appId]?.windows.length > 0) {
+            ds.System.Manager.Desktop.appMenu = ds.System.Manager.App.apps[appId].appMenu ?? []
+        } else if (ds.System.Manager.App.apps[appId]?.windows.length) {
             ds.System.Manager.App.apps[appId].windows[0].closed = false
             ds.System.Manager.App.apps[appId].windows[0].focused = true
-        ds.System.Manager.Desktop.appMenu = ds.System.Manager.App.apps[appId].appMenu ?? []
+            ds.System.Manager.Desktop.appMenu = ds.System.Manager.App.apps[appId].appMenu ?? []
         }
     }
 
@@ -162,7 +187,9 @@ export class ClassicyAppManagerHandler {
         if (findApp) {
             ds.System.Manager.App.apps[appId].open = false
             ds.System.Manager.App.apps[appId].focused = false
-            ds.System.Manager.App.apps[appId].windows?.map((w) => (w.closed = true))
+            ds.System.Manager.App.apps[appId].windows?.forEach((w) => {
+                w.closed = true
+            })
         }
     }
 
@@ -181,23 +208,21 @@ export class ClassicyAppManagerHandler {
     }
 }
 
-export const classicyAppEventHandler = (ds: ClassicyStore, action) => {
+export const classicyAppEventHandler = (ds: ClassicyStore, action: ClassicyAppAction) => {
     const handler = new ClassicyAppManagerHandler()
 
     switch (action.type) {
         case 'ClassicyAppOpen': {
-            handler.openApp(ds, action.app.id, action.app.name, action.app.icon)
+            handler.openApp(ds, action.app.id, action.app.name ?? action.app.id, action.app.icon ?? '')
             break
         }
         case 'ClassicyAppLoad': {
-            handler.loadApp(ds, action.app.id, action.app.name, action.app.icon)
+            handler.loadApp(ds, action.app.id, action.app.name ?? action.app.id, action.app.icon ?? '')
             break
         }
         case 'ClassicyAppClose': {
             handler.closeApp(ds, action.app.id)
-            const openApps = Object.values(ds.System.Manager.App.apps).find((value) => {
-                return value.open === true
-            })
+            const openApps = Object.values(ds.System.Manager.App.apps).find((value) => value.open === true)
 
             if (openApps?.id) {
                 handler.focusApp(ds, openApps.id)
@@ -218,16 +243,16 @@ export const classicyAppEventHandler = (ds: ClassicyStore, action) => {
     return ds
 }
 
-export const classicyDesktopStateEventReducer = (ds: ClassicyStore, action) => {
-    if ('debug' in action) {
+export const classicyDesktopStateEventReducer = (ds: ClassicyStore, action: ClassicyAction) => {
+    if (action.debug) {
         console.group('Desktop Event')
         console.log('Action: ', action)
         console.log('Start State: ', ds)
     }
 
-    if ('type' in action) {
+    if (typeof action.type === 'string') {
         if (action.type.startsWith('ClassicyWindow')) {
-            ds = classicyWindowEventHandler(ds, action)
+            ds = classicyWindowEventHandler(ds, action as ClassicyWindowAction)
         } else if (action.type.startsWith('ClassicyAppFinder')) {
             ds = classicyFinderEventHandler(ds, action)
         } else if (action.type.startsWith('ClassicyAppMoviePlayer')) {
@@ -240,12 +265,12 @@ export const classicyDesktopStateEventReducer = (ds: ClassicyStore, action) => {
             ds = classicyDesktopEventHandler(ds, action)
         } else if (action.type.startsWith('ClassicyManagerDateTime')) {
             ds = classicyDateTimeManagerEventHandler(ds, action)
-        } else if (action.type.startsWith('ClassicyApp')) {
+        } else if (action.type.startsWith('ClassicyApp') && isClassicyAppAction(action)) {
             ds = classicyAppEventHandler(ds, action)
         }
     }
 
-    if ('debug' in action) {
+    if (action.debug) {
         console.log('End State: ', ds)
         console.groupEnd()
     }
@@ -318,7 +343,7 @@ export const DefaultDesktopState: ClassicyStore = {
             },
             Appearance: {
                 availableThemes: themesData as unknown as ClassicyTheme[],
-                activeTheme: themesData.find((t) => t.id == 'walleos-terminal') as unknown as ClassicyTheme,
+                activeTheme: themesData.find((t) => t.id === 'walleos-terminal') as unknown as ClassicyTheme,
             },
         },
     },

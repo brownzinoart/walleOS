@@ -3,7 +3,7 @@
 import { intToHex } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyColors'
 import { useDesktop, useDesktopDispatch } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
 import ClassicyWindow from '@/app/SystemFolder/SystemResources/Window/ClassicyWindow'
-import React, { useEffect } from 'react'
+import React, { ReactNode, useEffect } from 'react'
 
 interface ClassicyAppProps {
     id: string
@@ -14,7 +14,7 @@ interface ClassicyAppProps {
     addSystemMenu?: boolean
     debug?: boolean
     openOnBoot?: boolean
-    children?: any
+    children?: ReactNode
 }
 
 const ClassicyApp: React.FC<ClassicyAppProps> = ({
@@ -30,6 +30,10 @@ const ClassicyApp: React.FC<ClassicyAppProps> = ({
 }) => {
     const desktopContext = useDesktop()
     const desktopEventDispatch = useDesktopDispatch()
+
+    const currentApp = desktopContext.System.Manager.App.apps[id]
+    const isOpen = Boolean(currentApp?.open)
+    const isActive = Boolean(currentApp?.focused)
 
     const themeData = desktopContext.System.Manager.Appearance.activeTheme
     const debuggerJSONTheme = {
@@ -71,14 +75,6 @@ const ClassicyApp: React.FC<ClassicyAppProps> = ({
         )
     }
 
-    const isAppOpen = () => {
-        return desktopContext.System.Manager.App.apps[id]?.open
-    }
-
-    const isAppActive = () => {
-        return desktopContext.System.Manager.App.apps[id]?.focused
-    }
-
     const onFocus = () => {
         desktopEventDispatch({
             type: 'ClassicyAppActivate',
@@ -106,7 +102,7 @@ const ClassicyApp: React.FC<ClassicyAppProps> = ({
                 },
             })
         }
-        if (isAppActive() && defaultWindow) {
+        if (isActive && defaultWindow) {
             desktopEventDispatch({
                 type: 'ClassicyWindowFocus',
                 app: {
@@ -129,33 +125,34 @@ const ClassicyApp: React.FC<ClassicyAppProps> = ({
                 kind: 'app_shortcut',
             })
         }
-    }, [addSystemMenu, noDesktopIcon])
+    }, [addSystemMenu, defaultWindow, desktopEventDispatch, icon, id, isActive, name, noDesktopIcon])
 
-    if (debug) {
-        let debugWindow = (
-            <ClassicyWindow
-                initialSize={[400, 300]}
-                initialPosition={[100, 200]}
-                title={'DEBUG ' + name}
-                id={id + '_debugger'}
-                appId={id}
-                appMenu={[{ id: 'Debug', title: 'Debug' }]}
-            >
-                <h1>Providers</h1>
-                <hr />
-                <h2>desktopContext</h2>
-                <DebugJSONTree data={desktopContext} />
-            </ClassicyWindow>
-        )
+    const debugWindow = (
+        <ClassicyWindow
+            initialSize={[400, 300]}
+            initialPosition={[100, 200]}
+            title={`DEBUG ${name}`}
+            id={`${id}_debugger`}
+            appId={id}
+            appMenu={[{ id: 'Debug', title: 'Debug' }]}
+        >
+            <h1>Providers</h1>
+            <hr />
+            <h2>desktopContext</h2>
+            <DebugJSONTree data={desktopContext} />
+        </ClassicyWindow>
+    )
 
-        if (Array.isArray[children]) {
-            children = [...children, debugWindow]
-        } else {
-            children = [children, debugWindow]
-        }
-    }
+    const renderedChildren = debug ? (
+        <>
+            {children}
+            {debugWindow}
+        </>
+    ) : (
+        <>{children}</>
+    )
 
-    return <div onMouseDown={onFocus}>{isAppOpen() && <>{children}</>}</div>
+    return <div onMouseDown={onFocus}>{isOpen ? renderedChildren : null}</div>
 }
 
 export default ClassicyApp

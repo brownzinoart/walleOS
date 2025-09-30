@@ -17,7 +17,7 @@ const initialWindowState = {
 
 const notEmpty = <T,>(value: T | null | undefined): value is T => value != null
 
-type ClassicyWindowAction =
+export type ClassicyWindowAction =
     // Open the Window's Context Menu
     | { type: 'ClassicyWindowMenu'; menuBar: ClassicyMenuItem[] }
     // Open a Window
@@ -66,7 +66,7 @@ type ClassicyWindowAction =
       }
 
 export const classicyWindowEventHandler = (ds: ClassicyStore, action: ClassicyWindowAction) => {
-    const updateWindow = (appId: string, windowId: string, updates: any) => {
+    const updateWindow = (appId: string, windowId: string, updates: Partial<ClassicyStoreSystemAppWindow>) => {
         ds.System.Manager.App.apps[appId].windows = ds.System.Manager.App.apps[appId].windows.map((w) =>
             w.id === windowId ? { ...w, ...updates } : w
         )

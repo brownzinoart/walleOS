@@ -1,7 +1,10 @@
 import { intToHex } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyColors'
 import { intToPct, intToPx } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicySize'
 import themesData from '@/app/SystemFolder/ControlPanels/AppearanceManager/styles/themes.json'
-import { ClassicyStoreSystemManager } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
+import {
+    ClassicyStoreSystemManager,
+    UnknownRecord,
+} from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
 import { ClassicyThemeSound } from '@/app/SystemFolder/ControlPanels/SoundManager/ClassicySoundManagerContext'
 
 export interface ClassicyStoreSystemAppearanceManager extends ClassicyStoreSystemManager {
@@ -63,7 +66,7 @@ export type ClassicyThemeDesktop = {
     backgroundPosition: string | number
 }
 
-export type ClassicyTheme = {
+export type ClassicyTheme = UnknownRecord & {
     id: string
     name: string
     color: ClassicyThemeColors
@@ -73,7 +76,11 @@ export type ClassicyTheme = {
     sound: ClassicyThemeSound
 }
 
-const makeThemeStyle = (theme: ClassicyTheme) => {
+const isPlainObject = (value: unknown): value is UnknownRecord => {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+const makeThemeStyle = (theme: ClassicyTheme): Record<string, string> => {
     return {
         '--color-black': intToHex(theme.color.black),
         '--color-white': intToHex(theme.color.white),
@@ -117,7 +124,7 @@ const makeThemeStyle = (theme: ClassicyTheme) => {
         '--desktop-background-image': `url(${process.env.NEXT_PUBLIC_BASE_PATH || ''}${theme.desktop.backgroundImage})`,
         '--desktop-background-color': intToHex(theme.desktop.backgroundColor),
         '--desktop-background-repeat': theme.desktop.backgroundRepeat,
-        '--desktop-background-position': theme.desktop.backgroundPosition,
+        '--desktop-background-position': String(theme.desktop.backgroundPosition),
         '--desktop-background-size':
             typeof theme.desktop.backgroundSize === 'number'
                 ? intToPct(theme.desktop.backgroundSize)
@@ -125,46 +132,41 @@ const makeThemeStyle = (theme: ClassicyTheme) => {
     }
 }
 
-export const getThemeVars = (theme: ClassicyTheme) => {
+export const getThemeVars = (theme: ClassicyTheme): Record<string, string> => {
     return makeThemeStyle(theme)
 }
 
-export const getAllThemes = () => {
+export const getAllThemes = (): ClassicyTheme[] => {
     return themesData
 }
 
-export const getTheme = (theme: string, overrides?: {}) => {
-    let namedThemeData: object = themesData[0]
-    for (let i: number = 0; i < themesData.length; i++) {
-        if (themesData[i].id === theme) {
-            namedThemeData = themesData[i]
-        }
-    }
-
-    return overrides ? mergeDeep(namedThemeData, overrides) : namedThemeData
-}
-
-export const mergeDeep = (target: object, ...sources) => {
+export const mergeDeep = (target: UnknownRecord, ...sources: UnknownRecord[]): UnknownRecord => {
     if (!sources.length) {
         return target
     }
 
-    const source = sources.shift()
-
-    const isObject = (item) => {
-        return item && typeof item === 'object' && !Array.isArray(item)
-    }
-
-    for (const key in source) {
-        if (isObject(source[key])) {
-            if (!target[key]) {
-                Object.assign(target, { [key]: {} })
+    const [source, ...rest] = sources
+    if (source) {
+        Object.entries(source).forEach(([key, value]) => {
+            if (isPlainObject(value)) {
+                const baseValue = isPlainObject(target[key]) ? (target[key] as UnknownRecord) : {}
+                target[key] = mergeDeep({ ...baseValue }, value)
+            } else {
+                target[key] = value
             }
-            mergeDeep(target[key], source[key])
-        } else {
-            Object.assign(target, { [key]: source[key] })
-        }
+        })
     }
 
-    return mergeDeep(target, ...sources)
+    return rest.length ? mergeDeep(target, ...rest) : target
+}
+
+export const getTheme = (theme: string, overrides?: UnknownRecord): ClassicyTheme => {
+    const namedThemeData = themesData.find((item) => item.id === theme) ?? themesData[0]
+
+    if (!overrides) {
+        return namedThemeData
+    }
+
+    const clonedTheme = JSON.parse(JSON.stringify(namedThemeData)) as UnknownRecord
+    return mergeDeep(clonedTheme, overrides) as ClassicyTheme
 }

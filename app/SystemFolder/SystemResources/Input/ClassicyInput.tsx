@@ -1,24 +1,23 @@
 import ClassicyControlLabel from '@/app/SystemFolder/SystemResources/ControlLabel/ClassicyControlLabel'
 import classicyInputStyles from '@/app/SystemFolder/SystemResources/Input/ClassicyInput.module.scss'
 import classNames from 'classnames'
-import React from 'react'
+import React, { ChangeEventHandler, ForwardedRef } from 'react'
 
 interface ClassicyInputProps {
     id: string
     inputType?: 'text'
-    onChangeFunc?: any
+    onChangeFunc?: ChangeEventHandler<HTMLInputElement>
     labelTitle?: string
     placeholder?: string
     prefillValue?: string
     disabled?: boolean
     isDefault?: boolean
-    ref?: any
 }
 
 const ClassicyInput: React.FC<ClassicyInputProps> = React.forwardRef<HTMLInputElement, ClassicyInputProps>(
     function ClassicyInput(
         { id, inputType = 'text', labelTitle, placeholder, prefillValue, disabled = false, isDefault, onChangeFunc },
-        ref
+        ref: ForwardedRef<HTMLInputElement>
     ) {
         return (
             <div className={classicyInputStyles.classicyInputHolder}>

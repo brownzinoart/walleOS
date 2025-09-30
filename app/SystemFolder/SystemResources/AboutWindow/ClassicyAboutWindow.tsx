@@ -9,7 +9,7 @@ type ClassicyAboutWindowProps = {
     appId: string
     appName: string
     appIcon: string
-    hideFunc: any
+    hideFunc: () => void
     appMenu?: ClassicyMenuItem[]
 }
 export const getClassicyAboutWindow = (props: ClassicyAboutWindowProps) => {

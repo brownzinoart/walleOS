@@ -1,6 +1,6 @@
 import classicyIconStyles from '@/app/SystemFolder/SystemResources/Icon/ClassicyIcon.module.scss'
 import classNames from 'classnames'
-import React, { useRef, useState } from 'react'
+import React, { RefObject, useRef, useState } from 'react'
 
 interface ClassicyIconProps {
     appId: string
@@ -8,8 +8,8 @@ interface ClassicyIconProps {
     icon: string
     label?: string
     initialPosition?: [number, number]
-    holder?: any
-    onClickFunc?: any
+    holder?: RefObject<HTMLDivElement>
+    onClickFunc?: () => void
     invisible?: boolean
 }
 
@@ -24,25 +24,22 @@ const ClassicyIcon: React.FC<ClassicyIconProps> = ({
     invisible = false,
 }) => {
     const [position, setPosition] = useState<[number, number]>(initialPosition)
-    const [dragging, setDragging] = useState<boolean>(false)
-    const [active, setActive] = useState<boolean>(false)
+    const [dragging, setDragging] = useState(false)
+    const [active, setActive] = useState(false)
 
-    const iconRef = useRef(null)
+    const iconRef = useRef<HTMLDivElement | null>(null)
 
-    const id = appId + '.shortcut'
+    const id = `${appId}.shortcut`
 
     const toggleFocus = () => {
-        setActive(!active)
-    }
-    const setFocus = (active: boolean) => {
-        setActive(active)
+        setActive((prev) => !prev)
     }
 
     const clearFocus = () => {
         setActive(false)
     }
 
-    const doDoubleClick = () => {
+    const handleDoubleClick = () => {
         if (onClickFunc) {
             clearFocus()
             onClickFunc()
@@ -57,18 +54,24 @@ const ClassicyIcon: React.FC<ClassicyIconProps> = ({
         setDragging(true)
     }
 
-    const changeIcon = (e) => {
-        if (dragging) {
-            setFocus(true)
-            setPosition([
-                e.clientX -
-                    holder.current.getBoundingClientRect().left -
-                    iconRef.current.getBoundingClientRect().width / 2,
-                e.clientY -
-                    holder.current.getBoundingClientRect().top -
-                    iconRef.current.getBoundingClientRect().height / 2,
-            ])
+    const changeIcon = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (!dragging) {
+            return
         }
+
+        const holderElement = holder?.current
+        const iconElement = iconRef.current
+        if (!holderElement || !iconElement) {
+            return
+        }
+
+        const holderRect = holderElement.getBoundingClientRect()
+        const iconRect = iconElement.getBoundingClientRect()
+        setActive(true)
+        setPosition([
+            event.clientX - holderRect.left - iconRect.width / 2,
+            event.clientY - holderRect.top - iconRect.height / 2,
+        ])
     }
 
     return (
@@ -81,12 +84,12 @@ const ClassicyIcon: React.FC<ClassicyIconProps> = ({
                 dragging ? classicyIconStyles.classicyIconDragging : '',
                 active ? classicyIconStyles.classicyIconActive : ''
             )}
-            style={{ position: 'absolute', left: position[0] + 'px', top: position[1] + 'px' }}
+            style={{ position: 'absolute', left: `${position[0]}px`, top: `${position[1]}px` }}
             onClick={toggleFocus}
             onMouseDown={startDrag}
             onMouseMove={changeIcon}
             onMouseUp={stopChangeIcon}
-            onDoubleClick={doDoubleClick}
+            onDoubleClick={handleDoubleClick}
         >
             <div
                 className={classNames(
@@ -99,9 +102,7 @@ const ClassicyIcon: React.FC<ClassicyIconProps> = ({
                     <img src={icon} alt={name} />
                 </div>
             </div>
-            <p className={classNames(invisible ? classicyIconStyles.classicyIconInvisible : '')}>
-                {label ? label : name}
-            </p>
+            <p className={classNames(invisible ? classicyIconStyles.classicyIconInvisible : '')}>{label ?? name}</p>
         </div>
     )
 }

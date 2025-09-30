@@ -1,10 +1,13 @@
+import React from 'react'
 import {
+    ClassicyAction,
     ClassicyAppManagerHandler,
     ClassicyStore,
     ClassicyStoreSystemManager,
+    UnknownRecord,
 } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
+import { ClassicyTheme } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyAppearance'
 import { ClassicyMenuItem } from '@/app/SystemFolder/SystemResources/Menu/ClassicyMenu'
-import React from 'react'
 
 export interface ClassicyStoreSystemDesktopManagerIcon {
     appId: string
@@ -15,7 +18,7 @@ export interface ClassicyStoreSystemDesktopManagerIcon {
     location?: [number, number]
     onClickFunc: (event: React.MouseEvent) => void
     event?: string
-    eventData?: any
+    eventData?: UnknownRecord
     contextMenu?: ClassicyMenuItem[]
 }
 
@@ -33,24 +36,69 @@ export interface ClassicyStoreSystemDesktopManager extends ClassicyStoreSystemMa
     }
 }
 
-export const classicyDesktopEventHandler = (ds: ClassicyStore, action) => {
+type BasicAppReference = {
+    id: string
+    name?: string
+    icon?: string
+}
+
+const isAppReference = (value: unknown): value is BasicAppReference => {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        'id' in value &&
+        typeof (value as { id: unknown }).id === 'string'
+    )
+}
+
+type DesktopFocusEvent = React.MouseEvent & {
+    target: EventTarget & { id: string }
+}
+
+const getDesktopEvent = (value: unknown): DesktopFocusEvent | null => {
+    if (
+        typeof value === 'object' &&
+        value !== null &&
+        'target' in value &&
+        'clientX' in value &&
+        'clientY' in value
+    ) {
+        return value as DesktopFocusEvent
+    }
+    return null
+}
+
+const asMenuItems = (value: unknown): ClassicyMenuItem[] | null => {
+    return Array.isArray(value) ? (value as ClassicyMenuItem[]) : null
+}
+
+const asThemes = (value: unknown): ClassicyTheme[] | null => {
+    return Array.isArray(value) ? (value as ClassicyTheme[]) : null
+}
+
+export const classicyDesktopEventHandler = (ds: ClassicyStore, action: ClassicyAction): ClassicyStore => {
     switch (action.type) {
         case 'ClassicyDesktopAppMenuAdd': {
-            const menuItem = {
-                id: 'system_menu_' + action.app.id,
-                title: action.app.name,
-                image: action.app.icon,
+            const app = isAppReference(action.app) ? action.app : null
+            if (!app) {
+                break
+            }
+
+            const menuItem: ClassicyMenuItem = {
+                id: `system_menu_${app.id}`,
+                title: app.name ?? app.id,
+                image: app.icon,
                 event: 'ClassicyAppOpen',
                 eventData: {
                     app: {
-                        id: action.app.id,
-                        name: action.app.name,
-                        icon: action.app.icon,
+                        id: app.id,
+                        name: app.name ?? app.id,
+                        icon: app.icon,
                     },
                 },
             }
 
-            const exists = ds.System.Manager.Desktop.systemMenu.findIndex((i) => i.id === menuItem.id)
+            const exists = ds.System.Manager.Desktop.systemMenu.findIndex((item) => item.id === menuItem.id)
             if (exists >= 0) {
                 ds.System.Manager.Desktop.systemMenu[exists] = menuItem
             } else {
@@ -60,8 +108,13 @@ export const classicyDesktopEventHandler = (ds: ClassicyStore, action) => {
             break
         }
         case 'ClassicyDesktopAppMenuRemove': {
+            const app = isAppReference(action.app) ? action.app : null
+            if (!app) {
+                break
+            }
+
             const exists = ds.System.Manager.Desktop.systemMenu.findIndex(
-                (i) => i && i.id == `system_menu_${action.app.id}`
+                (item) => item && item.id === `system_menu_${app.id}`
             )
             if (exists >= 0) {
                 ds.System.Manager.Desktop.systemMenu.splice(exists, 1)
@@ -69,7 +122,8 @@ export const classicyDesktopEventHandler = (ds: ClassicyStore, action) => {
             break
         }
         case 'ClassicyDesktopFocus': {
-            if ('e' in action && action.e.target.id === 'classicyDesktop') {
+            const event = getDesktopEvent(action.e)
+            if (event?.target.id === 'classicyDesktop') {
                 const mgr = new ClassicyAppManagerHandler()
                 ds = mgr.deFocusApps(ds)
 
@@ -77,11 +131,12 @@ export const classicyDesktopEventHandler = (ds: ClassicyStore, action) => {
                 ds.System.Manager.Desktop.selectedIcons = []
                 ds.System.Manager.Desktop.showContextMenu = false
                 ds.System.Manager.Desktop.selectBox.active = true
-                ds.System.Manager.Desktop.selectBox.start = [action.e.clientX, action.e.client]
+                ds.System.Manager.Desktop.selectBox.start = [event.clientX, event.clientY]
             }
 
-            if ('menuBar' in action) {
-                ds.System.Manager.Desktop.appMenu = action.menuBar
+            const menuItems = asMenuItems(action.menuBar)
+            if (menuItems) {
+                ds.System.Manager.Desktop.appMenu = menuItems
             }
 
             break
@@ -90,12 +145,15 @@ export const classicyDesktopEventHandler = (ds: ClassicyStore, action) => {
             break
         }
         case 'ClassicyDesktopDrag': {
-            ds.System.Manager.Desktop.selectBox.start = [
-                action.e.clientX - ds.System.Manager.Desktop.selectBox.start[0],
-                action.e.clientY - ds.System.Manager.Desktop.selectBox.start[1],
-            ]
+            const event = getDesktopEvent(action.e)
+            if (event) {
+                ds.System.Manager.Desktop.selectBox.start = [
+                    event.clientX - ds.System.Manager.Desktop.selectBox.start[0],
+                    event.clientY - ds.System.Manager.Desktop.selectBox.start[1],
+                ]
 
-            ds.System.Manager.Desktop.selectBox.size = [0, 0]
+                ds.System.Manager.Desktop.selectBox.size = [0, 0]
+            }
             break
         }
         case 'ClassicyDesktopStop': {
@@ -105,51 +163,70 @@ export const classicyDesktopEventHandler = (ds: ClassicyStore, action) => {
             break
         }
         case 'ClassicyDesktopContextMenu': {
-            ds.System.Manager.Desktop.showContextMenu = action.showContextMenu
-            if (action.contextMenu) {
-                ds.System.Manager.Desktop.contextMenu = action.contextMenu
+            ds.System.Manager.Desktop.showContextMenu = Boolean(action.showContextMenu)
+            const contextMenu = asMenuItems(action.contextMenu)
+            if (contextMenu) {
+                ds.System.Manager.Desktop.contextMenu = contextMenu
             }
             break
         }
         case 'ClassicyDesktopChangeTheme': {
-            ds.System.Manager.Appearance.activeTheme = ds.System.Manager.Appearance.availableThemes.find(
-                (a) => a.id == action.activeTheme
-            )
+            const activeTheme = typeof action.activeTheme === 'string' ? action.activeTheme : null
+            if (activeTheme) {
+                const theme = ds.System.Manager.Appearance.availableThemes.find((item) => item.id === activeTheme)
+                if (theme) {
+                    ds.System.Manager.Appearance.activeTheme = theme
+                }
+            }
             break
         }
         case 'ClassicyDesktopChangeBackground': {
-            ds.System.Manager.Appearance.activeTheme.desktop.backgroundImage = action.backgroundImage
-            ds.System.Manager.Appearance.activeTheme.desktop.backgroundSize = 'auto'
+            if (typeof action.backgroundImage === 'string' && action.backgroundImage.length > 0) {
+                ds.System.Manager.Appearance.activeTheme.desktop.backgroundImage = action.backgroundImage
+                ds.System.Manager.Appearance.activeTheme.desktop.backgroundSize = 'auto'
+            }
             break
         }
         case 'ClassicyDesktopChangeBackgroundPosition': {
-            ds.System.Manager.Appearance.activeTheme.desktop.backgroundPosition = action.backgroundPosition
+            if (typeof action.backgroundPosition === 'string') {
+                ds.System.Manager.Appearance.activeTheme.desktop.backgroundPosition = action.backgroundPosition
+            }
             break
         }
         case 'ClassicyDesktopChangeBackgroundRepeat': {
-            ds.System.Manager.Appearance.activeTheme.desktop.backgroundRepeat = action.backgroundRepeat
+            if (typeof action.backgroundRepeat === 'string') {
+                ds.System.Manager.Appearance.activeTheme.desktop.backgroundRepeat = action.backgroundRepeat
+            }
             break
         }
         case 'ClassicyDesktopChangeBackgroundSize': {
-            ds.System.Manager.Appearance.activeTheme.desktop.backgroundSize = action.backgroundSize
+            if (typeof action.backgroundSize === 'string') {
+                ds.System.Manager.Appearance.activeTheme.desktop.backgroundSize = action.backgroundSize
+            }
             break
         }
         case 'ClassicyDesktopChangeFont': {
-            switch (action.fontType) {
-                case 'body':
-                    ds.System.Manager.Appearance.activeTheme.typography.body = action.font
-                    break
-                case 'ui':
-                    ds.System.Manager.Appearance.activeTheme.typography.ui = action.font
-                    break
-                case 'header':
-                    ds.System.Manager.Appearance.activeTheme.typography.header = action.font
-                    break
+            if (typeof action.font === 'string' && typeof action.fontType === 'string') {
+                switch (action.fontType) {
+                    case 'body':
+                        ds.System.Manager.Appearance.activeTheme.typography.body = action.font
+                        break
+                    case 'ui':
+                        ds.System.Manager.Appearance.activeTheme.typography.ui = action.font
+                        break
+                    case 'header':
+                        ds.System.Manager.Appearance.activeTheme.typography.header = action.font
+                        break
+                }
             }
             break
         }
         case 'ClassicyDesktopLoadThemes': {
-            ds.System.Manager.Appearance.availableThemes = action.availableThemes
+            const themes = asThemes(action.availableThemes)
+            if (themes) {
+                ds.System.Manager.Appearance.availableThemes = themes
+            }
+            break
         }
     }
     return ds

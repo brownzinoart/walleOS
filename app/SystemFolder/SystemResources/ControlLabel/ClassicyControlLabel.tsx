@@ -1,6 +1,6 @@
 import classicyControlLabelStyles from '@/app/SystemFolder/SystemResources/ControlLabel/ClassicyControlLabel.module.scss'
 import classNames from 'classnames'
-import React from 'react'
+import React, { MouseEventHandler, ReactNode } from 'react'
 
 type ClassicyControlLabelDirections = 'left' | 'right'
 type ClassicyControlLabelSize = 'small' | 'medium' | 'large'
@@ -13,8 +13,8 @@ interface ClassicyControlLabelProps {
     icon?: string
     iconSize?: string
     direction?: ClassicyControlLabelDirections
-    children?: any
-    onClickFunc?: Function
+    children?: ReactNode
+    onClickFunc?: MouseEventHandler<HTMLDivElement>
 }
 
 const ClassicyControlLabel: React.FC<ClassicyControlLabelProps> = ({
@@ -47,11 +47,11 @@ const ClassicyControlLabel: React.FC<ClassicyControlLabelProps> = ({
         return classicyControlLabelStyles.classicyControlLabelLeft
     }
 
-    const imageSize = (size: string) => {
-        if (iconSize === 'sm') {
+    const getImageSize = (size?: string) => {
+        if (size === 'sm') {
             return '16px'
         }
-        if (iconSize === 'lg') {
+        if (size === 'lg') {
             return '64px'
         }
         return '32px'
@@ -72,7 +72,7 @@ const ClassicyControlLabel: React.FC<ClassicyControlLabelProps> = ({
                     }
                 }}
             >
-                {icon && <img src={icon} width={imageSize(iconSize)} alt={label} />}
+                {icon && <img src={icon} width={getImageSize(iconSize)} alt={label} />}
 
                 {['left', 'bottom'].includes(direction) && children}
 

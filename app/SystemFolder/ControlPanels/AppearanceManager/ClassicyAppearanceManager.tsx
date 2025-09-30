@@ -1,6 +1,6 @@
 'use client'
 
-import { getTheme } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyAppearance'
+import { ClassicyTheme, getTheme } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyAppearance'
 import { useDesktop, useDesktopDispatch } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
 import { useSoundDispatch } from '@/app/SystemFolder/ControlPanels/SoundManager/ClassicySoundManagerContext'
 import { getClassicyAboutWindow } from '@/app/SystemFolder/SystemResources/AboutWindow/ClassicyAboutWindow'
@@ -13,6 +13,8 @@ import ClassicyPopUpMenu from '@/app/SystemFolder/SystemResources/PopUpMenu/Clas
 import ClassicyTabs from '@/app/SystemFolder/SystemResources/Tabs/ClassicyTabs'
 import ClassicyWindow from '@/app/SystemFolder/SystemResources/Window/ClassicyWindow'
 import React, { useState } from 'react'
+
+type ValueChangeEvent = React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 
 function isValidUrlWithRegex(url: string): boolean {
     const urlPattern = /^(https?):\/\/[^\s/$.?#].[^\s]*$/i
@@ -35,9 +37,9 @@ export const ClassicyAppearanceManager: React.FC = () => {
             `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/img/wallpapers/default.png`
     )
 
-    const themesList = desktopContext.System.Manager.Appearance.availableThemes.map((a: any) =>
-        (({ id, name }) => ({ value: id, label: name }))(a)
-    )
+    const availableThemes: ClassicyTheme[] =
+        desktopContext.System.Manager.Appearance.availableThemes ?? []
+    const themesList = availableThemes.map(({ id, name }) => ({ value: id, label: name }))
 
     const fonts = [
         { label: 'Charcoal', value: 'Charcoal' },
@@ -96,58 +98,58 @@ export const ClassicyAppearanceManager: React.FC = () => {
         { label: 'Waves Sunny', value: 'waves_sunny.png' },
     ]
 
-    const switchTheme = (e) => {
+    const switchTheme = (event: ValueChangeEvent) => {
         desktopEventDispatch({
             type: 'ClassicyDesktopChangeTheme',
-            activeTheme: e.target.value,
+            activeTheme: event.target.value,
         })
-        loadSoundTheme(e.target.value)
+        loadSoundTheme(event.target.value)
     }
 
-    const changeBackground = (e) => {
-        setBg(backgroundPrefix + '/' + e.target.value)
+    const changeBackground = (event: ValueChangeEvent) => {
+        setBg(`${backgroundPrefix}/${event.target.value}`)
         desktopEventDispatch({
             type: 'ClassicyDesktopChangeBackground',
-            backgroundImage: '/img/wallpapers/' + e.target.value,
+            backgroundImage: `/img/wallpapers/${event.target.value}`,
         })
     }
 
-    const setBackgroundURL = (e) => {
-        if (isValidUrlWithRegex(e.target.value)) {
-            setBg(e.target.value)
+    const setBackgroundURL = (event: ValueChangeEvent) => {
+        if (isValidUrlWithRegex(event.target.value)) {
+            setBg(event.target.value)
             desktopEventDispatch({
                 type: 'ClassicyDesktopChangeBackground',
-                backgroundImage: e.target.value,
+                backgroundImage: event.target.value,
             })
         }
     }
 
-    const alignBackground = (e) => {
+    const alignBackground = (event: ValueChangeEvent) => {
         desktopEventDispatch({
             type: 'ClassicyDesktopChangeBackgroundPosition',
-            backgroundPosition: e.target.value,
+            backgroundPosition: event.target.value,
         })
     }
 
-    const repeatBackground = (e) => {
+    const repeatBackground = (event: ValueChangeEvent) => {
         desktopEventDispatch({
             type: 'ClassicyDesktopChangeBackgroundRepeat',
-            backgroundRepeat: e.target.value,
+            backgroundRepeat: event.target.value,
         })
     }
 
-    const backgroundSize = (e) => {
+    const backgroundSize = (event: ValueChangeEvent) => {
         desktopEventDispatch({
             type: 'ClassicyDesktopChangeBackgroundSize',
-            backgroundSize: e.target.value,
+            backgroundSize: event.target.value,
         })
     }
 
-    const changeFont = (e) => {
+    const changeFont = (event: ValueChangeEvent) => {
         desktopEventDispatch({
             type: 'ClassicyDesktopChangeFont',
-            font: e.target.value,
-            fontType: e.target.id,
+            font: event.target.value,
+            fontType: event.target.id,
         })
     }
     const loadSoundTheme = (themeName: string) => {

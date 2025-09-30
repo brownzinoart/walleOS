@@ -11,7 +11,7 @@ type QuickTimeVideoEmbed = {
     name: string
     url: string
     type: 'audio' | 'video'
-    options?: {}
+    options?: Record<string, unknown>
     subtitlesUrl?: string
     autoPlay?: boolean
     hideControls?: boolean

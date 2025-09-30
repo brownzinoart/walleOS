@@ -39,7 +39,7 @@ export const cleanupIcon = (
     containerMeasure: [number, number]
 ): [number, number] => {
     const [iconSize, iconPadding] = getIconSize(theme)
-    let grid = createGrid(iconSize, iconTotal, containerMeasure)
+    const grid = createGrid(iconSize, iconPadding, containerMeasure)
     const [startX, startY] = getGridPosition(iconIndex, grid)
 
     return [iconPadding + Math.floor(iconSize * 2 * startX), iconPadding + Math.floor(iconSize * 2 * startY)]

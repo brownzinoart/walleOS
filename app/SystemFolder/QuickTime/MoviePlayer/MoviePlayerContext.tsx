@@ -1,10 +1,10 @@
-import { classicyAppEventHandler, ClassicyStore } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
+import { classicyAppEventHandler, ClassicyStore, UnknownRecord } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
 import { MoviePlayerAppInfo } from '@/app/SystemFolder/QuickTime/MoviePlayer/MoviePlayer'
 
 export type ClassicyQuickTimeDocument = {
     url: string
     name?: string
-    options?: any
+    options?: UnknownRecord
     icon?: string
     type?: 'video' | 'audio' | 'image'
 }
@@ -32,13 +32,14 @@ export const classicyQuickTimeMoviePlayerEventHandler = (ds: ClassicyStore, acti
         ds.System.Manager.App.apps[appId].data['openFiles'] = []
     }
 
-    const openDocUrls = ds.System.Manager.App.apps[appId].data['openFiles'].map((app) => app.url)
+    const openFiles = ds.System.Manager.App.apps[appId].data['openFiles'] as ClassicyQuickTimeDocument[]
+    const openDocUrls = openFiles.map((app) => app.url)
 
     switch (action.type) {
         case 'ClassicyAppMoviePlayerOpenDocument': {
-            if (Array.isArray(openDocUrls) && !openDocUrls.includes(action.document.url)) {
+            if (action.document && !openDocUrls.includes(action.document.url)) {
                 ds.System.Manager.App.apps[appId].data['openFiles'] = Array.from(
-                    new Set([...ds.System.Manager.App.apps[appId].data['openFiles'], action.document])
+                    new Set([...openFiles, action.document])
                 )
                 ds = classicyAppEventHandler(ds, {
                     type: 'ClassicyAppOpen',
@@ -53,7 +54,7 @@ export const classicyQuickTimeMoviePlayerEventHandler = (ds: ClassicyStore, acti
                 break
             }
             ds.System.Manager.App.apps[appId].data['openFiles'] = Array.from(
-                new Set([...ds.System.Manager.App.apps[appId].data['openFiles'], ...docs])
+                new Set([...openFiles, ...docs])
             )
             ds = classicyAppEventHandler(ds, {
                 type: 'ClassicyAppOpen',
@@ -62,9 +63,9 @@ export const classicyQuickTimeMoviePlayerEventHandler = (ds: ClassicyStore, acti
             break
         }
         case 'ClassicyAppMoviePlayerCloseDocument': {
-            ds.System.Manager.App.apps[appId].data['openFiles'] = ds.System.Manager.App.apps[appId].data[
-                'openFiles'
-            ].filter((p: ClassicyQuickTimeDocument) => p.url != action.document.url)
+            if (action.document) {
+                ds.System.Manager.App.apps[appId].data['openFiles'] = openFiles.filter((p) => p.url !== action.document?.url)
+            }
             break
         }
     }

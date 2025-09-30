@@ -11,11 +11,11 @@ import ClassicyDesktopIcon from '@/app/SystemFolder/SystemResources/Desktop/Clas
 import ClassicyDesktopMenuBar from '@/app/SystemFolder/SystemResources/Desktop/MenuBar/ClassicyDesktopMenuBar'
 import { ClassicyMenuItem } from '@/app/SystemFolder/SystemResources/Menu/ClassicyMenu'
 import classNames from 'classnames'
-import React, { CSSProperties, useState } from 'react'
+import React, { CSSProperties, ReactNode, useState } from 'react'
 import '@/app/SystemFolder/ControlPanels/AppearanceManager/styles/fonts.scss'
 
 interface ClassicyDesktopProps {
-    children?: any
+    children?: ReactNode
 }
 
 const ClassicyDesktop: React.FC<ClassicyDesktopProps> = ({ children }) => {
@@ -39,21 +39,22 @@ const ClassicyDesktop: React.FC<ClassicyDesktopProps> = ({ children }) => {
         })
     }
 
-    const startSelectBox = (e) => {
-        if (e.target.id === 'classicyDesktop') {
-            if (e.button > 1) {
-                toggleDesktopContextMenu(e)
+    const startSelectBox = (event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.target as HTMLElement
+        if (target.id === 'classicyDesktop') {
+            if (event.button > 1) {
+                toggleDesktopContextMenu(event)
             } else {
-                clearActives(e)
+                clearActives(event)
                 setSelectBox(true)
-                setSelectBoxStart([e.clientX, e.clientY])
+                setSelectBoxStart([event.clientX, event.clientY])
                 setSelectBoxSize([0, 0])
             }
         }
     }
 
-    const resizeSelectBox = (e) => {
-        setSelectBoxSize([e.clientX - selectBoxStart[0], e.clientY - selectBoxStart[1]])
+    const resizeSelectBox = (event: React.MouseEvent<HTMLDivElement>) => {
+        setSelectBoxSize([event.clientX - selectBoxStart[0], event.clientY - selectBoxStart[1]])
     }
 
     const clearSelectBox = () => {
@@ -62,18 +63,19 @@ const ClassicyDesktop: React.FC<ClassicyDesktopProps> = ({ children }) => {
         setSelectBox(false)
     }
 
-    const clearActives = (e) => {
+    const clearActives = (event: React.MouseEvent<HTMLDivElement>) => {
         setContextMenu(false)
         desktopEventDispatch({
             type: 'ClassicyDesktopFocus',
-            e: e,
+            e: event,
             menuBar: defaultMenuItems,
         })
     }
 
     const toggleDesktopContextMenu = (e) => {
         e.preventDefault()
-        if (e.target.id === 'classicyDesktop') {
+        const target = event.target as HTMLElement
+        if (target.id === 'classicyDesktop') {
             setContextMenuLocation([e.clientX - clickOffset[0], e.clientY - clickOffset[1]])
             setContextMenu(!contextMenu)
         }
