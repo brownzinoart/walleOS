@@ -1,3 +1,46 @@
+# Dependency Fix: @types/react Version Conflict (RESOLVED)
+
+## Problem
+The build was failing with npm ERESOLVE errors due to conflicting @types/react versions:
+- Root project: @types/react ^19.0.0 (React 19)
+- classicy-main subdirectory: @types/react 18.2.48 (React 18)
+
+## Root Cause
+The repository contained two independent Next.js projects:
+1. Root WalleOS project (React 19 + Next.js 15)
+2. classicy-main "Platinum" library (React 18 + Next.js 15)
+
+When running `npm install` at the root, npm scanned the entire directory tree and encountered both package.json files with conflicting React type definitions.
+
+## Solution
+Deleted the classicy-main directory since:
+- The root project has its own complete copy of all SystemFolder components in `app/SystemFolder/`
+- No imports or references to classicy-main exist in the root project
+- Both projects used `@/app/SystemFolder/` but resolved to their own local directories via tsconfig path mappings
+- The root project is what's deployed to Netlify (per netlify.toml)
+
+### Steps Taken
+1. Verified no dependencies on classicy-main in root project
+2. Deleted `/Users/wallymo/WalleOS/classicy-main/` directory
+3. Added `classicy-main/` to .gitignore
+4. Deleted package-lock.json
+5. Ran `npm install` to regenerate clean dependencies
+
+### Verification
+```bash
+# Check that only React 19 types are installed
+npm list @types/react
+# Should show: @types/react@19.0.0
+
+# Verify build works
+npm run build
+```
+
+## Status
+✅ **RESOLVED** - classicy-main removed, dependency conflict eliminated
+
+---
+
 # Dependency Fix: React Three Fiber Compatibility
 
 ## Problem

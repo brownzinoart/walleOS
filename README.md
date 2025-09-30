@@ -21,10 +21,17 @@ This project targets Netlify with the Next.js Runtime v5 via `@netlify/plugin-ne
 
 ## Project Structure
 - `app/` — Next.js App Router entry points, layouts, and routes
+  - `app/page.tsx` — Main landing page with ClassicyDesktop
+  - `app/SystemFolder/` — Classic Mac OS UI components and system resources
+    - `ControlPanels/` — Appearance, Sound, Date/Time, and App managers
+    - `Finder/` — File browser and desktop icon management
+    - `SystemResources/` — Reusable UI components (Window, Button, Menu, etc.)
 - `app/globals.css` — Tailwind v4 directives, Lenis styles, and terminal theme tokens
-- `components/` — Shared React components (populated via shadcn/ui in future phases)
+- `components/` — Shared React components (Hero, ProjectsGrid, WebGLBackground, etc.)
+- `hooks/` — Custom React hooks (useFocusTrap, useReducedMotion)
 - `lib/` — Utility helpers and shared logic
 - `public/` — Static assets served at the site root
+  - `sounds/platinum/` — Classic Mac OS Platinum theme sound effects
 
 ## License
 MIT © WalleOS
