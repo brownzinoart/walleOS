@@ -96,7 +96,11 @@ export type ClassicyAction = {
     debug?: boolean
 } & UnknownRecord
 
-type BasicAppReference = Pick<ClassicyStoreSystemApp, 'id' | 'name' | 'icon'>
+type AppIdentifier = Pick<ClassicyStoreSystemApp, 'id'>
+
+type BasicAppReference = AppIdentifier & Partial<Pick<ClassicyStoreSystemApp, 'name' | 'icon'>>
+
+type RequiredAppReference = AppIdentifier & Pick<ClassicyStoreSystemApp, 'name' | 'icon'>
 
 type AppActionBase<T extends string, TApp extends BasicAppReference = BasicAppReference> = ClassicyAction & {
     type: T
@@ -104,14 +108,20 @@ type AppActionBase<T extends string, TApp extends BasicAppReference = BasicAppRe
 }
 
 export type ClassicyAppAction =
-    | AppActionBase<'ClassicyAppOpen'>
-    | AppActionBase<'ClassicyAppLoad'>
-    | AppActionBase<'ClassicyAppClose', Pick<BasicAppReference, 'id'>>
-    | AppActionBase<'ClassicyAppFocus', Pick<BasicAppReference, 'id'>>
-    | AppActionBase<'ClassicyAppActivate', Pick<BasicAppReference, 'id'>>
+    | AppActionBase<'ClassicyAppOpen', RequiredAppReference>
+    | AppActionBase<'ClassicyAppLoad', RequiredAppReference>
+    | AppActionBase<'ClassicyAppClose', AppIdentifier>
+    | AppActionBase<'ClassicyAppFocus', AppIdentifier>
+    | AppActionBase<'ClassicyAppActivate', AppIdentifier>
 
 const isClassicyAppAction = (action: ClassicyAction): action is ClassicyAppAction => {
-    return action.type.startsWith('ClassicyApp') && typeof action.app === 'object' && action.app !== null
+    return (
+        action.type.startsWith('ClassicyApp') &&
+        typeof action.app === 'object' &&
+        action.app !== null &&
+        'id' in action.app &&
+        typeof (action.app as { id: unknown }).id === 'string'
+    )
 }
 
 export class ClassicyAppManagerHandler {
