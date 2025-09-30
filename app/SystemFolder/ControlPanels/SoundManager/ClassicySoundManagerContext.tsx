@@ -4,7 +4,7 @@ import { ClassicyStoreSystemManager } from '@/app/SystemFolder/ControlPanels/App
 import { Howl } from 'howler'
 import React, { createContext, useContext, useReducer } from 'react'
 import fetch from 'sync-fetch'
-import soundData from '../../../../../public/sounds/platinum/platinum.json'
+import soundData from './platinum.json'
 import soundLabels from './ClassicySoundManagerLabels.json'
 
 export const ClassicySoundManagerContext = createContext(null)
