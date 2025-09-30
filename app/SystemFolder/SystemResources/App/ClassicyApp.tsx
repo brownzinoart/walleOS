@@ -4,7 +4,6 @@ import { intToHex } from '@/app/SystemFolder/ControlPanels/AppearanceManager/Cla
 import { useDesktop, useDesktopDispatch } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
 import ClassicyWindow from '@/app/SystemFolder/SystemResources/Window/ClassicyWindow'
 import React, { useEffect } from 'react'
-import { JSONTree } from 'react-json-tree'
 
 interface ClassicyAppProps {
     id: string
@@ -50,6 +49,26 @@ const ClassicyApp: React.FC<ClassicyAppProps> = ({
         base0D: intToHex(themeData.color.theme[4]),
         base0E: intToHex(themeData.color.theme[5]),
         base0F: intToHex(themeData.color.theme[6]),
+    }
+
+    const DebugJSONTree: React.FC<{ data: unknown }> = ({ data }) => {
+        return (
+            <pre
+                style={{
+                    backgroundColor: debuggerJSONTheme.base02,
+                    color: debuggerJSONTheme.base05,
+                    padding: '8px',
+                    borderRadius: '4px',
+                    overflow: 'auto',
+                    maxHeight: '100%',
+                    fontFamily: 'Menlo, Consolas, SFMono-Regular, monospace',
+                    fontSize: '12px',
+                    lineHeight: 1.4,
+                }}
+            >
+                {JSON.stringify(data, null, 2)}
+            </pre>
+        )
     }
 
     const isAppOpen = () => {
@@ -125,7 +144,7 @@ const ClassicyApp: React.FC<ClassicyAppProps> = ({
                 <h1>Providers</h1>
                 <hr />
                 <h2>desktopContext</h2>
-                <JSONTree data={desktopContext} theme={debuggerJSONTheme} />
+                <DebugJSONTree data={desktopContext} />
             </ClassicyWindow>
         )
 
