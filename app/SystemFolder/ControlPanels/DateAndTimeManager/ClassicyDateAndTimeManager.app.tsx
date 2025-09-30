@@ -14,12 +14,16 @@ import ClassicyWindow from '@/app/SystemFolder/SystemResources/Window/ClassicyWi
 import React, { ChangeEvent, useState } from 'react'
 import ClassicyControlGroup from '../../SystemResources/ControlGroup/ClassicyControlGroup'
 
+type ClassicyDateTimeAction =
+    | { type: 'ClassicyManagerDateTimeSet'; dateTime: Date }
+    | { type: 'ClassicyManagerDateTimeTZSet'; tzOffset: string }
+
 export const ClassicyDateAndTimeManager: React.FC = () => {
     const appName: string = 'Date and Time Manager'
     const appId: string = 'DateAndTimeManager.app'
     const appIcon: string = `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/img/icons/control-panels/date-time-manager/date-time-manager.png`
 
-    const [period, setPeriod] = useState<string>('am')
+    const [period, setPeriod] = useState<'am' | 'pm'>('am')
 
     const desktopContext = useDesktop(),
         desktopEventDispatch = useDesktopDispatch()
@@ -33,10 +37,13 @@ export const ClassicyDateAndTimeManager: React.FC = () => {
     const updateSystemTime = (updatedDate: Date) => {
         const date = new Date(desktopContext.System.Manager.DateAndTime.dateTime)
 
-        let hoursToSet = period == 'am' ? updatedDate.getHours() : updatedDate.getHours() + 12
-        if (period == 'pm' && updatedDate.getHours() == 12) {
+        let hoursToSet = updatedDate.getHours()
+        if (period === 'pm' && hoursToSet < 12) {
+            hoursToSet += 12
+        } else if (period === 'am' && hoursToSet === 12) {
             hoursToSet = 0
         }
+
         date.setHours(hoursToSet, updatedDate.getMinutes(), updatedDate.getSeconds())
         desktopEventDispatch({
             type: 'ClassicyManagerDateTimeSet',
@@ -56,11 +63,12 @@ export const ClassicyDateAndTimeManager: React.FC = () => {
         })
     }
 
-    const updateSystemTimeZone = (e: ChangeEvent<HTMLSelectElement>) => {
-        setPeriod(e.target.value)
+    const updateSystemTimeZone = (event: ChangeEvent<HTMLSelectElement>) => {
+        const selectedPeriod = event.target.value === 'pm' ? 'pm' : 'am'
+        setPeriod(selectedPeriod)
         desktopEventDispatch({
             type: 'ClassicyManagerDateTimeTZSet',
-            tzOffset: e.target.value,
+            tzOffset: event.target.value,
         })
     }
 
@@ -287,18 +295,22 @@ export const ClassicyDateAndTimeManager: React.FC = () => {
     )
 }
 
-export const classicyDateTimeManagerEventHandler = (ds: ClassicyStore, action) => {
+export const classicyDateTimeManagerEventHandler = (
+    ds: ClassicyStore,
+    action: ClassicyDateTimeAction
+): ClassicyStore => {
     switch (action.type) {
         case 'ClassicyManagerDateTimeSet': {
-            const t = action.dateTime
-            t.setHours(action.dateTime.getHours())
-            ds.System.Manager.DateAndTime.dateTime = t.toISOString()
+            const next = new Date(action.dateTime.getTime())
+            ds.System.Manager.DateAndTime.dateTime = next.toISOString()
             break
         }
         case 'ClassicyManagerDateTimeTZSet': {
             ds.System.Manager.DateAndTime.timeZoneOffset = action.tzOffset
             break
         }
+        default:
+            break
     }
     return ds
 }

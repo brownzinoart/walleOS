@@ -48,28 +48,28 @@ const ClassicyDesktopMenuWidgetTime: React.FC = ({}) => {
         return () => clearInterval(intervalId)
     }, [])
 
-    const convertToTwoDigit = (num) => {
+    const convertToTwoDigit = (num: number): string => {
         return num.toLocaleString('en-US', {
             minimumIntegerDigits: 2,
         })
     }
 
-    const convertTo12HourPeriod = (num) => {
+    const convertTo12HourPeriod = (num: number): number => {
         if (num > 12) {
             return num - 12
         }
-        if (num == 0) {
+        if (num === 0) {
             return 12
         }
         return num
     }
 
-    const toBlink = () => {
+    const toBlink = (): string | undefined => {
         if (flashSeparators) {
             return classicyDesktopMenuWidgetTimeStyles.textBlinker
         }
 
-        return
+        return undefined
     }
 
     const openDateTimeManager = () => {
