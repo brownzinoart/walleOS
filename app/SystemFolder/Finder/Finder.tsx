@@ -5,6 +5,7 @@ import { getClassicyAboutWindow } from '@/app/SystemFolder/SystemResources/About
 import ClassicyApp from '@/app/SystemFolder/SystemResources/App/ClassicyApp'
 import ClassicyFileBrowser from '@/app/SystemFolder/SystemResources/File/ClassicyFileBrowser'
 import { ClassicyFileSystem } from '@/app/SystemFolder/SystemResources/File/ClassicyFileSystem'
+import { ClassicyFileSystemEntry } from '@/app/SystemFolder/SystemResources/File/ClassicyFileSystemModel'
 import ClassicyWindow from '@/app/SystemFolder/SystemResources/Window/ClassicyWindow'
 import React, { useEffect, useMemo, useState } from 'react'
 
@@ -89,12 +90,18 @@ const Finder = () => {
         const drives = fs.filterByType('', 'drive')
 
         Object.entries(drives).forEach(([path, metadata]) => {
+            const driveMetadata = metadata as ClassicyFileSystemEntry
+            const icon =
+                typeof driveMetadata._icon === 'string'
+                    ? driveMetadata._icon
+                    : `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/img/icons/system/folders/directory.png`
+
             desktopEventDispatch({
                 type: 'ClassicyDesktopIconAdd',
                 app: {
                     id: appId,
                     name: path,
-                    icon: metadata['_icon'],
+                    icon,
                 },
                 event: 'ClassicyAppFinderOpenFolder',
                 eventData: { path },
