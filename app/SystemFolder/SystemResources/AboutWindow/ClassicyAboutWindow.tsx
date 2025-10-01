@@ -1,5 +1,7 @@
 'use client'
 
+/* eslint-disable @next/next/no-img-element */
+
 import appearanceManagerStyles from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyAppearanceManager.module.scss'
 import ClassicyButton from '@/app/SystemFolder/SystemResources/Button/ClassicyButton'
 import ClassicyWindow from '@/app/SystemFolder/SystemResources/Window/ClassicyWindow'

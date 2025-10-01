@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import classicyIconStyles from '@/app/SystemFolder/SystemResources/Icon/ClassicyIcon.module.scss'
 import classNames from 'classnames'
 import React, { RefObject, useRef, useState } from 'react'

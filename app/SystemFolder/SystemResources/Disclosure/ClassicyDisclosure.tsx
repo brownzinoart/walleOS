@@ -1,7 +1,7 @@
 import ClassicyControlLabel from '@/app/SystemFolder/SystemResources/ControlLabel/ClassicyControlLabel'
 import classicyDisclosureStyles from '@/app/SystemFolder/SystemResources/Disclosure/ClassicyDisclosure.module.scss'
 import classNames from 'classnames'
-import React, { KeyboardEvent, ReactNode, useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 
 type ClassicyDisclosureTriangleDirections = 'up' | 'right' | 'down' | 'left'
 
@@ -19,11 +19,11 @@ const ClassicyDisclosure: React.FC<ClassicyDisclosureProps> = ({ direction = 'ri
         direction.slice(1) +
         (open ? 'Open' : 'Closed')
 
-    function handleKeyPress(e) {
-        switch (e.key) {
+    function handleKeyPress(event: React.KeyboardEvent<HTMLDivElement>) {
+        switch (event.key) {
             case 'Enter':
             case ' ': {
-                setOpen(!open)
+                setOpen((prev) => !prev)
             }
         }
     }

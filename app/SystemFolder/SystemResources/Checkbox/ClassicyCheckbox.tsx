@@ -23,7 +23,8 @@ const ClassicyCheckbox: React.FC<ClassicyCheckboxProps> = ({
 }) => {
     const [check, setCheck] = useState<boolean>(checked)
 
-    const handleOnClick = (e: React.MouseEvent<Element, MouseEvent>) => {
+    const handleOnClick = (_event: React.MouseEvent<Element, MouseEvent>) => {
+        void _event
         if (onClickFunc) {
             onClickFunc(!check)
         }

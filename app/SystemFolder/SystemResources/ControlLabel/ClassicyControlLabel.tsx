@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import classicyControlLabelStyles from '@/app/SystemFolder/SystemResources/ControlLabel/ClassicyControlLabel.module.scss'
 import classNames from 'classnames'
 import React, { MouseEventHandler, ReactNode } from 'react'

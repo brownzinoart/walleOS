@@ -1,5 +1,7 @@
 'use client'
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useDesktop, useDesktopDispatch } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
 import { useSoundDispatch } from '@/app/SystemFolder/ControlPanels/SoundManager/ClassicySoundManagerContext'
 import ClassicyContextualMenu from '@/app/SystemFolder/SystemResources/ContextualMenu/ClassicyContextualMenu'
@@ -7,7 +9,7 @@ import { ClassicyMenuItem } from '@/app/SystemFolder/SystemResources/Menu/Classi
 import classicyWindowStyle from '@/app/SystemFolder/SystemResources/Window/ClassicyWindow.module.scss'
 import { ClassicyWindowState } from '@/app/SystemFolder/SystemResources/Window/ClassicyWindowContext'
 import classNames from 'classnames'
-import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 interface ClassicyWindowProps {
     title?: string
@@ -65,6 +67,9 @@ const ClassicyWindow: React.FC<ClassicyWindowProps> = ({
     const desktopEventDispatch = useDesktopDispatch()
     const player = useSoundDispatch()
 
+    const appCollection = desktopContext.System.Manager.App.apps
+    const appEntry = appCollection[appId]
+    const appWindows = appEntry?.windows
     const windowRef = useRef<HTMLDivElement | null>(null)
 
     const ws = useMemo(() => {
@@ -82,32 +87,21 @@ const ClassicyWindow: React.FC<ClassicyWindowProps> = ({
             menuBar: appMenu || [],
             contextMenuShown: false,
         }
-        let window = desktopContext.System.Manager.App.apps[appId]?.windows.find((w) => w.id === id)
-        if (!window) {
-            window = {
-                id,
-                appId,
-                minimumSize,
-                position: [
-                    windowRef.current?.getBoundingClientRect().left,
-                    windowRef.current?.getBoundingClientRect().top,
-                ],
-                ...initialWindowState,
-            }
+        const existingWindow = appWindows?.find((window) => window.id === id)
+        if (existingWindow) {
+            return existingWindow
         }
-        return window
-    }, [
-        appId,
-        appId,
-        appMenu,
-        contextMenu,
-        desktopContext.System.Manager.App.apps[appId],
-        hidden,
-        id,
-        initialPosition,
-        initialSize,
-        minimumSize,
-    ])
+        return {
+            id,
+            appId,
+            minimumSize,
+            position: [
+                windowRef.current?.getBoundingClientRect().left,
+                windowRef.current?.getBoundingClientRect().top,
+            ],
+            ...initialWindowState,
+        }
+    }, [appId, appMenu, contextMenu, hidden, id, initialPosition, initialSize, minimumSize, appWindows])
 
     useEffect(() => {
         desktopEventDispatch({
@@ -117,7 +111,7 @@ const ClassicyWindow: React.FC<ClassicyWindowProps> = ({
                 id: appId,
             },
         })
-    }, [appId, desktopContext.System.Manager.App.apps[appId], ws])
+    }, [appId, desktopEventDispatch, ws])
 
     const startResizeWindow = () => {
         desktopEventDispatch({
@@ -205,11 +199,9 @@ const ClassicyWindow: React.FC<ClassicyWindowProps> = ({
         })
     }
 
-    const isActive = () => {
-        return ws.focused
-    }
+    const isActive = useCallback(() => ws.focused, [ws])
 
-    const setActive = () => {
+    const setActive = useCallback(() => {
         if (!isActive()) {
             player({ type: 'ClassicySoundPlay', sound: 'ClassicyWindowFocus' })
 
@@ -226,15 +218,15 @@ const ClassicyWindow: React.FC<ClassicyWindowProps> = ({
             //     contextMenu: contextMenu || [],
             // })
         }
-    }
+    }, [appId, appMenu, desktopEventDispatch, isActive, player, ws])
 
     useEffect(() => {
         // This ensures that once a window has opened it becomes the focus.
         setActive()
-        if (modal && type == 'error') {
+        if (modal && type === 'error') {
             player({ type: 'ClassicySoundPlayError' })
         }
-    }, [])
+    }, [modal, player, setActive, type])
 
     const toggleCollapse = () => {
         if (collapsable) {
@@ -291,7 +283,9 @@ const ClassicyWindow: React.FC<ClassicyWindowProps> = ({
         })
     }
 
-    const setContextMenu = (toShow: boolean, atPosition: [number, number]) => {
+    const setContextMenu = (_toShow: boolean, _atPosition: [number, number]) => {
+        void _toShow
+        void _atPosition
         // desktopEventDispatch({
         //     type: 'ClassicyWindowContextMenu',
         //     contextMenu: toShow,

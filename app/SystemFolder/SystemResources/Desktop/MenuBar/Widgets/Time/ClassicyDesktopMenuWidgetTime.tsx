@@ -13,6 +13,8 @@ const ClassicyDesktopMenuWidgetTime: React.FC = ({}) => {
     const { show, militaryTime, displaySeconds, displayPeriod, displayDay, displayLongDay, flashSeparators } =
         desktopContext.System.Manager.DateAndTime
 
+    const dateTimeState = desktopContext.System.Manager.DateAndTime
+
     const [time, setTime] = useState({
         day: new Date(desktopContext.System.Manager.DateAndTime.dateTime).getUTCDay(),
         minutes: new Date(desktopContext.System.Manager.DateAndTime.dateTime).getUTCMinutes(),
@@ -25,7 +27,7 @@ const ClassicyDesktopMenuWidgetTime: React.FC = ({}) => {
 
     useEffect(() => {
         const intervalId = setInterval(() => {
-            const date = new Date(desktopContext.System.Manager.DateAndTime.dateTime)
+            const date = new Date(dateTimeState.dateTime)
             date.setSeconds(date.getSeconds() + 1)
             desktopEventDispatch({
                 type: 'ClassicyManagerDateTimeSet',
@@ -33,9 +35,7 @@ const ClassicyDesktopMenuWidgetTime: React.FC = ({}) => {
             })
 
             const localDate = new Date(date.toISOString())
-            localDate.setHours(
-                localDate.getHours() + parseInt(desktopContext.System.Manager.DateAndTime.timeZoneOffset)
-            )
+            localDate.setHours(localDate.getHours() + parseInt(dateTimeState.timeZoneOffset, 10))
             setTime({
                 day: localDate.getDay(),
                 minutes: localDate.getMinutes(),
@@ -46,7 +46,7 @@ const ClassicyDesktopMenuWidgetTime: React.FC = ({}) => {
         }, 1000)
 
         return () => clearInterval(intervalId)
-    }, [])
+    }, [dateTimeState.dateTime, dateTimeState.timeZoneOffset, desktopEventDispatch])
 
     const convertToTwoDigit = (num: number): string => {
         return num.toLocaleString('en-US', {

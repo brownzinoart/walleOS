@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable jsx-a11y/alt-text */
 import { useDesktop } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
 import quickTimeStyles from '@/app/SystemFolder/SystemResources/QuickTime/QuickTimeMovieEmbed.module.scss'
 import { parse } from '@plussub/srt-vtt-parser'
@@ -32,11 +34,12 @@ export const QuickTimeVideoEmbed: React.FC<QuickTimeVideoEmbed> = ({
     muted,
 }) => {
     const desktop = useDesktop()
+    const desktopApps = desktop.System.Manager.App.apps
 
     const [playing, setPlaying] = useState(autoPlay)
     const [volume, setVolume] = useState(0.5)
     const [loop, setLoop] = useState(false)
-    const [isFullscreen, setIsFullscreen] = useState(false)
+    const [, setIsFullscreen] = useState(false)
     const [showVolume, setShowVolume] = useState<boolean>(false)
     const [subtitlesData, setSubtitlesData] = useState(null)
     const [showSubtitles, setShowSubtitles] = useState(false)
@@ -44,12 +47,19 @@ export const QuickTimeVideoEmbed: React.FC<QuickTimeVideoEmbed> = ({
     const playerRef = useRef(null)
 
     useEffect(() => {
-        if (screenfull.isEnabled) {
-            screenfull.on('change', () => {
-                setIsFullscreen(isFullscreen)
-            })
+        if (!screenfull.isEnabled) {
+            return
         }
-    })
+
+        const handleChange = () => {
+            setIsFullscreen(screenfull.isFullscreen)
+        }
+
+        screenfull.on('change', handleChange)
+        return () => {
+            screenfull.off('change', handleChange)
+        }
+    }, [])
 
     const toggleCC = useCallback(() => {
         setShowSubtitles((prev) => !prev)
@@ -59,41 +69,48 @@ export const QuickTimeVideoEmbed: React.FC<QuickTimeVideoEmbed> = ({
         setPlaying((prev) => !prev)
     }, [])
 
+    const seekTo = useCallback((seconds: number) => {
+        playerRef.current?.seekTo(seconds)
+    }, [])
+
+    const seekToPct = useCallback((pct: number) => {
+        const duration = playerRef.current?.getDuration() ?? 0
+        seekTo(pct * duration)
+    }, [seekTo])
+
     const seekForward = useCallback(() => {
-        seekTo(playerRef.current.getCurrentTime() + 10)
-    }, [playerRef])
+        const current = playerRef.current?.getCurrentTime() ?? 0
+        seekTo(current + 10)
+    }, [seekTo])
 
     const seekBackward = useCallback(() => {
-        seekTo(playerRef.current.getCurrentTime() - 10)
-    }, [playerRef])
+        const current = playerRef.current?.getCurrentTime() ?? 0
+        seekTo(Math.max(current - 10, 0))
+    }, [seekTo])
 
     const toggleFullscreen = useCallback(() => {
         if (!screenfull.isEnabled) {
             return
         }
-        screenfull.toggle(playerRef.current.getInternalPlayer(), { navigationUI: 'hide' })
-    }, [playerRef])
+        const internalPlayer = playerRef.current?.getInternalPlayer?.()
+        if (!internalPlayer) {
+            return
+        }
+        screenfull.toggle(internalPlayer, { navigationUI: 'hide' })
+    }, [])
 
-    const seekTo = (seconds: number) => {
-        playerRef.current.seekTo(seconds)
-    }
-
-    const seekToPct = (pct: number) => {
-        playerRef.current.seekTo(pct * playerRef.current.getDuration())
-    }
-
-    const escapeFullscreen = () => {
+    const escapeFullscreen = useCallback(() => {
         if (!screenfull.isEnabled) {
             return
         }
         screenfull.exit()
-    }
+    }, [])
 
     useEffect(() => {
-        const handleKeyDown = (event) => {
-            const { windows } = desktop.System.Manager.App.apps[appId]
-            const a = windows.find((w) => (w.id = appId + '_VideoPlayer_' + url))
-            if (!a.focused) {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            const { windows = [] } = desktopApps[appId] ?? { windows: [] }
+            const playerWindow = windows.find((window) => window.id === `${appId}_VideoPlayer_${url}`)
+            if (!playerWindow?.focused) {
                 return
             }
             switch (event.key) {
@@ -118,7 +135,7 @@ export const QuickTimeVideoEmbed: React.FC<QuickTimeVideoEmbed> = ({
                     break
                 case 'l':
                 case 'L':
-                    setLoop(!loop)
+                    setLoop((prev) => !prev)
                     break
                 default:
                     break
@@ -127,7 +144,7 @@ export const QuickTimeVideoEmbed: React.FC<QuickTimeVideoEmbed> = ({
 
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [handlePlayPause, seekForward, seekBackward, toggleFullscreen, type, loop, appId, url])
+    }, [appId, desktopApps, escapeFullscreen, handlePlayPause, loop, seekBackward, seekForward, toggleFullscreen, type, url])
 
     const volumeButtonRef = useRef(null)
 

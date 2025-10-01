@@ -7,7 +7,7 @@ import ClassicyFileBrowser from '@/app/SystemFolder/SystemResources/File/Classic
 import { ClassicyFileSystem } from '@/app/SystemFolder/SystemResources/File/ClassicyFileSystem'
 import { ClassicyFileSystemEntry } from '@/app/SystemFolder/SystemResources/File/ClassicyFileSystemModel'
 import ClassicyWindow from '@/app/SystemFolder/SystemResources/Window/ClassicyWindow'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 type PathSettingsProps = {
     _viewType: 'list' | 'icons'
@@ -23,9 +23,17 @@ const Finder = () => {
     const [pathSettings, setPathSettings] = useState<Record<string, PathSettingsProps>>({})
     const [showAbout, setShowAbout] = useState(false)
 
+    const hasInitialized = useRef(false)
+    const hasLoadedDrives = useRef(false)
+
     const { openPaths } = desktop.System.Manager.App.apps[appId]?.data || {}
 
     useEffect(() => {
+        if (hasInitialized.current) {
+            return
+        }
+        hasInitialized.current = true
+
         const appData = desktop.System.Manager.App.apps[appId]?.data || {}
         if (!appData?.hasOwnProperty('openPaths')) {
             appData['openPaths'] = []
@@ -34,7 +42,7 @@ const Finder = () => {
             type: 'ClassicyAppFinderOpenFolders',
             paths: appData['openPaths'],
         })
-    }, [])
+    }, [desktop.System.Manager.App.apps, desktopEventDispatch, appId])
 
     const handlePathSettingsChange = (path: string, settings: PathSettingsProps) => {
         const updatedPathSettings = { ...pathSettings }
@@ -87,6 +95,11 @@ const Finder = () => {
     const fs = useMemo(() => new ClassicyFileSystem(''), [])
 
     useEffect(() => {
+        if (hasLoadedDrives.current) {
+            return
+        }
+        hasLoadedDrives.current = true
+
         const drives = fs.filterByType('', 'drive')
 
         Object.entries(drives).forEach(([path, metadata]) => {
@@ -120,7 +133,7 @@ const Finder = () => {
         //     event: 'ClassicyAppFinderEmptyTrash',
         //     eventData: {},
         // })
-    }, [fs])
+    }, [fs, desktopEventDispatch, appId])
 
     const getHeaderString = (dir) => {
         return (

@@ -1,5 +1,7 @@
 'use client'
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useDesktop, useDesktopDispatch } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
 import { UnknownRecord } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManager'
 import classicyDesktopIconStyles from '@/app/SystemFolder/SystemResources/Desktop/ClassicyDesktopIcon.module.scss'
@@ -137,6 +139,7 @@ const ClassicyDesktopIcon: React.FC<ClassicyDesktopIconProps> = ({
         <div
             ref={iconRef}
             id={`${id}`}
+            data-kind={kind}
             onMouseDown={startDrag}
             onMouseMove={changeIcon}
             onMouseUp={stopChangeIcon}

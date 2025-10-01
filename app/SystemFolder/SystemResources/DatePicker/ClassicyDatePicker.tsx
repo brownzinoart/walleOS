@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { useDesktop } from '@/app/SystemFolder/ControlPanels/AppManager/ClassicyAppManagerContext'
 import ClassicyControlLabel from '@/app/SystemFolder/SystemResources/ControlLabel/ClassicyControlLabel'
 import classicyDatePickerStyles from '@/app/SystemFolder/SystemResources/DatePicker/ClassicyDatePicker.module.scss'
@@ -28,14 +29,11 @@ const ClassicyDatePicker: React.FC<ClassicyDatePickerProps> = React.forwardRef<
 ) {
     const desktop = useDesktop()
 
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date(desktop.System.Manager.DateAndTime.dateTime))
-    const [month, setMonth] = useState<string>(
-        (new Date(desktop.System.Manager.DateAndTime.dateTime).getMonth() + 1).toString()
-    )
-    const [day, setDay] = useState<string>(new Date(desktop.System.Manager.DateAndTime.dateTime).getDate().toString())
-    const [year, setYear] = useState<string>(
-        new Date(desktop.System.Manager.DateAndTime.dateTime).getFullYear().toString()
-    )
+    const initialDate = prefillValue ?? new Date(desktop.System.Manager.DateAndTime.dateTime)
+    const [selectedDate, setSelectedDate] = useState<Date>(initialDate)
+    const [month, setMonth] = useState<string>((initialDate.getMonth() + 1).toString())
+    const [day, setDay] = useState<string>(initialDate.getDate().toString())
+    const [year, setYear] = useState<string>(initialDate.getFullYear().toString())
 
     const selectText = (event: MouseEvent<HTMLInputElement>) => {
         event.currentTarget.focus()
@@ -143,6 +141,7 @@ const ClassicyDatePicker: React.FC<ClassicyDatePickerProps> = React.forwardRef<
                         onKeyDown={(e) => incrementDatePartChange(e, 'month')}
                         onClick={selectText}
                         name={id + '_month'}
+                        placeholder={placeholder}
                         type={inputType}
                         ref={ref}
                         disabled={disabled}
@@ -159,6 +158,7 @@ const ClassicyDatePicker: React.FC<ClassicyDatePickerProps> = React.forwardRef<
                         onKeyDown={(e) => incrementDatePartChange(e, 'day')}
                         onClick={selectText}
                         name={id + '_day'}
+                        placeholder={placeholder}
                         type={inputType}
                         ref={ref}
                         disabled={disabled}
@@ -175,6 +175,7 @@ const ClassicyDatePicker: React.FC<ClassicyDatePickerProps> = React.forwardRef<
                         onBlur={(e) => handleDatePartChange(e, 'year')}
                         onKeyDown={(e) => incrementDatePartChange(e, 'year')}
                         name={id + '_year'}
+                        placeholder={placeholder}
                         type={inputType}
                         ref={ref}
                         disabled={disabled}

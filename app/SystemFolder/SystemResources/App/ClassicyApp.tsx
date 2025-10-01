@@ -21,13 +21,14 @@ const ClassicyApp: React.FC<ClassicyAppProps> = ({
     id,
     icon,
     name,
-    openOnBoot,
+    openOnBoot: _openOnBoot,
     addSystemMenu,
     noDesktopIcon,
     defaultWindow,
     debug = false,
     children,
 }) => {
+    void _openOnBoot
     const desktopContext = useDesktop()
     const desktopEventDispatch = useDesktopDispatch()
 
@@ -56,6 +57,7 @@ const ClassicyApp: React.FC<ClassicyAppProps> = ({
     }
 
     const DebugJSONTree: React.FC<{ data: unknown }> = ({ data }) => {
+    void _openOnBoot
         return (
             <pre
                 style={{
