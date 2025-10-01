@@ -135,14 +135,12 @@ const Finder = () => {
         // })
     }, [fs, desktopEventDispatch, appId])
 
-    const getHeaderString = (dir) => {
-        return (
-            dir['_count'] +
-            ' items' +
-            (dir['_countHidden'] ? ' (' + dir['_countHidden'] + ' hidden)' : '') +
-            ', ' +
-            fs.formatSize(dir['_size'])
-        )
+    const getHeaderString = (dir: ClassicyFileSystemEntry) => {
+        const visibleCount = dir._count ?? 0
+        const hiddenCount = dir._countHidden ?? 0
+        const totalSize = typeof dir._size === 'number' ? dir._size : 0
+
+        return `${visibleCount} items${hiddenCount ? ` (${hiddenCount} hidden)` : ''}, ${fs.formatSize(totalSize)}`
     }
 
     return (
