@@ -14,7 +14,7 @@ import ClassicyWindow from '@/app/SystemFolder/SystemResources/Window/ClassicyWi
 import React, { ChangeEvent, useState } from 'react'
 import ClassicyControlGroup from '../../SystemResources/ControlGroup/ClassicyControlGroup'
 
-type ClassicyDateTimeAction =
+export type ClassicyDateTimeAction =
     | { type: 'ClassicyManagerDateTimeSet'; dateTime: Date }
     | { type: 'ClassicyManagerDateTimeTZSet'; tzOffset: string }
 

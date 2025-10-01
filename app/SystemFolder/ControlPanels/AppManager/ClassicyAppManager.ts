@@ -5,6 +5,7 @@ import {
     getAllThemes,
 } from '@/app/SystemFolder/ControlPanels/AppearanceManager/ClassicyAppearance'
 import { classicyDateTimeManagerEventHandler } from '@/app/SystemFolder/ControlPanels/DateAndTimeManager/ClassicyDateAndTimeManager.app'
+import { ClassicyDateTimeAction } from '@/app/SystemFolder/ControlPanels/DateAndTimeManager/ClassicyDateAndTimeManager.app'
 import { ClassicyStoreSystemSoundManager } from '@/app/SystemFolder/ControlPanels/SoundManager/ClassicySoundManagerContext'
 import { classicyFinderEventHandler } from '@/app/SystemFolder/Finder/FinderContext'
 import { classicyQuickTimeMoviePlayerEventHandler } from '@/app/SystemFolder/QuickTime/MoviePlayer/MoviePlayerContext'
@@ -275,7 +276,7 @@ export const classicyDesktopStateEventReducer = (ds: ClassicyStore, action: Clas
         } else if (action.type.startsWith('ClassicyDesktop')) {
             ds = classicyDesktopEventHandler(ds, action)
         } else if (action.type.startsWith('ClassicyManagerDateTime')) {
-            ds = classicyDateTimeManagerEventHandler(ds, action)
+            ds = classicyDateTimeManagerEventHandler(ds, action as ClassicyDateTimeAction)
         } else if (action.type.startsWith('ClassicyApp') && isClassicyAppAction(action)) {
             ds = classicyAppEventHandler(ds, action)
         }
