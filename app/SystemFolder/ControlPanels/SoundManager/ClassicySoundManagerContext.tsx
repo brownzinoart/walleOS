@@ -59,7 +59,7 @@ interface ClassicySoundAction extends UnknownRecord {
 
 interface SoundThemeData {
     src: string[]
-    sprite: Record<string, [number, number, number?]>
+    sprite: Record<string, [number, number] | [number, number, number]>
 }
 
 interface SoundPlayerConfig {
