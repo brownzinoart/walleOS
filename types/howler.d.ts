@@ -1,7 +1,7 @@
 declare module 'howler' {
     export interface HowlOptions {
         src: string[]
-        sprite?: Record<string, [number, number] | [number, number, number]>
+        sprite?: Record<string, number[]>
         volume?: number
         loop?: boolean
         autoplay?: boolean
