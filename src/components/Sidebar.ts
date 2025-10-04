@@ -3,6 +3,7 @@ import type { NavigationItem, SocialLink } from '@/types';
 import { prefersReducedMotion, observeIntersection, rafThrottle, addWillChange, removeWillChange } from '@/utils/performance';
 
 const NEON_COLORS = ['var(--color-neon-cyan)', 'var(--color-neon-magenta)', 'var(--color-neon-lime)', 'var(--color-neon-orange)'];
+const FALLBACK_NEON_COLOR = 'var(--color-neon-cyan)';
 
 const SIDEBAR_SELECTOR = '[data-sidebar]';
 const NAV_ITEM_SELECTOR = '[data-sidebar-nav-item]';
@@ -83,7 +84,7 @@ const cacheSidebarElements = () => {
   navItemRefs.clear();
 
   sidebarRoot?.querySelectorAll<HTMLButtonElement>(NAV_ITEM_SELECTOR).forEach((item) => {
-    const navId = item.dataset.navId;
+    const navId = item.dataset['navId'];
 
     if (navId) {
       navItemRefs.set(navId, item);
@@ -106,7 +107,8 @@ const setupBrandingInteractions = () => {
   let colorIndex = 0;
 
   const cycleColors = () => {
-    brandingRef?.style.setProperty('--branding-accent', NEON_COLORS[colorIndex % NEON_COLORS.length]);
+    const nextColor = NEON_COLORS[colorIndex % NEON_COLORS.length] ?? FALLBACK_NEON_COLOR;
+    brandingRef?.style.setProperty('--branding-accent', nextColor);
     colorIndex += 1;
   };
 
@@ -241,13 +243,16 @@ const setupSectionObserver = () => {
       }
 
       const topEntry = visible[0];
+      if (!topEntry) {
+        return;
+      }
       const targetSection = topEntry.target as HTMLElement;
       const matchedNav = Array.from(sectionRefs.entries()).find(([, section]) => section === targetSection);
 
       if (matchedNav && matchedNav[0] !== sidebarState.activeNavId) {
         const navId = matchedNav[0];
         const navItem = navItemRefs.get(navId);
-        const label = navItem?.dataset.navLabel ?? navId;
+        const label = navItem?.dataset['navLabel'] ?? navId;
         // Prevent projects tab from being activated during homepage scrolling
         // Only allow projects tab activation if currently not on home, or if explicitly navigating to projects
         if (navId === 'projects' && sidebarState.activeNavId === 'home') {
@@ -289,7 +294,7 @@ export const setActiveNavItem = (itemId: string | null, options: SetActiveOption
   });
 
   sidebarState.activeNavId = itemId;
-  const label = nextItem.dataset.navLabel ?? itemId;
+  const label = nextItem.dataset['navLabel'] ?? itemId;
   emitActiveChange(itemId, label, options.silent);
 };
 

@@ -126,51 +126,13 @@ export const renderProjectCards = (projects: FeaturedProject[]): string => {
   `;
 };
 
-const openProjectUrl = (url: string) => {
-  const targetUrl = url.trim();
-
-  if (!targetUrl) {
-    return;
-  }
-
-  const isExternal = /^https?:\/\//i.test(targetUrl);
-
-  if (isExternal) {
-    window.open(targetUrl, '_blank', 'noopener');
-    return;
-  }
-
-  window.location.assign(targetUrl);
-};
-
-const handleCardInteraction = (card: HTMLElement) => {
-  const url = card.getAttribute('data-project-url')?.trim() ?? '';
-
-  if (!url) {
-    return;
-  }
-
-  openProjectUrl(url);
-};
-
 const registerCardListeners = (card: HTMLElement): void => {
-  if (card.dataset.listenersAttached === 'true') {
+  if (card.dataset['listenersAttached'] === 'true') {
     return;
   }
 
-  card.dataset.listenersAttached = 'true';
-
-  card.addEventListener('click', (event) => {
-    event.preventDefault();
-    handleCardInteraction(card);
-  });
-
-  card.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleCardInteraction(card);
-    }
-  });
+  card.dataset['listenersAttached'] = 'true';
+  // Click and keyboard interactions are delegated in ProjectsPage.ts to power grid expansion.
 };
 
 const setupThumbnail = (card: HTMLElement) => {
@@ -205,13 +167,13 @@ const setupTagListeners = (card: HTMLElement) => {
   }
 
   tags.forEach((tag) => {
-    if (tag.dataset.listenerAttached === 'true') {
+    if (tag.dataset['listenerAttached'] === 'true') {
       return;
     }
 
-    tag.dataset.listenerAttached = 'true';
+    tag.dataset['listenerAttached'] = 'true';
 
-    const value = tag.dataset.projectTagValue ?? tag.textContent?.trim() ?? '';
+    const value = tag.dataset['projectTagValue'] ?? tag.textContent?.trim() ?? '';
 
     const emitSelection = () => {
       const event = new CustomEvent('project:tag-select', {
@@ -243,7 +205,15 @@ const setupTagListeners = (card: HTMLElement) => {
 };
 
 const setupPressFeedback = (card: HTMLElement) => {
+  if (card.dataset['expanded'] === 'true') {
+    return;
+  }
+
   const applyPress = () => {
+    if (card.dataset['expanded'] === 'true') {
+      return;
+    }
+
     addWillChange(card, ['transform']);
     card.style.setProperty('--card-scale', '0.98');
   };
@@ -251,12 +221,21 @@ const setupPressFeedback = (card: HTMLElement) => {
   const releasePress = (event?: PointerEvent) => {
     card.style.setProperty('--card-scale', '1');
 
+    if (card.dataset['expanded'] === 'true') {
+      removeWillChange(card);
+      return;
+    }
+
     if (!event || event.pointerType !== 'mouse') {
       removeWillChange(card);
     }
   };
 
   card.addEventListener('pointerdown', (event) => {
+    if (card.dataset['expanded'] === 'true') {
+      return;
+    }
+
     if (event.pointerType === 'mouse' || event.pointerType === 'touch' || event.pointerType === 'pen') {
       applyPress();
     }
@@ -268,11 +247,19 @@ const setupPressFeedback = (card: HTMLElement) => {
 };
 
 const setupTiltEffect = (card: HTMLElement) => {
+  if (card.dataset['expanded'] === 'true') {
+    return;
+  }
+
   if (prefersReducedMotion()) {
     return;
   }
 
   const updateTilt = rafThrottle((event: PointerEvent) => {
+    if (card.dataset['expanded'] === 'true') {
+      return;
+    }
+
     const rect = card.getBoundingClientRect();
     const relativeX = event.clientX - rect.left;
     const relativeY = event.clientY - rect.top;
@@ -294,7 +281,7 @@ const setupTiltEffect = (card: HTMLElement) => {
   };
 
   card.addEventListener('pointerenter', (event) => {
-    if (event.pointerType !== 'mouse') {
+    if (event.pointerType !== 'mouse' || card.dataset['expanded'] === 'true') {
       return;
     }
 
@@ -302,7 +289,7 @@ const setupTiltEffect = (card: HTMLElement) => {
   });
 
   card.addEventListener('pointermove', (event) => {
-    if (event.pointerType !== 'mouse') {
+    if (event.pointerType !== 'mouse' || card.dataset['expanded'] === 'true') {
       return;
     }
 
@@ -313,6 +300,10 @@ const setupTiltEffect = (card: HTMLElement) => {
   card.addEventListener('pointercancel', resetTilt);
 
   card.addEventListener('focus', () => {
+    if (card.dataset['expanded'] === 'true') {
+      return;
+    }
+
     addWillChange(card, ['transform']);
     card.style.setProperty('--card-scale', '1.02');
   });
@@ -321,7 +312,7 @@ const setupTiltEffect = (card: HTMLElement) => {
 };
 
 const initializeCard = (card: HTMLElement, index: number, reducedMotion: boolean) => {
-  card.dataset.cardIndex = String(index);
+  card.dataset['cardIndex'] = String(index);
   card.style.setProperty('--card-delay', `${Math.min(index * 80, 320)}ms`);
 
   registerCardListeners(card);
@@ -340,7 +331,7 @@ const initializeCard = (card: HTMLElement, index: number, reducedMotion: boolean
 
     card.addEventListener('animationend', handleAnimationEnd);
   } else {
-    card.dataset.animated = 'true';
+    card.dataset['animated'] = 'true';
     card.classList.add('project-card--enter');
   }
 };
@@ -379,12 +370,12 @@ export const attachProjectCardListeners = (): void => {
 
          const card = entry.target as HTMLElement;
 
-         if (card.dataset.animated === 'true') {
+         if (card.dataset['animated'] === 'true') {
            observer.unobserve(card);
            return;
          }
 
-         card.dataset.animated = 'true';
+         card.dataset['animated'] = 'true';
          card.classList.add('project-card--enter');
          observer.unobserve(card);
        });
@@ -397,7 +388,7 @@ export const attachProjectCardListeners = (): void => {
 
    // Immediately animate cards that are already in view on page load
    cards.forEach((card) => {
-     if (card.dataset.animated === 'true') {
+     if (card.dataset['animated'] === 'true') {
        return;
      }
 
@@ -405,7 +396,7 @@ export const attachProjectCardListeners = (): void => {
      const isInView = rect.top < window.innerHeight && rect.bottom > 0;
 
      if (isInView) {
-       card.dataset.animated = 'true';
+       card.dataset['animated'] = 'true';
        card.classList.add('project-card--enter');
      }
    });

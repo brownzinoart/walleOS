@@ -42,8 +42,11 @@ const normalize = (value: string): string =>
     .trim();
 
 export const generateMockResponse = (userMessage: string, chipId?: string): string => {
-  if (chipId && mockResponses[chipId]) {
-    return mockResponses[chipId];
+  if (chipId) {
+    const chipResponse = mockResponses[chipId];
+    if (chipResponse !== undefined) {
+      return chipResponse;
+    }
   }
 
   const normalizedMessage = normalize(userMessage);
@@ -55,8 +58,11 @@ export const generateMockResponse = (userMessage: string, chipId?: string): stri
     return textMatch || idMatch || categoryMatch;
   });
 
-  if (chipMatch && mockResponses[chipMatch.id]) {
-    return mockResponses[chipMatch.id];
+  if (chipMatch) {
+    const matchedResponse = mockResponses[chipMatch.id];
+    if (matchedResponse !== undefined) {
+      return matchedResponse;
+    }
   }
 
   const keywordMatch = Object.keys(mockResponses).find((key) => {
@@ -68,10 +74,13 @@ export const generateMockResponse = (userMessage: string, chipId?: string): stri
   });
 
   if (keywordMatch) {
-    return mockResponses[keywordMatch];
+    const response = mockResponses[keywordMatch];
+    if (response !== undefined) {
+      return response;
+    }
   }
 
-  return mockResponses.default ?? 'Appreciate the question—give me a second to sketch a thoughtful answer.';
+  return mockResponses['default'] ?? 'Appreciate the question—give me a second to sketch a thoughtful answer.';
 };
 
 export const createMessage = (role: ChatMessage['role'], content: string): ChatMessage => ({

@@ -3,7 +3,6 @@
  */
 
 import { logger } from './logger';
-import { performanceMonitor, measurePerformanceWithMonitoring } from './performance';
 
 export interface DevToolsConfig {
   enableConsoleLogging?: boolean;
@@ -18,7 +17,6 @@ export interface DevToolsConfig {
 export class DevTools {
   private static instance: DevTools;
   private config: Required<DevToolsConfig>;
-  private observers: Array<(data: unknown) => void> = [];
   private performanceMarks: Map<string, number> = new Map();
   private memoryHistory: Array<{ timestamp: number; usage: number }> = [];
 
@@ -137,7 +135,11 @@ export class DevTools {
           const recent = this.memoryHistory.slice(-10);
           const trend = recent.reduce((acc, curr, index) => {
             if (index === 0) return acc;
-            return acc + (curr.usage - recent[index - 1].usage);
+            const previous = recent[index - 1];
+            if (!previous) {
+              return acc;
+            }
+            return acc + (curr.usage - previous.usage);
           }, 0);
 
           if (trend > 1024 * 1024) { // 1MB increase over 10 measurements
@@ -209,7 +211,10 @@ export class DevTools {
   } | null {
     if (this.memoryHistory.length === 0) return null;
 
-    const current = this.memoryHistory[this.memoryHistory.length - 1].usage;
+    const currentEntry = this.memoryHistory[this.memoryHistory.length - 1];
+    if (!currentEntry) return null;
+
+    const current = currentEntry.usage;
     const average = this.memoryHistory.reduce((sum, entry) => sum + entry.usage, 0) / this.memoryHistory.length;
     const peak = Math.max(...this.memoryHistory.map(entry => entry.usage));
 

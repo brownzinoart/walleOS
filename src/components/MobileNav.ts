@@ -60,6 +60,10 @@ const trapFocus = (container: HTMLElement): FocusTrapCleanup => {
 
     const firstElement = focusable[0];
     const lastElement = focusable[focusable.length - 1];
+
+    if (!firstElement || !lastElement) {
+      return;
+    }
     const isShiftPressed = event.shiftKey;
     const activeElement = document.activeElement as HTMLElement | null;
 

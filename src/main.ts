@@ -26,7 +26,6 @@ import {
   prefersReducedMotion,
   measurePerformance,
   measurePerformanceWithMonitoring,
-  performanceMonitor,
 } from '@/utils/performance';
 import { logger, errorBoundary } from '@/utils/logger';
 import {
@@ -37,14 +36,11 @@ import {
   setChatTyping,
   subscribeToChatState,
 } from '@/utils/chatState';
- import {
-   initRouter,
-   getCurrentRoute,
-   getRouteTitle,
-   navigateTo,
-   isRouteActive,
- } from '@/utils/router';
- import { renderProjectsPage, initProjectsPageInteractions } from '@/components/ProjectsPage';
+import {
+  initRouter,
+  getCurrentRoute,
+} from '@/utils/router';
+import { renderProjectsPage, initProjectsPageInteractions } from '@/components/ProjectsPage';
 
 const CHAT_ROOT_SELECTOR = '[data-chat-root]';
 const WELCOME_SLOT_SELECTOR = '[data-chat-welcome]';
@@ -64,7 +60,7 @@ const showAppLoader = (): HTMLElement | null => {
   loader.className = 'app-loader';
   loader.setAttribute('role', 'status');
   loader.setAttribute('aria-live', 'polite');
-  loader.dataset.appLoader = 'true';
+  loader.dataset['appLoader'] = 'true';
   loader.innerHTML = `
     <span class="app-loader__spinner" aria-hidden="true"></span>
     <span class="app-loader__label">Warming up WalleOS&#8230;</span>
@@ -271,20 +267,25 @@ const handleRouteChange = () => {
     root.innerHTML = renderLayout(getMainContent());
     initLayout();
 
-    // Initialize interactions based on current route
-    const currentRoute = currentActiveNavItem;
-    switch (currentRoute) {
-      case 'projects':
-        initProjectsPageInteractions();
-        break;
-      case 'resume':
-        initResumeInteractions();
-        break;
-      case 'home':
-      default:
-        attachProjectCardListeners();
-        break;
-    }
+    // Defer route-specific interactions until DOM updates paint
+    requestAnimationFrame(() => {
+      const currentRoute = currentActiveNavItem;
+
+      switch (currentRoute) {
+        case 'projects':
+          requestAnimationFrame(() => {
+            initProjectsPageInteractions();
+          });
+          break;
+        case 'resume':
+          initResumeInteractions();
+          break;
+        case 'home':
+        default:
+          attachProjectCardListeners();
+          break;
+      }
+    });
   }
 };
 
@@ -415,19 +416,22 @@ const handleNavigationChange = (event: Event) => {
     root.innerHTML = renderLayout(getMainContent());
     initLayout();
 
-    // Initialize resume interactions if resume is now active
-    if (navId === 'resume') {
-      initResumeInteractions();
-    }
+    // Defer interactions until after layout render completes
+    requestAnimationFrame(() => {
+      if (navId === 'resume') {
+        initResumeInteractions();
+      }
 
-    if (navId === 'projects') {
-      initProjectsPageInteractions();
-    }
+      if (navId === 'projects') {
+        requestAnimationFrame(() => {
+          initProjectsPageInteractions();
+        });
+      }
 
-    // Initialize project card interactions if home tab is now active
-    if (navId === 'home') {
-      attachProjectCardListeners();
-    }
+      if (navId === 'home') {
+        attachProjectCardListeners();
+      }
+    });
   }
 };
 

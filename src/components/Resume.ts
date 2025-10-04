@@ -1,6 +1,8 @@
 import { resume } from '@/config/content';
 import type { Experience } from '@/types';
 
+let selectedExperienceId: string | null = null;
+
 const EXPERIENCE_LEVEL_COLORS = {
   'Junior': 'var(--color-neon-cyan)',
   'Mid': 'var(--color-neon-lime)',
@@ -9,63 +11,38 @@ const EXPERIENCE_LEVEL_COLORS = {
   'Principal': 'var(--color-neon-yellow)',
 } as const;
 
-const renderExperienceCard = (experience: Experience): string => {
+const renderMediumExperienceCard = (experience: Experience): string => {
   const levelColor = EXPERIENCE_LEVEL_COLORS[experience.experienceLevel];
+  const isSelected = selectedExperienceId === experience.id;
+  const briefDescription = experience.description.substring(0, 120) + '...';
 
   return `
-    <article class="resume-timeline-card" data-experience-id="${experience.id}">
-      <div class="resume-timeline-card-header">
-        <div class="resume-timeline-card-level" style="background-color: ${levelColor}">
+    <article 
+      class="resume-medium-card ${isSelected ? 'resume-medium-card--selected' : ''}" 
+      data-experience-id="${experience.id}"
+      role="button"
+      tabindex="0"
+      aria-pressed="${isSelected}"
+    >
+      <div class="resume-medium-card-header">
+        <div class="resume-medium-card-level" style="background-color: ${levelColor}">
           <span class="text-xs font-bold uppercase tracking-wider">${experience.experienceLevel}</span>
         </div>
-        <div class="resume-timeline-card-period text-sm text-gray-400 font-medium">
+        <div class="resume-medium-card-period text-sm text-gray-400 font-medium">
           ${experience.period}
         </div>
       </div>
-
-      <div class="resume-timeline-card-content">
-        <h3 class="resume-timeline-card-title text-xl font-bold text-white mb-1">
+      
+      <div class="resume-medium-card-content">
+        <h3 class="resume-medium-card-title text-lg font-bold text-white mb-1">
           ${experience.title}
         </h3>
-        <h4 class="resume-timeline-card-company text-lg text-gray-300 mb-4">
+        <h4 class="resume-medium-card-company text-base text-gray-300 mb-3">
           ${experience.company}
         </h4>
-
-        <p class="resume-timeline-card-description text-gray-400 mb-4 leading-relaxed">
-          ${experience.description}
+        <p class="resume-medium-card-brief text-sm text-gray-400 leading-relaxed">
+          ${briefDescription}
         </p>
-
-        <div class="resume-timeline-card-achievements mb-4">
-          <h5 class="text-sm font-semibold text-white mb-2 uppercase tracking-wider">Key Achievements</h5>
-          <ul class="space-y-2">
-            ${experience.achievements.map(achievement => `
-              <li class="text-sm text-gray-300 flex items-start gap-2">
-                <span class="text-[var(--color-neon-cyan)] mt-1.5 flex-shrink-0">•</span>
-                <span>${achievement}</span>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
-
-        <div class="resume-timeline-card-skills">
-          <h5 class="text-sm font-semibold text-white mb-2 uppercase tracking-wider">Skills & Technologies</h5>
-          <div class="flex flex-wrap gap-2">
-            ${experience.skills.map(skill => `
-              <span class="resume-skill-tag text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-300 border border-gray-700">
-                ${skill}
-              </span>
-            `).join('')}
-          </div>
-          ${experience.technologies ? `
-            <div class="mt-2 flex flex-wrap gap-1">
-              ${experience.technologies.map(tech => `
-                <span class="text-xs px-2 py-0.5 rounded bg-gray-900 text-gray-400 border border-gray-800">
-                  ${tech}
-                </span>
-              `).join('')}
-            </div>
-          ` : ''}
-        </div>
       </div>
     </article>
   `;
@@ -83,23 +60,17 @@ export const renderResume = (): string => `
         </p>
       </div>
 
-      <div class="resume-timeline-wrapper">
-        <div class="resume-timeline-scroll-area" data-resume-scroll>
-          <div class="resume-timeline">
-            ${resume.experiences.map((experience, index) => `
-              <div class="resume-timeline-item" data-experience-index="${index}">
-                ${renderExperienceCard(experience)}
-              </div>
-            `).join('')}
-          </div>
+      <div class="resume-grid-container">
+        <div class="resume-cards-column" data-resume-cards-scroll>
+          ${resume.experiences.map(renderMediumExperienceCard).join('')}
         </div>
-
-        <div class="resume-scroll-indicators">
-          <div class="resume-scroll-indicator resume-scroll-indicator--left" data-scroll-indicator="left">
-            <span class="text-white">‹</span>
-          </div>
-          <div class="resume-scroll-indicator resume-scroll-indicator--right" data-scroll-indicator="right">
-            <span class="text-white">›</span>
+        <div class="resume-detail-column">
+          <div class="resume-detail-panel">
+            <div class="resume-detail-empty">
+              <p class="resume-detail-placeholder text-sm text-gray-400 text-center leading-relaxed max-w-xs">
+                Click on a job experience for more details.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -132,90 +103,46 @@ export const renderResume = (): string => `
 `;
 
 export const initResumeInteractions = (): void => {
-  const scrollArea = document.querySelector<HTMLElement>('[data-resume-scroll]');
-  const leftIndicator = document.querySelector<HTMLElement>('[data-scroll-indicator="left"]');
-  const rightIndicator = document.querySelector<HTMLElement>('[data-scroll-indicator="right"]');
+  const cardsContainer = document.querySelector('[data-resume-cards-scroll]');
+  if (!cardsContainer) return;
 
-  if (!scrollArea || !leftIndicator || !rightIndicator) {
-    return;
-  }
+  // Handle card clicks
+  const handleCardClick = (event: Event) => {
+    const card = (event.target as HTMLElement).closest('[data-experience-id]');
+    if (!card) return;
 
-  const updateScrollIndicators = () => {
-    const { scrollLeft, scrollWidth, clientWidth } = scrollArea;
+    const experienceId = card.getAttribute('data-experience-id');
+    if (!experienceId) return;
 
-    leftIndicator.classList.toggle('is-visible', scrollLeft > 8);
-    rightIndicator.classList.toggle('is-visible', scrollLeft + clientWidth < scrollWidth - 8);
+    // Update selected state
+    selectedExperienceId = experienceId;
+
+    // Update UI - remove selected class from all cards
+    cardsContainer.querySelectorAll('.resume-medium-card').forEach(c => {
+      c.classList.remove('resume-medium-card--selected');
+      c.setAttribute('aria-pressed', 'false');
+    });
+
+    // Add selected class to clicked card
+    card.classList.add('resume-medium-card--selected');
+    card.setAttribute('aria-pressed', 'true');
+
+    // Dispatch custom event for detail panel to listen to (will be used in phase 3)
+    const selectionEvent = new CustomEvent('experience-selected', {
+      detail: { experienceId }
+    });
+    document.dispatchEvent(selectionEvent);
   };
 
-  const handleScroll = () => {
-    updateScrollIndicators();
-  };
-
-  const scrollLeft = () => {
-    scrollArea.scrollBy({ left: -400, behavior: 'smooth' });
-  };
-
-  const scrollRight = () => {
-    scrollArea.scrollBy({ left: 400, behavior: 'smooth' });
-  };
-
-  // Touch/swipe support for mobile
-  let startX = 0;
-  let scrollLeftStart = 0;
-
-  const handleTouchStart = (e: TouchEvent) => {
-    startX = e.touches[0].pageX - scrollArea.offsetLeft;
-    scrollLeftStart = scrollArea.scrollLeft;
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!startX) return;
-
-    e.preventDefault();
-    const x = e.touches[0].pageX - scrollArea.offsetLeft;
-    const walk = (x - startX) * 2;
-    scrollArea.scrollLeft = scrollLeftStart - walk;
-  };
-
-  const handleTouchEnd = () => {
-    startX = 0;
-  };
-
-  // Mouse wheel horizontal scrolling
-  const handleWheel = (e: WheelEvent) => {
-    e.preventDefault();
-    scrollArea.scrollBy({ left: e.deltaY, behavior: 'smooth' });
-  };
-
-  // Keyboard navigation
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowLeft') {
-      scrollLeft();
-    } else if (e.key === 'ArrowRight') {
-      scrollRight();
+  // Handle keyboard navigation (Enter/Space)
+  const handleCardKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCardClick(event);
     }
   };
 
-  // Button click handlers
-  leftIndicator.addEventListener('click', scrollLeft);
-  rightIndicator.addEventListener('click', scrollRight);
-
-  // Scroll area event listeners
-  scrollArea.addEventListener('scroll', handleScroll);
-  scrollArea.addEventListener('wheel', handleWheel, { passive: false });
-  scrollArea.addEventListener('touchstart', handleTouchStart, { passive: true });
-  scrollArea.addEventListener('touchmove', handleTouchMove, { passive: false });
-  scrollArea.addEventListener('touchend', handleTouchEnd);
-
-  // Keyboard listeners (only when scroll area is focused)
-  scrollArea.addEventListener('keydown', handleKeyDown);
-  scrollArea.setAttribute('tabindex', '0');
-
-  // Initialize indicators
-  updateScrollIndicators();
-
-  // Auto-scroll for demo (optional)
-  setTimeout(() => {
-    scrollArea.scrollBy({ left: 100, behavior: 'smooth' });
-  }, 1000);
+  // Attach event listeners using event delegation
+  cardsContainer.addEventListener('click', handleCardClick);
+  cardsContainer.addEventListener('keydown', handleCardKeydown);
 };

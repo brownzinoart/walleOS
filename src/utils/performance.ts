@@ -232,8 +232,8 @@ export const measurePerformance = <T>(label: string, callback: () => T): T => {
   const duration = entries[entries.length - 1]?.duration;
 
   const isDev = (() => {
-    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV) {
-      return process.env.NODE_ENV !== 'production';
+    if (typeof process !== 'undefined' && process.env && process.env['NODE_ENV']) {
+      return process.env['NODE_ENV'] !== 'production';
     }
 
     if (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.MODE) {
@@ -260,8 +260,8 @@ export interface PerformanceMetrics {
   label: string;
   duration: number;
   timestamp: number;
-  memoryUsage?: number;
-  customData?: Record<string, unknown>;
+  memoryUsage?: number | undefined;
+  customData?: Record<string, unknown> | undefined;
 }
 
 class PerformanceMonitor {
@@ -359,4 +359,37 @@ export const measurePerformanceWithMonitoring = <T>(
   performance.clearMeasures(label);
 
   return result;
+};
+
+type DocumentWithViewTransitions = Document & {
+  startViewTransition?: (callback: () => void) => unknown;
+};
+
+export const supportsViewTransitions = (): boolean => {
+  if (typeof document === 'undefined') {
+    return false;
+  }
+
+  const doc = document as DocumentWithViewTransitions;
+  return typeof doc.startViewTransition === 'function';
+};
+
+export const withViewTransition = (callback: () => void): void => {
+  if (typeof callback !== 'function') {
+    return;
+  }
+
+  if (!supportsViewTransitions()) {
+    callback();
+    return;
+  }
+
+  try {
+    const doc = document as DocumentWithViewTransitions;
+    doc.startViewTransition?.(() => {
+      callback();
+    });
+  } catch (error) {
+    callback();
+  }
 };

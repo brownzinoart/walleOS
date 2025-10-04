@@ -18,7 +18,7 @@ const ENTRANCE_DELAY = 70;
 const disabledSuggestionChipIds = new Set<string>();
 
 const setChipDisabledState = (chip: HTMLButtonElement, disabled: boolean) => {
-  chip.dataset.disabled = disabled ? 'true' : 'false';
+  chip.dataset['disabled'] = disabled ? 'true' : 'false';
   chip.setAttribute('aria-disabled', String(disabled));
   chip.setAttribute('tabindex', disabled ? '-1' : '0');
   chip.classList.toggle('disabled', disabled);
@@ -139,7 +139,7 @@ const handleChipSelection = (
   onClick: (chipText: string) => void,
   event: PointerEvent | KeyboardEvent
 ) => {
-  if (chip.dataset.disabled === 'true') {
+  if (chip.dataset['disabled'] === 'true') {
     if (event instanceof PointerEvent) {
       triggerDisabledFeedback(chip);
     }
@@ -208,7 +208,7 @@ const setupInteractionEffects = (
         createRipple(chip, event.clientX, event.clientY);
       }
 
-      if (chip.dataset.disabled === 'true') {
+      if (chip.dataset['disabled'] === 'true') {
         triggerDisabledFeedback(chip);
       }
 
@@ -245,7 +245,7 @@ export const attachSuggestionChipListeners = (onClick: (chipText: string) => voi
   const reducedMotion = prefersReducedMotion();
 
   container.querySelectorAll<HTMLButtonElement>(SUGGESTION_CHIP_SELECTOR).forEach((chip, index) => {
-    const isDisabled = chip.dataset.disabled === 'true';
+    const isDisabled = chip.dataset['disabled'] === 'true';
 
     if (isDisabled) {
       disableChipElement(chip);

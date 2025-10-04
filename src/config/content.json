@@ -64,6 +64,22 @@
       "tags": ["AI", "Exploration"],
       "thumbnail": "/images/project-delta.png",
       "url": "https://example.com/project-delta"
+    },
+    {
+      "id": "project-epsilon",
+      "title": "Project Epsilon",
+      "description": "Crafting ambient interfaces that adapt to user context and emotional state.",
+      "tags": ["Interaction", "Innovation"],
+      "thumbnail": "/images/project-epsilon.png",
+      "url": "https://example.com/project-epsilon"
+    },
+    {
+      "id": "project-zeta",
+      "title": "Project Zeta",
+      "description": "Building bridges between human intuition and machine learning workflows.",
+      "tags": ["ML", "Design", "Tools"],
+      "thumbnail": "/images/project-zeta.png",
+      "url": "https://example.com/project-zeta"
     }
   ],
   "resume": {

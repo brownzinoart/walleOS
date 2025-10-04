@@ -15,9 +15,9 @@ export interface LogContext {
   action?: string;
   userId?: string;
   sessionId?: string;
-  metadata?: Record<string, unknown>;
-  error?: Error;
-  stack?: string;
+  metadata?: Record<string, unknown> | undefined;
+  error?: Error | undefined;
+  stack?: string | undefined;
   timestamp?: number;
 }
 

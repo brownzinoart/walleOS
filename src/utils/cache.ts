@@ -10,7 +10,7 @@ export interface CacheEntry<T> {
   ttl: number;
   accessCount: number;
   lastAccessed: number;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown> | undefined;
 }
 
 export interface CacheOptions {
@@ -153,7 +153,6 @@ export class AdvancedCache<T = unknown> {
   }
 
   private async cleanup(): Promise<void> {
-    const now = Date.now();
     const toDelete: string[] = [];
 
     for (const [key, entry] of this.cache) {
@@ -512,7 +511,7 @@ export function cached<T extends (...args: any[]) => any>(
     metadata?: Record<string, unknown>;
   }
 ) {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (_target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: Parameters<T>) {
