@@ -254,3 +254,109 @@ export const measurePerformance = <T>(label: string, callback: () => T): T => {
 
   return result;
 };
+
+// Performance monitoring and analytics
+export interface PerformanceMetrics {
+  label: string;
+  duration: number;
+  timestamp: number;
+  memoryUsage?: number;
+  customData?: Record<string, unknown>;
+}
+
+class PerformanceMonitor {
+  private static instance: PerformanceMonitor;
+  private metrics: PerformanceMetrics[] = [];
+  private observers: Array<(metrics: PerformanceMetrics) => void> = [];
+  private maxMetricsSize = 1000;
+
+  static getInstance(): PerformanceMonitor {
+    if (!PerformanceMonitor.instance) {
+      PerformanceMonitor.instance = new PerformanceMonitor();
+    }
+    return PerformanceMonitor.instance;
+  }
+
+  recordMetric(label: string, duration: number, customData?: Record<string, unknown>): void {
+    const metric: PerformanceMetrics = {
+      label,
+      duration,
+      timestamp: Date.now(),
+      memoryUsage: this.getMemoryUsage(),
+      customData,
+    };
+
+    this.metrics.push(metric);
+
+    // Keep only the latest metrics to prevent memory leaks
+    if (this.metrics.length > this.maxMetricsSize) {
+      this.metrics = this.metrics.slice(-this.maxMetricsSize);
+    }
+
+    // Notify observers
+    this.observers.forEach(observer => observer(metric));
+  }
+
+  subscribe(observer: (metrics: PerformanceMetrics) => void): () => void {
+    this.observers.push(observer);
+    return () => {
+      const index = this.observers.indexOf(observer);
+      if (index > -1) {
+        this.observers.splice(index, 1);
+      }
+    };
+  }
+
+  getMetrics(): PerformanceMetrics[] {
+    return [...this.metrics];
+  }
+
+  getAverageTime(label: string): number | null {
+    const labelMetrics = this.metrics.filter(m => m.label === label);
+    if (labelMetrics.length === 0) return null;
+
+    const sum = labelMetrics.reduce((acc, m) => acc + m.duration, 0);
+    return sum / labelMetrics.length;
+  }
+
+  private getMemoryUsage(): number | undefined {
+    if (typeof performance !== 'undefined' && (performance as any).memory) {
+      return (performance as any).memory.usedJSHeapSize;
+    }
+    return undefined;
+  }
+}
+
+export const performanceMonitor = PerformanceMonitor.getInstance();
+
+// Enhanced performance measurement with monitoring
+export const measurePerformanceWithMonitoring = <T>(
+  label: string,
+  callback: () => T,
+  customData?: Record<string, unknown>
+): T => {
+  if (typeof performance === 'undefined' || typeof performance.mark !== 'function') {
+    return callback();
+  }
+
+  const startMark = `${label}-start`;
+  const endMark = `${label}-end`;
+
+  performance.mark(startMark);
+  const result = callback();
+  performance.mark(endMark);
+  performance.measure(label, startMark, endMark);
+
+  const entries = performance.getEntriesByName(label);
+  const duration = entries[entries.length - 1]?.duration;
+
+  if (typeof duration === 'number') {
+    performanceMonitor.recordMetric(label, duration, customData);
+  }
+
+  performance.clearMarks(startMark);
+  performance.clearMarks(endMark);
+  performance.clearMeasures(label);
+
+  return result;
+};

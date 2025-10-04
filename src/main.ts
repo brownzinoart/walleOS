@@ -25,7 +25,10 @@ import {
   rafThrottle,
   prefersReducedMotion,
   measurePerformance,
+  measurePerformanceWithMonitoring,
+  performanceMonitor,
 } from '@/utils/performance';
+import { logger, errorBoundary } from '@/utils/logger';
 import {
   addChatMessage,
   generateMockResponse,
@@ -285,48 +288,90 @@ const handleRouteChange = () => {
   }
 };
 
-const mount = () => {
+const mount = async () => {
   const loader = showAppLoader();
 
-  try {
+  // Register error recovery strategies
+  errorBoundary.registerRecoveryStrategy('mount', () => {
+    logger.info('Attempting to recover from mount error');
+    window.location.reload();
+  });
+
+  errorBoundary.registerRecoveryStrategy('render', () => {
+    logger.info('Attempting to recover from render error');
     const root = document.querySelector<HTMLDivElement>('#app');
-
-    if (!root) {
-      throw new Error('Root element #app not found.');
+    if (root) {
+      root.innerHTML = renderLayout(getMainContent());
+      initLayout();
     }
+  });
 
-    if (reducedMotion) {
-      document.body.setAttribute('data-reduced-motion', 'true');
-    }
+  try {
+    await errorBoundary.executeWithErrorBoundary(async () => {
+      const root = document.querySelector<HTMLDivElement>('#app');
 
-    root.innerHTML = renderLayout(getMainContent());
-    initLayout();
+      if (!root) {
+        throw new Error('Root element #app not found.');
+      }
 
-    attachChatInputListeners(handleUserMessage);
-    observeChatInput();
+      if (reducedMotion) {
+        document.body.setAttribute('data-reduced-motion', 'true');
+      }
 
-    attachSuggestionChipListeners(handleSuggestionChipClick);
-    attachProjectCardListeners();
-    applyInitialAnimations();
+      logger.info('Starting WalleOS initialization', {
+        component: 'main',
+        action: 'mount',
+        metadata: { reducedMotion, userAgent: navigator.userAgent }
+      });
 
-    // Initialize router first
-    initRouter();
+      // Use enhanced performance monitoring
+      await measurePerformanceWithMonitoring('app-render', () => {
+        root.innerHTML = renderLayout(getMainContent());
+        initLayout();
+      });
 
-    // Initialize resume interactions if resume is active
-    if (currentActiveNavItem === 'resume') {
-      initResumeInteractions();
-    }
+      attachChatInputListeners(handleUserMessage);
+      observeChatInput();
+      attachSuggestionChipListeners(handleSuggestionChipClick);
+      attachProjectCardListeners();
+      applyInitialAnimations();
+
+      // Initialize router first
+      initRouter();
+
+      // Initialize resume interactions if resume is active
+      if (currentActiveNavItem === 'resume') {
+        initResumeInteractions();
+      }
+    }, {
+      component: 'main',
+      action: 'mount'
+    });
 
     const fontsReady = (document as any).fonts?.ready ?? Promise.resolve();
     fontsReady.finally(() => hideAppLoader(loader));
+
+    logger.info('WalleOS initialization completed successfully');
+
   } catch (error) {
     hideAppLoader(loader);
-    // eslint-disable-next-line no-console
-    console.error('Failed to initialise WalleOS:', error);
+
     const fallback = document.createElement('div');
     fallback.className = 'app-error';
-    fallback.textContent = 'We hit a snag while loading the experience. Please refresh and try again.';
+    fallback.innerHTML = `
+      <h2>Initialization Error</h2>
+      <p>We hit a snag while loading the experience. Please refresh and try again.</p>
+      <button onclick="window.location.reload()" class="btn-retry">
+        Retry
+      </button>
+    `;
+
     document.body.appendChild(fallback);
+
+    logger.fatal('Failed to initialise WalleOS', error as Error, {
+      component: 'main',
+      action: 'mount'
+    });
   }
 };
 
