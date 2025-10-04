@@ -1,0 +1,3 @@
+- Run `npm run lint` or targeted checks when touching TypeScript.
+- Build with `npm run build` if changes affect bundling/production behavior.
+- Manually spot-check chat UI in dev server when modifying interactive flows.

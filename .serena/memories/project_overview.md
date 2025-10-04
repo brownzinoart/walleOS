@@ -1,0 +1,3 @@
+- Purpose: WalleGPT conversational portfolio experience showcasing Wally; current phase builds chat-first interface per PRD in docs/PRD.md.
+- Core stack: Vite + TypeScript + Tailwind CSS in a vanilla (framework-free) TypeScript SPA.
+- Key structure: `src/main.ts` app entry/bootstrap, `src/components` for HTML render helpers, `src/config` for typed JSON-driven content, `src/styles` for Tailwind layers/tokens, `docs` for product specs/research.

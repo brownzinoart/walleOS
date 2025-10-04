@@ -1,0 +1,5 @@
+- Install deps: `npm install`
+- Start dev server: `npm run dev`
+- Type-check + build: `npm run build`
+- Lint sources: `npm run lint`
+- Preview prod build: `npm run preview`

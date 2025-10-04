@@ -1,0 +1,4 @@
+- TypeScript-first codebase; DOM APIs and functional helpers dominate.
+- ESLint (`@typescript-eslint`) enforces `prefer-const`, warns on `any` and unused vars (allow underscore prefix for intentional ignores).
+- Components return template strings for markup; keep Tailwind utility classes aligned with design tokens.
+- Add only purposeful comments; follow existing pattern of minimal inline documentation.
