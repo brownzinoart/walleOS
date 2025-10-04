@@ -34,6 +34,14 @@ import {
   setChatTyping,
   subscribeToChatState,
 } from '@/utils/chatState';
+ import {
+   initRouter,
+   getCurrentRoute,
+   getRouteTitle,
+   navigateTo,
+   isRouteActive,
+ } from '@/utils/router';
+ import { renderProjectsPage, initProjectsPageInteractions } from '@/components/ProjectsPage';
 
 const CHAT_ROOT_SELECTOR = '[data-chat-root]';
 const WELCOME_SLOT_SELECTOR = '[data-chat-welcome]';
@@ -41,7 +49,7 @@ const SUGGESTION_SLOT_SELECTOR = '[data-chat-suggestions]';
 const CHAT_INPUT_SELECTOR = '[data-chat-input]';
 
 let pendingSuggestion: { id: string; text: string } | null = null;
-let currentActiveNavItem: string | null = null;
+let currentActiveNavItem: string | null = 'home';
 const reducedMotion = prefersReducedMotion();
 
 const showAppLoader = (): HTMLElement | null => {
@@ -103,18 +111,26 @@ const renderTypingIndicator = (): string => `
   </article>
 `;
 const getMainContent = (): string => {
+  // Render projects page when projects nav item is active
+  if (currentActiveNavItem === 'projects') {
+    return renderProjectsPage();
+  }
+
   // Render resume section if resume nav item is active
   if (currentActiveNavItem === 'resume') {
     return renderResume();
   }
 
-  // Default chat interface
+  // Show project cards on home tab for better UX
+  const showProjectCards = currentActiveNavItem === 'home';
+  const projectCardsMarkup = showProjectCards && featuredProjects.length > 0 ? renderProjectCards(featuredProjects) : '';
+
+  // Default chat interface (home, projects, and all other nav items)
   const state = getChatState();
   const hasMessages = state.messages.length > 0;
   const welcomeMarkup = hasMessages ? '' : renderWelcomeCard();
   const suggestionsMarkup = hasMessages ? '' : renderSuggestionChips(suggestionChips);
   const typingMarkup = state.isTyping ? renderTypingIndicator() : '';
-  const projectCardsMarkup = featuredProjects.length > 0 ? renderProjectCards(featuredProjects) : '';
 
   return `
     <section
@@ -245,6 +261,30 @@ const rerenderChat = (state: ChatState = getChatState()) => {
   scheduleChatRender(state);
 };
 
+const handleRouteChange = () => {
+  currentActiveNavItem = getCurrentRoute();
+  const root = document.querySelector<HTMLDivElement>('#app');
+  if (root) {
+    root.innerHTML = renderLayout(getMainContent());
+    initLayout();
+
+    // Initialize interactions based on current route
+    const currentRoute = currentActiveNavItem;
+    switch (currentRoute) {
+      case 'projects':
+        initProjectsPageInteractions();
+        break;
+      case 'resume':
+        initResumeInteractions();
+        break;
+      case 'home':
+      default:
+        attachProjectCardListeners();
+        break;
+    }
+  }
+};
+
 const mount = () => {
   const loader = showAppLoader();
 
@@ -268,6 +308,9 @@ const mount = () => {
     attachSuggestionChipListeners(handleSuggestionChipClick);
     attachProjectCardListeners();
     applyInitialAnimations();
+
+    // Initialize router first
+    initRouter();
 
     // Initialize resume interactions if resume is active
     if (currentActiveNavItem === 'resume') {
@@ -301,6 +344,9 @@ subscribeToChatState((state, previousState) => {
 validateContent();
 mount();
 
+// Listen for route changes
+document.addEventListener('route:change', handleRouteChange);
+
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     scrollToBottom(reducedMotion ? 'auto' : 'smooth');
@@ -327,6 +373,15 @@ const handleNavigationChange = (event: Event) => {
     // Initialize resume interactions if resume is now active
     if (navId === 'resume') {
       initResumeInteractions();
+    }
+
+    if (navId === 'projects') {
+      initProjectsPageInteractions();
+    }
+
+    // Initialize project card interactions if home tab is now active
+    if (navId === 'home') {
+      attachProjectCardListeners();
     }
   }
 };

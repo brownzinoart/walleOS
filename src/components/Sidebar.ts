@@ -248,6 +248,12 @@ const setupSectionObserver = () => {
         const navId = matchedNav[0];
         const navItem = navItemRefs.get(navId);
         const label = navItem?.dataset.navLabel ?? navId;
+        // Prevent projects tab from being activated during homepage scrolling
+        // Only allow projects tab activation if currently not on home, or if explicitly navigating to projects
+        if (navId === 'projects' && sidebarState.activeNavId === 'home') {
+          return;
+        }
+
         setActiveNavItem(navId, { silent: true });
         emitActiveChange(navId, label, true);
       }
@@ -288,15 +294,27 @@ export const setActiveNavItem = (itemId: string | null, options: SetActiveOption
 };
 
 export const handleNavActivation = (itemId: string, behavior: ScrollBehavior = 'smooth') => {
-  const target = findSectionTarget(itemId);
-  const motionSafe: ScrollBehavior = prefersReducedMotion() ? 'auto' : behavior;
+  // Import router functions dynamically to avoid circular dependencies
+  import('@/utils/router').then(({ navigateTo }) => {
+    // For projects, resume, and other dedicated pages, use routing
+    if (itemId === 'projects' || itemId === 'resume') {
+      navigateTo(itemId);
+      setActiveNavItem(itemId);
+      emitNavigationEvent(itemId);
+      return;
+    }
 
-  if (target) {
-    target.scrollIntoView({ behavior: motionSafe, block: 'start' });
-  }
+    // For home and other sections, use traditional scroll behavior
+    const target = findSectionTarget(itemId);
+    const motionSafe: ScrollBehavior = prefersReducedMotion() ? 'auto' : behavior;
 
-  setActiveNavItem(itemId);
-  emitNavigationEvent(itemId);
+    if (target) {
+      target.scrollIntoView({ behavior: motionSafe, block: 'start' });
+    }
+
+    setActiveNavItem(itemId);
+    emitNavigationEvent(itemId);
+  });
 };
 
 const setupNavItemInteractions = () => {

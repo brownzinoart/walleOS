@@ -5,6 +5,7 @@
     "greeting": "Hey! I'm Wally. Ask me anything about my work, background, or what I'm building."
   },
   "navigation": [
+    { "id": "home", "label": "Home", "icon": "🏠" },
     { "id": "projects", "label": "Projects", "icon": "🚀" },
     { "id": "resume", "label": "Resume", "icon": "📄" },
     { "id": "past-ux-life", "label": "Past UX Life", "icon": "🎨" },
