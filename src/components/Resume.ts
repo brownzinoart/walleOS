@@ -48,6 +48,80 @@ const renderMediumExperienceCard = (experience: Experience): string => {
   `;
 };
 
+const renderDetailPlaceholder = (): string => `
+  <div class="resume-detail-content resume-detail-empty">
+    <p class="resume-detail-placeholder text-sm text-gray-400 text-center leading-relaxed max-w-xs">
+      Click on a card for more info
+    </p>
+  </div>
+`;
+
+const renderDetailContent = (experience: Experience): string => {
+  const titleId = `resume-detail-title-${experience.id}`;
+  const descriptionId = `resume-detail-description-${experience.id}`;
+  const achievementsHeadingId = `${titleId}-achievements`;
+  const skillsHeadingId = `${titleId}-skills`;
+  const techHeadingId = `${titleId}-technologies`;
+
+  const achievementsSection = experience.achievements?.length
+    ? `
+      <section class="resume-detail-section" aria-labelledby="${achievementsHeadingId}">
+        <h3 class="resume-detail-section-title" id="${achievementsHeadingId}">Key Achievements</h3>
+        <ul class="resume-detail-achievements">
+          ${experience.achievements.map((achievement) => `
+            <li class="resume-detail-achievement-item">
+              <span class="resume-detail-achievement-icon" aria-hidden="true">&#10003;</span>
+              <span class="resume-detail-achievement-text">${achievement}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </section>
+    `
+    : '';
+
+  const skillsSection = experience.skills?.length
+    ? `
+      <section class="resume-detail-section" aria-labelledby="${skillsHeadingId}">
+        <h3 class="resume-detail-section-title" id="${skillsHeadingId}">Core Skills</h3>
+        <div class="resume-detail-skills" role="list">
+          ${experience.skills.map((skill) => `
+            <span class="resume-detail-skill-tag" role="listitem">${skill}</span>
+          `).join('')}
+        </div>
+      </section>
+    `
+    : '';
+
+  const technologiesSection = experience.technologies?.length
+    ? `
+      <section class="resume-detail-section" aria-labelledby="${techHeadingId}">
+        <h3 class="resume-detail-section-title" id="${techHeadingId}">Technologies</h3>
+        <div class="resume-detail-technologies" role="list">
+          ${experience.technologies.map((tech) => `
+            <span class="resume-detail-tech-badge" role="listitem">${tech}</span>
+          `).join('')}
+        </div>
+      </section>
+    `
+    : '';
+
+  return `
+    <article class="resume-detail-content" aria-labelledby="${titleId}" aria-describedby="${descriptionId}" tabindex="0">
+      <header class="resume-detail-header">
+        <h2 class="resume-detail-title" id="${titleId}">${experience.title}</h2>
+        <p class="resume-detail-company">${experience.company}</p>
+        <p class="resume-detail-period">${experience.period}</p>
+      </header>
+      <p class="resume-detail-description" id="${descriptionId}">
+        ${experience.description}
+      </p>
+      ${achievementsSection}
+      ${skillsSection}
+      ${technologiesSection}
+    </article>
+  `;
+};
+
 export const renderResume = (): string => `
   <section class="resume-section" data-section-id="resume">
     <div class="resume-container max-w-7xl mx-auto">
@@ -65,12 +139,14 @@ export const renderResume = (): string => `
           ${resume.experiences.map(renderMediumExperienceCard).join('')}
         </div>
         <div class="resume-detail-column">
-          <div class="resume-detail-panel">
-            <div class="resume-detail-empty">
-              <p class="resume-detail-placeholder text-sm text-gray-400 text-center leading-relaxed max-w-xs">
-                Click on a job experience for more details.
-              </p>
-            </div>
+          <div
+            class="resume-detail-panel resume-detail-fade-in"
+            data-detail-content
+            role="region"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            ${renderDetailPlaceholder()}
           </div>
         </div>
       </div>
@@ -104,6 +180,8 @@ export const renderResume = (): string => `
 
 export const initResumeInteractions = (): void => {
   const cardsContainer = document.querySelector('[data-resume-cards-scroll]');
+  const detailPanel = document.querySelector<HTMLElement>('.resume-detail-panel[data-detail-content]');
+  let detailTransitionTimeout: number | null = null;
   if (!cardsContainer) return;
 
   // Handle card clicks
@@ -113,6 +191,10 @@ export const initResumeInteractions = (): void => {
 
     const experienceId = card.getAttribute('data-experience-id');
     if (!experienceId) return;
+
+    if (selectedExperienceId === experienceId) {
+      return;
+    }
 
     // Update selected state
     selectedExperienceId = experienceId;
@@ -145,4 +227,45 @@ export const initResumeInteractions = (): void => {
   // Attach event listeners using event delegation
   cardsContainer.addEventListener('click', handleCardClick);
   cardsContainer.addEventListener('keydown', handleCardKeydown);
+
+  const updateDetailPanel = (content: string) => {
+    if (!detailPanel) return;
+
+    detailPanel.classList.remove('resume-detail-fade-in');
+    detailPanel.classList.add('resume-detail-fade-out');
+
+    if (detailTransitionTimeout !== null) {
+      window.clearTimeout(detailTransitionTimeout);
+    }
+
+    detailTransitionTimeout = window.setTimeout(() => {
+      detailPanel.innerHTML = content;
+      detailPanel.classList.remove('resume-detail-fade-out');
+      // Force reflow to restart the fade-in animation
+      void detailPanel.offsetWidth;
+      detailPanel.classList.add('resume-detail-fade-in');
+      detailTransitionTimeout = null;
+    }, 150);
+  };
+
+  document.addEventListener('experience-selected', (event: Event) => {
+    if (!detailPanel) return;
+
+    const customEvent = event as CustomEvent<{ experienceId?: string }>;
+    const experienceId = customEvent.detail?.experienceId;
+
+    if (!experienceId) {
+      updateDetailPanel(renderDetailPlaceholder());
+      return;
+    }
+
+    const experience = resume.experiences.find((item) => item.id === experienceId);
+
+    if (!experience) {
+      updateDetailPanel(renderDetailPlaceholder());
+      return;
+    }
+
+    updateDetailPanel(renderDetailContent(experience));
+  });
 };

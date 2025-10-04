@@ -1445,19 +1445,187 @@
 
 .resume-detail-panel {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
   height: 100%;
 }
 
 .resume-detail-empty {
   min-height: 0;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .resume-detail-placeholder {
   color: rgba(161, 161, 170, 0.8);
   text-align: center;
   line-height: 1.6;
+}
+
+.resume-detail-fade-out,
+.resume-detail-fade-in {
+  will-change: opacity;
+}
+
+.resume-detail-fade-out {
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.resume-detail-fade-in {
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+
+.resume-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+  overflow-y: auto;
+  padding: 1.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-neon-cyan) transparent;
+  background: linear-gradient(145deg, rgba(24, 24, 27, 0.85) 0%, rgba(18, 18, 22, 0.95) 100%);
+  border-radius: 1rem;
+  border: 1px solid rgba(34, 34, 38, 0.6);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+}
+
+.resume-detail-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.resume-detail-content::-webkit-scrollbar-track {
+  background: rgba(34, 34, 34, 0.4);
+  border-radius: 4px;
+}
+
+.resume-detail-content::-webkit-scrollbar-thumb {
+  background-color: var(--color-neon-cyan);
+  border-radius: 4px;
+}
+
+.resume-detail-content::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 255, 255, 0.8);
+}
+
+.resume-detail-header {
+  margin-bottom: 1rem;
+}
+
+.resume-detail-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.resume-detail-company {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neon-cyan);
+  margin-bottom: 0.25rem;
+}
+
+.resume-detail-period {
+  font-size: 0.875rem;
+  color: var(--color-gray-400);
+}
+
+.resume-detail-description {
+  color: rgba(161, 161, 170, 0.9);
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.resume-detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.resume-detail-section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: white;
+}
+
+.resume-detail-achievements {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resume-detail-achievement-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(24, 24, 27, 0.5);
+  border-radius: 0.5rem;
+  border-left: 3px solid var(--color-neon-cyan);
+}
+
+.resume-detail-achievement-icon {
+  color: var(--color-neon-cyan);
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.resume-detail-achievement-text {
+  color: rgba(161, 161, 170, 0.95);
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.resume-detail-skills,
+.resume-detail-technologies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.resume-detail-skill-tag {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(145deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 9999px;
+  color: rgba(0, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.resume-detail-skill-tag:hover,
+.resume-detail-skill-tag:focus-visible {
+  background: rgba(0, 255, 255, 0.15);
+  border-color: var(--color-neon-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+}
+
+.resume-detail-tech-badge {
+  padding: 0.4rem 0.875rem;
+  background: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(161, 161, 170, 0.3);
+  border-radius: 0.375rem;
+  color: rgba(161, 161, 170, 0.9);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.resume-detail-tech-badge:hover,
+.resume-detail-tech-badge:focus-visible {
+  border-color: rgba(161, 161, 170, 0.6);
+  background: rgba(34, 34, 38, 0.8);
+  color: white;
 }
 
 .resume-timeline-card {
@@ -1905,6 +2073,27 @@
     border-top: 1px solid rgba(34, 34, 38, 0.5);
   }
 
+  .resume-detail-content {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .resume-detail-title {
+    font-size: 1.3rem;
+  }
+
+  .resume-detail-company {
+    font-size: 1rem;
+  }
+
+  .resume-detail-section-title {
+    font-size: 1rem;
+  }
+
+  .resume-detail-description {
+    font-size: 0.9rem;
+  }
+
   .resume-timeline-card {
     padding: 1rem;
     margin-bottom: 1rem;
@@ -1942,5 +2131,20 @@
   .resume-cards-column,
   .resume-detail-column {
     scroll-behavior: auto;
+  }
+
+  .resume-detail-fade-out,
+  .resume-detail-fade-in,
+  .resume-detail-skill-tag,
+  .resume-detail-tech-badge {
+    transition: none !important;
+  }
+
+  .resume-detail-skill-tag:hover,
+  .resume-detail-skill-tag:focus-visible,
+  .resume-detail-tech-badge:hover,
+  .resume-detail-tech-badge:focus-visible {
+    transform: none !important;
+    box-shadow: none !important;
   }
 }
