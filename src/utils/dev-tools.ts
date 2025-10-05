@@ -69,17 +69,30 @@ export class DevTools {
   private setupConsoleLogging(): void {
     // Enhanced console methods
     const originalConsole = { ...console };
+    let isConsoleHookLogging = false;
 
-    const createEnhancedLogMethod = (level: string, originalMethod: (...args: any[]) => void) =>
-      (...args: any[]) => {
-        if (this.config.enableConsoleLogging) {
-          originalMethod(...args);
+    const createEnhancedLogMethod = (level: string, originalMethod: (...args: unknown[]) => void) =>
+      (...args: unknown[]) => {
+        if (!this.config.enableConsoleLogging) {
+          return;
+        }
 
-          // Also log to our logger system
+        if (typeof originalMethod === 'function') {
+          originalMethod.apply(console, args);
+        }
+
+        if (isConsoleHookLogging) {
+          return;
+        }
+
+        try {
+          isConsoleHookLogging = true;
           logger.debug(`Console ${level}:`, {
             component: 'console',
             metadata: { args, level }
           });
+        } finally {
+          isConsoleHookLogging = false;
         }
       };
 
@@ -119,7 +132,10 @@ export class DevTools {
   private setupMemoryTracking(): void {
     const trackMemory = () => {
       if ('memory' in performance) {
-        const usage = (performance as any).memory.usedJSHeapSize;
+        const performanceWithMemory = performance as Performance & {
+          memory?: { usedJSHeapSize: number };
+        };
+        const usage = performanceWithMemory.memory?.usedJSHeapSize ?? 0;
         this.memoryHistory.push({
           timestamp: Date.now(),
           usage
@@ -299,8 +315,9 @@ export class DevTools {
       }
 
       const result: Record<string, unknown> = {};
+      const record = obj as Record<string, unknown>;
       for (const key of keys.slice(0, 5)) {
-        result[key] = this.summarizeObject((obj as any)[key], maxDepth, currentDepth + 1);
+        result[key] = this.summarizeObject(record[key], maxDepth, currentDepth + 1);
       }
       return result;
     }
@@ -319,8 +336,11 @@ export class DevTools {
 
   // Hot reloading helpers
   enableHotReloading(): void {
-    if ((import.meta as any).hot) {
-      (import.meta as any).hot.accept();
+    type DevImportMeta = ImportMeta & { hot?: { accept: () => void } };
+    const devImportMeta = import.meta as DevImportMeta;
+
+    if (devImportMeta.hot) {
+      devImportMeta.hot.accept();
 
       logger.info('Hot reloading enabled', {
         component: 'dev-tools',
@@ -335,10 +355,16 @@ export class DevTools {
     hotReload: boolean;
     environment: string;
   } {
+    type DevImportMeta = ImportMeta & {
+      hot?: { accept: () => void };
+      env?: { MODE?: string };
+    };
+    const devImportMeta = import.meta as DevImportMeta;
+
     return {
       url: window.location.origin,
-      hotReload: !!(import.meta as any).hot,
-      environment: (import.meta as any).env?.MODE || 'development'
+      hotReload: Boolean(devImportMeta.hot),
+      environment: devImportMeta.env?.MODE || 'development'
     };
   }
 
@@ -368,7 +394,7 @@ export class DevTools {
         element.dispatchEvent(event);
       },
 
-      mockFunction: <T extends (...args: any[]) => any>(fn: T): T & { callCount: number; callHistory: Parameters<T>[] } => {
+      mockFunction: <T extends (...args: unknown[]) => unknown>(fn: T): T & { callCount: number; callHistory: Parameters<T>[] } => {
         const mock = ((...args: Parameters<T>) => {
           mock.callCount++;
           mock.callHistory.push(args);

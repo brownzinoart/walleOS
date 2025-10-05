@@ -389,7 +389,7 @@ export const withViewTransition = (callback: () => void): void => {
     doc.startViewTransition?.(() => {
       callback();
     });
-  } catch (error) {
+  } catch {
     callback();
   }
 };

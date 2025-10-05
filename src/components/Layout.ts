@@ -1,5 +1,3 @@
-import { navigation } from '@/config/content';
-import type { LayoutState } from '@/types';
 import { renderSidebar, initSidebarInteractions, setActiveNavItem } from './Sidebar';
 import { renderMobileNav, attachMobileNavListeners } from './MobileNav';
 
@@ -7,9 +5,18 @@ const SIDEBAR_SELECTOR = '[data-sidebar]';
 const MOBILE_NAV_TRIGGER = '[data-mobile-nav-trigger]';
 const MOBILE_NAV_OVERLAY = '[data-mobile-nav-overlay]';
 
-let layoutState: LayoutState = {
+type LayoutState = {
+  isSidebarOpen: boolean;
+  isMobile: boolean;
+  lastScreenWidth: number;
+  activeNavItem: string | null;
+};
+
+const layoutState: LayoutState = {
   isSidebarOpen: false,
-  activeNavItem: navigation[0]?.id ?? null,
+  isMobile: false,
+  lastScreenWidth: 0,
+  activeNavItem: null,
 };
 
 const isDesktop = () => window.matchMedia('(min-width: 768px)').matches;

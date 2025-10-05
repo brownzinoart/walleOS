@@ -349,7 +349,8 @@ const mount = async () => {
       action: 'mount'
     });
 
-    const fontsReady = (document as any).fonts?.ready ?? Promise.resolve();
+    const docWithFonts = document as Document & { fonts?: FontFaceSet };
+    const fontsReady = docWithFonts.fonts?.ready ?? Promise.resolve();
     fontsReady.finally(() => hideAppLoader(loader));
 
     logger.info('WalleOS initialization completed successfully');

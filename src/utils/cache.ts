@@ -503,22 +503,23 @@ export const apiCache = new AdvancedCache<unknown>({
 });
 
 // Cache decorator for functions
-export function cached<T extends (...args: any[]) => any>(
-  cache: AdvancedCache,
+export function cached<T extends (...args: unknown[]) => unknown>(
+  cache: AdvancedCache<Awaited<ReturnType<T>>>,
   options?: {
     ttl?: number;
     keyGenerator?: (...args: Parameters<T>) => string;
     metadata?: Record<string, unknown>;
   }
 ) {
-  return (_target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-    const originalMethod = descriptor.value;
+  return (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
+    const originalMethod = descriptor.value as (...args: Parameters<T>) => ReturnType<T>;
 
     descriptor.value = async function (...args: Parameters<T>) {
-      const keyGenerator = options?.keyGenerator || ((...args: Parameters<T>) => `${propertyKey}:${JSON.stringify(args)}`);
+      const keyGenerator = options?.keyGenerator || ((...generatorArgs: Parameters<T>) => `${propertyKey}:${JSON.stringify(generatorArgs)}`);
       const cacheKey = keyGenerator(...args);
 
-      return cache.getOrSet(cacheKey, () => originalMethod.apply(this, args), options?.ttl, options?.metadata);
+      const factory = () => Promise.resolve(originalMethod.apply(this, args)) as Promise<Awaited<ReturnType<T>>>;
+      return cache.getOrSet(cacheKey, factory, options?.ttl, options?.metadata);
     };
 
     return descriptor;

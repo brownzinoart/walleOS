@@ -61,6 +61,7 @@ export interface Experience {
 export interface ResumeData {
   experiences: Experience[];
   summary: string;
+  resumeFileUrl?: string;
   skills: string[];
   education: {
     degree: string;

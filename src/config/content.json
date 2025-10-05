@@ -84,6 +84,7 @@
   ],
   "resume": {
     "summary": "Creative technologist with 8+ years of experience bridging design and development. Passionate about crafting intuitive user experiences through code, with expertise in modern web technologies and user-centered design principles.",
+    "resumeFileUrl": "/resume.pdf",
     "experiences": [
       {
         "id": "senior-frontend-engineer",

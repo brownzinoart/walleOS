@@ -132,6 +132,17 @@ export const renderResume = (): string => `
         <p class="resume-summary text-lg text-gray-400 max-w-3xl leading-relaxed">
           ${resume.summary}
         </p>
+        <div class="resume-header-actions mt-8">
+          <a
+            href="${resume.resumeFileUrl || '/resume.pdf'}"
+            download="Wally_Resume.pdf"
+            class="resume-download-button inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-bold rounded-md border-2 border-gray-700 hover:border-neon-cyan transition-all"
+            aria-label="Download resume as PDF"
+          >
+            <span aria-hidden="true">⬇️</span>
+            <span>Download Resume</span>
+          </a>
+        </div>
       </div>
 
       <div class="resume-grid-container">
@@ -216,17 +227,14 @@ export const initResumeInteractions = (): void => {
     document.dispatchEvent(selectionEvent);
   };
 
-  // Handle keyboard navigation (Enter/Space)
-  const handleCardKeydown = (event: KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+  // Attach event listeners using event delegation
+  cardsContainer.addEventListener('click', handleCardClick);
+  cardsContainer.addEventListener('keydown', (event) => {
+    if ((event as KeyboardEvent).key === 'Enter' || (event as KeyboardEvent).key === ' ') {
       event.preventDefault();
       handleCardClick(event);
     }
-  };
-
-  // Attach event listeners using event delegation
-  cardsContainer.addEventListener('click', handleCardClick);
-  cardsContainer.addEventListener('keydown', handleCardKeydown);
+  });
 
   const updateDetailPanel = (content: string) => {
     if (!detailPanel) return;

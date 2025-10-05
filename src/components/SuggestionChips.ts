@@ -137,10 +137,10 @@ const triggerDisabledFeedback = (chip: HTMLButtonElement) => {
 const handleChipSelection = (
   chip: HTMLButtonElement,
   onClick: (chipText: string) => void,
-  event: PointerEvent | KeyboardEvent
+  event: PointerEvent | MouseEvent | KeyboardEvent
 ) => {
   if (chip.dataset['disabled'] === 'true') {
-    if (event instanceof PointerEvent) {
+    if (event instanceof PointerEvent || event instanceof MouseEvent) {
       triggerDisabledFeedback(chip);
     }
     if ('preventDefault' in event) {

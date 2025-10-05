@@ -146,11 +146,20 @@ class Logger {
 
   private reportFatalError(entry: LogEntry): void {
     // This would integrate with error reporting services like Sentry
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
-      (window as any).Sentry.captureException(entry.context?.error || new Error(entry.message), {
-        level: 'fatal',
-        extra: entry.context,
-      });
+    if (typeof window !== 'undefined') {
+      type SentryGlobal = {
+        captureException: (error: unknown, context?: { level?: string; extra?: unknown }) => void;
+      };
+
+      const sentryWindow = window as Window & { Sentry?: SentryGlobal };
+      const sentry = sentryWindow.Sentry;
+
+      if (sentry) {
+        sentry.captureException(entry.context?.error || new Error(entry.message), {
+          level: 'fatal',
+          extra: entry.context,
+        });
+      }
     }
   }
 
@@ -275,14 +284,15 @@ export const createValidator = <T extends Record<string, unknown>>(schema: {
       throw new ValidationError('Invalid data: must be an object');
     }
 
-    const result = {} as T;
+    const result: Partial<T> = {};
     const obj = data as Record<string, unknown>;
 
     for (const [key, validator] of Object.entries(schema) as [keyof T, (value: T[keyof T]) => boolean | string][]) {
-      const value = obj[key as string];
+      const typedKey = key;
+      const value = obj[String(typedKey)] as T[keyof T];
 
       if (validator) {
-        const validationResult = validator(value as T[keyof T]);
+        const validationResult = validator(value);
         if (validationResult !== true) {
           throw new ValidationError(
             typeof validationResult === 'string' ? validationResult : `Invalid value for ${String(key)}`,
@@ -293,10 +303,10 @@ export const createValidator = <T extends Record<string, unknown>>(schema: {
         }
       }
 
-      (result as any)[key] = value;
+      result[typedKey] = value;
     }
 
-    return result;
+    return result as T;
   };
 };
 

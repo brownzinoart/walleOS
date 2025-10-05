@@ -766,7 +766,8 @@
   .project-card--enter,
   .project-card-expanded-content,
   .chat-input-send-button-active,
-  .chat-input-send-button-spinner {
+  .chat-input-send-button-spinner,
+  .resume-download-button {
     transition-duration: var(--transition-reduced, 50ms) !important;
     animation-duration: var(--animation-duration-reduced, 100ms) !important;
   }
@@ -2110,19 +2111,70 @@
     font-size: 0.8rem;
   }
 
-  .resume-skills-section {
-    margin-top: 2rem;
+  .resume-header-actions {
+    margin-top: 1.5rem;
   }
 
-  .resume-skills-section h2 {
-    font-size: 1.5rem;
+  .resume-download-button {
+    width: 100%;
+    justify-content: center;
   }
+
+}
+
+.resume-skills-section {
+  margin-top: 2rem;
+}
+
+.resume-skills-section h2 {
+  font-size: 1.5rem;
+}
+
+/* Resume Download Button */
+.resume-header-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.resume-download-button {
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.resume-download-button:hover {
+  transform: translateZ(0) translate(-4px, -4px);
+  box-shadow: 4px 4px 0 var(--color-neon-cyan);
+  border-color: var(--color-neon-cyan);
+  background-color: #1f1f24;
+}
+
+.resume-download-button:focus-visible {
+  transform: translateZ(0) translate(-4px, -4px);
+  box-shadow: 4px 4px 0 var(--color-neon-cyan);
+  border-color: var(--color-neon-cyan);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.resume-download-button:active {
+  transform: translateZ(0) translate(0, 0);
+  box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .resume-timeline-card,
   .resume-skill-tag,
-  .resume-core-skill {
+  .resume-core-skill,
+  .resume-download-button {
     transition: none !important;
     animation: none !important;
     transform: none !important;
@@ -2143,7 +2195,9 @@
   .resume-detail-skill-tag:hover,
   .resume-detail-skill-tag:focus-visible,
   .resume-detail-tech-badge:hover,
-  .resume-detail-tech-badge:focus-visible {
+  .resume-detail-tech-badge:focus-visible,
+  .resume-download-button:hover,
+  .resume-download-button:focus-visible {
     transform: none !important;
     box-shadow: none !important;
   }
