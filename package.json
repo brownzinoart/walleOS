@@ -19,7 +19,7 @@
     "docs:serve": "typedoc && npx serve docs",
     "performance": "vite-bundle-analyzer dist/assets/*.js",
     "clean": "rm -rf dist .nyc_output coverage",
-    "prepare": "npm run type-check && npm run lint && npm run test",
+    "prepare": "node scripts/prepare.mjs",
     "deploy": "npm run prepare && npm run build"
   },
   "devDependencies": {
