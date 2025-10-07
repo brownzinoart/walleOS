@@ -13,7 +13,7 @@
 
 ## 3. Success Metrics
 - Engagement: >60% of sessions trigger at least one chat exchange or suggestion chip tap.
-- Discoverability: >70% of unique visitors view or receive information about at least two distinct portfolio collections (e.g., Projects + Past UX Life).
+- Discoverability: >70% of unique visitors view or receive information about at least two distinct portfolio collections (e.g., Projects + For Fun).
 - Responsiveness: perceived latency under 1.5s for chat responses and <500ms for navigation transitions on broadband.
 - Maintainability: new content uploads (projects, tone corpus) reflected on the site within <10 minutes without developer intervention.
 
@@ -30,7 +30,7 @@
 - **Respectful Transparency**: cite or preview the underlying portfolio snippet for confidence; gracefully answer "unknown" when data is missing.
 
 ## 6. Content & Tone Strategy
-- Content sources: projects, resume, past UX life, personal fun facts, roadmap/plans.
+- Content sources: projects, resume, personal fun facts, roadmap/plans.
 - Tone extraction pipeline:
   - On ingestion, analyze the RAG documents to identify lexical signatures (phrases, metaphors, pacing) and emotional cues.
   - Store tone attributes alongside semantic embeddings for retrieval.
@@ -44,7 +44,7 @@
 - Quick actions: copy response, share link, escalate to email CTA.
 
 ### 7.2 Navigation & Layout
-- Left sidebar with sections: Projects, Resume, Past UX Life, For Fun (customizable labels).
+- Left sidebar with sections: Projects, Resume, For Fun (customizable labels).
 - Sticky contact block featuring name, email (with antispam obfuscation), optional socials.
 - Responsive design: two-column layout on desktop, collapsible drawer + floating chat on mobile.
 
@@ -56,7 +56,6 @@
 ### 7.4 Portfolio Highlights
 - Featured project grid under chat with thumbnail, title, tags; clicking opens modal or dedicated page with narrative and call-to-action.
 - Support embedding media (images, video links) and application links.
-- Provide timeline view for Past UX Life items.
 
 ### 7.5 Knowledge & Tone Engine
 - Local store containing curated snippets + tone metadata, chunked to 400-600 tokens with 80-120 overlap (tunable).
@@ -101,4 +100,3 @@
 - How frequently will content/tone uploads happen and who owns that process?
 - Requirements for gating or password-protecting sensitive materials?
 - Need for downloadable PDF resume vs. interactive view only?
-

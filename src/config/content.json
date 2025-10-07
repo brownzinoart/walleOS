@@ -6,9 +6,8 @@
   },
   "navigation": [
     { "id": "home", "label": "Home", "icon": "🏠" },
-    { "id": "projects", "label": "Projects", "icon": "🚀" },
     { "id": "resume", "label": "Resume", "icon": "📄" },
-    { "id": "past-ux-life", "label": "Past UX Life", "icon": "🎨" },
+    { "id": "projects", "label": "Projects", "icon": "🚀" },
     { "id": "for-fun", "label": "For Fun", "icon": "🎮" }
   ],
   "contact": {
@@ -25,11 +24,53 @@
     { "id": "design-process", "text": "Tell me about your design process", "category": "process" },
     { "id": "current-work", "text": "What are you working on now?", "category": "current" }
   ],
+  "experienceSuggestionChips": [
+    {
+      "id": "experience-achievements",
+      "text": "What were your key achievements in this role?",
+      "category": "experience",
+      "hasAchievements": true
+    },
+    {
+      "id": "experience-technologies",
+      "text": "What technologies did you work with?",
+      "category": "experience",
+      "hasTechnologies": true
+    },
+    {
+      "id": "experience-skills",
+      "text": "What skills did you develop here?",
+      "category": "experience"
+    },
+    {
+      "id": "experience-challenges",
+      "text": "What was the biggest challenge?",
+      "category": "experience",
+      "experienceLevel": ["Senior", "Lead", "Principal"]
+    },
+    {
+      "id": "experience-impact",
+      "text": "What impact did you have on the company?",
+      "category": "experience"
+    },
+    {
+      "id": "experience-transition",
+      "text": "Why did you move on from this role?",
+      "category": "experience"
+    }
+  ],
   "mockResponses": {
     "latest-project": "My latest build is Neon Atlas, a collaborative AI storyboard tool for boutique studios. I led the product vision, shaped the sonic brand, and prototyped a gesture-heavy interface that keeps teams in flow. The best part is watching clients remix prompts live and still stay aligned.",
     "career-shift": "I moved from UX into hybrid design-engineering because shipping ideas is the fastest way to learn. Trading static decks for living prototypes let me blend research instincts with a love for expressive interfaces. Now I still obsess over human moments, but I ship them with code.",
     "design-process": "Every project starts with listening tours and scrapbooks of inspiration from outside the obvious category. I prototype embarrassingly early, then invite stakeholders into weekly remix sessions so we co-own the risks. The loop ends with motion studies and a narrative that explains not just what we built, but how it feels.",
     "current-work": "Right now I'm exploring adaptive onboarding flows for a privacy-first fintech startup. I'm threading Gen Z pop energy into a serious product without losing trust signals. It means lots of accessibility testing, microcopy jams, and wild gradients restrained just enough.",
+    "experience-achievements": "During my time as {title} at {company}, I chased outcomes that mattered. One highlight was {achievement}. It reinforced how {skill} and {technologies} came together to drive results across the team.",
+    "experience-technologies": "In that role I lived inside a toolkit that spanned {technologies}. Those choices let us move fast while staying reliable, and I experimented with pairing them alongside {skill} workflows to keep the team future-ready.",
+    "experience-skills": "That chapter sharpened my {skills}, especially while leading initiatives like {achievement}. It was a playground for blending craft with leadership and learning where to stretch next.",
+    "experience-challenges": "The biggest challenge at {company} was {challenge}. I navigated it by leaning on {skills} and close collaboration with stakeholders, which turned the obstacle into a launchpad for a stronger roadmap.",
+    "experience-impact": "Impact looked like measurable shifts—during that period we {impact}. It was the result of pairing {skills} with deliberate experimentation across the team.",
+    "experience-transition": "Leaving {company} was about following the thread of growth. After building {achievement} and scaling {skills}, I was ready to tackle problems where I could apply that momentum in new domains.",
+    "experience-default": "That role at {company} as {title} ran from {period}. It was a pivotal season where I balanced {skills} with hands-on experimentation to keep the team shipping meaningful work.",
     "default": "That's a fun angle. Let me riff for a moment and share how I'm approaching that in my current experiments—feel free to push back or steer me elsewhere."
   },
   "featuredProjects": [
@@ -83,82 +124,147 @@
     }
   ],
   "resume": {
-    "summary": "Creative technologist with 8+ years of experience bridging design and development. Passionate about crafting intuitive user experiences through code, with expertise in modern web technologies and user-centered design principles.",
+    "summary": "AI implementation lead and UX-builder with 10+ years in account management, delivering multimillion-dollar programs. I wire LLMs into real workflows, run CLI toolchains, and ship usable prototypes fast. I combine client-facing experience with UX systems and multi-model orchestration to move projects from brief to launch.",
     "resumeFileUrl": "/resume.pdf",
     "experiences": [
       {
-        "id": "senior-frontend-engineer",
-        "title": "Senior Frontend Engineer",
-        "company": "TechFlow Solutions",
-        "period": "2022 - Present",
-        "description": "Leading frontend development for enterprise-scale applications, focusing on performance optimization and accessibility.",
+        "id": "founder-one-block-away",
+        "title": "Founder",
+        "company": "One Block Away LLC",
+        "period": "Jul 2023 - Present",
+        "description": "Leading AI and LLM implementation strategies to deliver MVP-ready products with practical orchestration methods. Building portfolio of AI-powered prototypes including WeReady, ListingPal, and Sagedvice.",
         "achievements": [
-          "Improved application performance by 40% through code splitting and lazy loading",
-          "Established design system used across 5+ product teams",
-          "Mentored 3 junior developers and conducted technical interviews"
+          "Drive innovation in AI and LLM implementation strategies to deliver MVP-ready products",
+          "Consult with organizations on selecting and applying optimal LLMs to existing workflows, increasing efficiency and employee output",
+          "Built and maintain portfolio of prototypes (WeReady, ListingPal, Sagedvice); currently seeking grants to scale WeReady"
         ],
-        "skills": ["React", "TypeScript", "Next.js", "Performance Optimization", "Team Leadership"],
+        "skills": ["AI Strategy", "LLM Implementation", "Product Development", "Consulting", "MVP Development"],
+        "experienceLevel": "Principal",
+        "technologies": ["LLMs", "CLI Tools", "AI Orchestration", "Multi-model Systems", "Prototyping Tools"]
+      },
+      {
+        "id": "director-kinesso",
+        "title": "Director, Experience & Innovation",
+        "company": "Kinesso, Part of IPG",
+        "period": "Feb 2020 - Jun 2023",
+        "description": "Led design organization growth and established enterprise-wide design systems. Promoted design thinking across teams while managing comprehensive UX initiatives for SaaS products.",
+        "achievements": [
+          "Co-built Kinesso's design org from 2 to 30 in under 3 years by standardizing research and design frameworks",
+          "Launched enterprise-wide design system that unified SaaS products and accelerated go-to-market",
+          "Promoted design thinking across teams, cutting design debt with reusable components",
+          "Improved dev efficiency and boosted client satisfaction and renewals"
+        ],
+        "skills": ["Design Leadership", "Design Systems", "UX Strategy", "Team Building", "Stakeholder Management"],
+        "experienceLevel": "Lead",
+        "technologies": ["Figma", "Design Systems", "SaaS Platforms", "UX Research Tools", "Prototyping Tools"]
+      },
+      {
+        "id": "sr-ux-designer-heartbeat",
+        "title": "Sr. UX Designer",
+        "company": "Heartbeat Ideas",
+        "period": "Aug 2018 - Nov 2019",
+        "description": "Managed comprehensive UX initiatives from research and wireframing to design systems, improving client satisfaction and project ROI across multiple agency clients.",
+        "achievements": [
+          "Managed comprehensive UX initiatives from research to design systems",
+          "Improved client satisfaction and project ROI across agency clients",
+          "Led wireframing and prototyping for multiple concurrent projects"
+        ],
+        "skills": ["UX Research", "Wireframing", "Design Systems", "Client Management", "Project Management"],
         "experienceLevel": "Senior",
-        "technologies": ["React", "TypeScript", "Next.js", "Webpack", "Jest", "Cypress"]
+        "technologies": ["Sketch", "Figma", "InVision", "Adobe Creative Suite", "User Testing Tools"]
       },
       {
-        "id": "fullstack-developer",
-        "title": "Full Stack Developer",
-        "company": "Digital Innovations Inc",
-        "period": "2020 - 2022",
-        "description": "Developed and maintained multiple client-facing applications using modern web technologies and agile methodologies.",
+        "id": "sr-freelance-ux-pharma",
+        "title": "Sr. Freelance UX Designer",
+        "company": "Pharma Ad Agencies",
+        "period": "Dec 2019 - Jan 2020",
+        "description": "Delivered UX design services for pharmaceutical advertising agencies, focusing on compliant digital experiences and user-centered design for healthcare brands.",
         "achievements": [
-          "Built responsive web applications serving 100K+ monthly active users",
-          "Integrated third-party APIs and payment systems",
-          "Collaborated with UX designers to implement pixel-perfect designs"
+          "Delivered UX design for pharmaceutical advertising campaigns",
+          "Ensured FDA compliance in digital healthcare experiences",
+          "Collaborated with medical and regulatory teams"
         ],
-        "skills": ["React", "Node.js", "PostgreSQL", "AWS", "Docker"],
+        "skills": ["UX Design", "Healthcare UX", "Regulatory Compliance", "Freelance Management"],
+        "experienceLevel": "Senior",
+        "technologies": ["Figma", "Adobe XD", "Sketch", "Compliance Tools"]
+      },
+      {
+        "id": "account-supervisor-scout",
+        "title": "Account Supervisor",
+        "company": "Scout Marketing",
+        "period": "Jun 2015 - Nov 2017",
+        "description": "Optimized key account campaigns for Jazz Pharmaceuticals' Xyrem, leveraging digital insights and leading unbranded disease awareness initiatives that boosted consumer engagement.",
+        "achievements": [
+          "Optimized key account campaigns for Jazz Pharmaceuticals' Xyrem",
+          "Led unbranded disease awareness initiative that boosted consumer engagement",
+          "Leveraged digital insights to improve campaign performance"
+        ],
+        "skills": ["Account Management", "Campaign Strategy", "Digital Marketing", "Client Relations", "Healthcare Marketing"],
+        "experienceLevel": "Senior",
+        "technologies": ["Marketing Analytics", "CRM Systems", "Digital Platforms", "Campaign Management Tools"]
+      },
+      {
+        "id": "sr-account-exec-fcb",
+        "title": "Sr. Account Executive",
+        "company": "FCB Health",
+        "period": "Jun 2014 - May 2015",
+        "description": "Supervised end-to-end production of brand commercials, coordinating FDA preclearance, network approvals, and talent management for pharmaceutical brands.",
+        "achievements": [
+          "Supervised end-to-end production of three brand commercials for Linzess",
+          "Coordinated FDA preclearance and network approvals",
+          "Managed talent and production logistics"
+        ],
+        "skills": ["Production Management", "FDA Compliance", "Vendor Management", "Budget Management"],
         "experienceLevel": "Mid",
-        "technologies": ["React", "Node.js", "Express", "PostgreSQL", "AWS", "Docker", "MongoDB"]
+        "technologies": ["Project Management Software", "Production Tools", "Compliance Systems"]
       },
       {
-        "id": "frontend-developer",
-        "title": "Frontend Developer",
-        "company": "StartupXYZ",
-        "period": "2018 - 2020",
-        "description": "Developed user interfaces for early-stage startup products, focusing on rapid prototyping and user feedback integration.",
+        "id": "account-exec-fcb",
+        "title": "Account Executive",
+        "company": "FCB Health",
+        "period": "Apr 2011 - Jul 2013",
+        "description": "Led unbranded campaigns and oversaw digital platform rebranding efforts, improving brand visibility and engagement for Teva Pharmaceuticals' NUVIGIL.",
         "achievements": [
-          "Prototyped and launched 3 major product features",
-          "Implemented A/B testing framework increasing conversion by 25%",
-          "Worked directly with founders to translate business requirements into technical solutions"
+          "Led unbranded campaigns for Teva Pharmaceuticals' NUVIGIL",
+          "Oversaw digital platform rebranding efforts",
+          "Improved brand visibility and engagement"
         ],
-        "skills": ["JavaScript", "Vue.js", "CSS", "User Experience", "Rapid Prototyping"],
+        "skills": ["Campaign Management", "Digital Strategy", "Brand Management", "Stakeholder Communication"],
         "experienceLevel": "Mid",
-        "technologies": ["Vue.js", "JavaScript", "SCSS", "Firebase", "Figma"]
+        "technologies": ["Digital Marketing Platforms", "Analytics Tools", "CMS Systems"]
       },
       {
-        "id": "junior-developer",
-        "title": "Junior Web Developer",
-        "company": "Creative Agency Co",
-        "period": "2016 - 2018",
-        "description": "Started my journey in web development, learning fundamentals while contributing to client projects and internal tools.",
+        "id": "account-coordinator-rosetta",
+        "title": "Account Coordinator",
+        "company": "RosettaWishbone - Pfizer Prevnar 13",
+        "period": "Sep 2010 - Apr 2011",
+        "description": "Coordinated international KOL workshop in Dubai with Pfizer stakeholders for Prevnar 13, managing logistics and stakeholder communications.",
         "achievements": [
-          "Completed intensive JavaScript training program",
-          "Built first production website for local business client",
-          "Participated in daily standups and code reviews"
+          "Coordinated KOL workshop in Dubai with Pfizer stakeholders for Prevnar 13",
+          "Managed international logistics and stakeholder communications",
+          "Supported account team in client deliverables"
         ],
-        "skills": ["HTML", "CSS", "JavaScript", "WordPress", "Basic SEO"],
+        "skills": ["Event Coordination", "Stakeholder Management", "International Logistics", "Client Support"],
         "experienceLevel": "Junior",
-        "technologies": ["HTML5", "CSS3", "JavaScript", "jQuery", "WordPress", "PHP"]
+        "technologies": ["Project Management Tools", "Communication Platforms"]
       }
     ],
     "skills": [
-      "JavaScript", "TypeScript", "React", "Vue.js", "Node.js", "Next.js",
-      "HTML5", "CSS3", "SCSS", "Tailwind CSS", "Responsive Design",
-      "REST APIs", "GraphQL", "PostgreSQL", "MongoDB", "AWS",
-      "Docker", "Git", "Webpack", "Vite", "Jest", "Cypress",
-      "Figma", "Adobe Creative Suite", "Agile/Scrum", "Team Leadership"
+      "AI Strategy", "LLM Implementation", "AI Orchestration", "Multi-model Systems",
+      "UX Research", "UX Design", "Design Systems", "Wireframing", "Prototyping",
+      "User Testing", "Information Architecture", "Interaction Design",
+      "Figma", "Sketch", "Adobe Creative Suite", "InVision", "Adobe XD",
+      "Account Management", "Client Relations", "Stakeholder Management",
+      "Campaign Strategy", "Digital Marketing", "Healthcare Marketing",
+      "Team Leadership", "Design Leadership", "Project Management",
+      "FDA Compliance", "Regulatory Compliance", "Production Management",
+      "CLI Tools", "Prototyping Tools", "Analytics Tools"
     ],
     "education": [
       {
-        "degree": "Bachelor of Science in Computer Science",
-        "school": "State University",
-        "year": "2016"
+        "degree": "BA Labor Studies and Employee Relations",
+        "school": "Rutgers University",
+        "year": "2010"
       }
     ]
   },

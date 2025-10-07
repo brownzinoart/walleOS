@@ -52,7 +52,9 @@ const getSuggestionChipElement = (chipId: string): HTMLButtonElement | null => {
 };
 
 const SUGGESTION_CHIP_BASE_CLASSES =
-  'suggestion-chip px-4 py-2 border-2 border-gray-700 bg-gray-900 text-white rounded-full text-sm md:text-base font-semibold transition-all duration-200 cursor-pointer';
+  'suggestion-chip px-3 py-2 md:px-4 border-2 border-gray-700 bg-gray-900 text-white rounded-full text-sm md:text-base font-semibold transition-all duration-200 cursor-pointer';
+
+type SuggestionChipScope = Document | DocumentFragment | Element;
 
 export const renderSuggestionChips = (chips: SuggestionChip[]): string => {
   if (!chips.length) {
@@ -235,8 +237,12 @@ const setupInteractionEffects = (
   });
 };
 
-export const attachSuggestionChipListeners = (onClick: (chipText: string) => void): void => {
-  const container = document.querySelector<HTMLDivElement>(SUGGESTION_CHIPS_CONTAINER_SELECTOR);
+export const attachSuggestionChipListeners = (
+  onClick: (chipText: string) => void,
+  root?: SuggestionChipScope
+): void => {
+  const scope = root ?? document;
+  const container = scope.querySelector<HTMLDivElement>(SUGGESTION_CHIPS_CONTAINER_SELECTOR);
 
   if (!container) {
     return;

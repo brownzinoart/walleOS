@@ -23,6 +23,12 @@ export interface SuggestionChip {
   category: string;
 }
 
+export interface ExperienceSuggestionChip extends SuggestionChip {
+  experienceLevel?: string[];
+  hasAchievements?: boolean;
+  hasTechnologies?: boolean;
+}
+
 export interface FeaturedProject {
   id: string;
   title: string;
@@ -53,6 +59,7 @@ export interface ContentConfig {
   navigation: NavigationItem[];
   contact: Contact;
   suggestionChips: SuggestionChip[];
+  experienceSuggestionChips: ExperienceSuggestionChip[];
   mockResponses: MockResponses;
   featuredProjects: FeaturedProject[];
   resume: import('@/types').ResumeData;
@@ -66,11 +73,37 @@ export const {
   navigation,
   contact,
   suggestionChips,
+  experienceSuggestionChips,
   mockResponses,
   featuredProjects,
   resume,
   metadata
 } = content;
+
+export const getExperienceSuggestionChips = (
+  experience: import('@/types').Experience,
+): ExperienceSuggestionChip[] => {
+  const filtered = experienceSuggestionChips.filter((chip) => {
+    if (
+      chip.experienceLevel &&
+      !chip.experienceLevel.includes(experience.experienceLevel)
+    ) {
+      return false;
+    }
+
+    if (chip.hasAchievements && experience.achievements.length === 0) {
+      return false;
+    }
+
+    if (chip.hasTechnologies && (!experience.technologies || experience.technologies.length === 0)) {
+      return false;
+    }
+
+    return true;
+  });
+
+  return filtered.slice(0, 4);
+};
 
 export const validateContent = (): void => {
   const warnings: string[] = [];

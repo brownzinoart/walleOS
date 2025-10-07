@@ -5,6 +5,7 @@ WalleGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neo
 ## Project Overview
 - Product requirements: [`docs/PRD.md`](docs/PRD.md)
 - Conversational agent architecture: [`docs/agents.md`](docs/agents.md)
+- Resume content populated from Wally's professional background, showcasing 10+ years across AI implementation, UX design leadership, and account management with highlights in AI/LLM strategy, design systems, enterprise UX, and pharmaceutical marketing
 
 ## Tech Stack
 - Vite for rapid development and optimized builds
@@ -45,9 +46,10 @@ WalleGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neo
 
 ## Content Management
 - Update structured content in `src/config/content.json`
-- Placeholder fields are wrapped in brackets (e.g., `[Your tagline here]`); replace them with real data
+- Non-resume placeholder fields are wrapped in brackets (e.g., `[Your tagline here]`); replace them with real data
 - Type definitions live in `src/config/content.ts` for editor autocomplete
 - Run `npm run dev` and watch the console for `[content-warning]` messages indicating remaining placeholders
+- Resume PDF is available at `/public/resume.pdf`; keep it in sync with `src/config/content.json`
 
 ## Development Roadmap
 1. Foundation (current): tooling, tokens, and content schema

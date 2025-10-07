@@ -64,7 +64,7 @@ const closeSidebar = (
 };
 
 export const renderLayout = (mainContent: string): string => `
-  <div class="layout-root relative min-h-screen bg-gray-950 text-white">
+  <div class="layout-root relative min-h-screen text-white">
     ${renderMobileNav()}
     <div class="layout-container grid grid-cols-1 md:grid-cols-[280px_1fr]">
       <div
@@ -76,7 +76,7 @@ export const renderLayout = (mainContent: string): string => `
         ${renderSidebar()}
       </div>
       <main
-        class="main-content-area w-full min-h-screen bg-gray-950 p-6 pt-20 md:p-12"
+        class="main-content-area w-full min-h-screen p-6 pt-20 md:p-12"
         data-main-content
         role="main"
         aria-label="Main content"

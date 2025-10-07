@@ -1,67 +1,217 @@
+import {
+  attachExperienceChatListeners,
+  cleanupExperienceChat,
+  renderExperienceChat,
+} from '@/components/ExperienceChat';
 import { resume } from '@/config/content';
 import type { Experience } from '@/types';
+import { escapeHtml } from '@/utils/dom';
+import { addWillChange, removeWillChange, prefersReducedMotion, observeIntersection } from '@/utils/performance';
 
-let selectedExperienceId: string | null = null;
+const RESUME_SECTION_SELECTOR = '.resume-section';
+const RESUME_HEADER_SELECTOR = '.resume-header';
+const RESUME_CONTEXT_INDICATOR_SELECTOR = '[data-resume-context-indicator]';
+const RESUME_CONTEXT_SUGGESTIONS_SELECTOR = '[data-resume-context-suggestions]';
+const RESUME_INTRO_DELAY_VAR = '--resume-intro-delay';
+const RESUME_CARD_DELAY_VAR = '--resume-card-delay';
+const EXPERIENCE_CARD_SELECTOR = '[data-experience-card]';
+const EXPERIENCE_ROW_SELECTOR = '[data-experience-row]';
+const EXPERIENCE_CHAT_TOGGLE_SELECTOR = '[data-experience-chat-toggle]';
+const EXPERIENCE_CHAT_CONTAINER_SELECTOR = '[data-chat-container]';
+const EXPERIENCE_CARD_CONTAINER_SELECTOR = '[data-card-container]';
 
-const EXPERIENCE_LEVEL_COLORS = {
-  'Junior': 'var(--color-neon-cyan)',
-  'Mid': 'var(--color-neon-lime)',
-  'Senior': 'var(--color-neon-orange)',
-  'Lead': 'var(--color-neon-magenta)',
-  'Principal': 'var(--color-neon-yellow)',
-} as const;
+const CHAT_TOGGLE_TEXT_OPEN = 'Close Chat';
+const CHAT_TOGGLE_TEXT_CLOSED = 'Chat About This Role';
 
-const renderMediumExperienceCard = (experience: Experience): string => {
-  const levelColor = EXPERIENCE_LEVEL_COLORS[experience.experienceLevel];
-  const isSelected = selectedExperienceId === experience.id;
-  const briefDescription = experience.description.substring(0, 120) + '...';
+const RESUME_CARD_PENDING_CLASS = 'resume-card-pending';
+const RESUME_CARD_DELAY_STEP = 70;
+const RESUME_CARD_DELAY_MAX = 280;
+const RESUME_CARD_ANIMATED_KEY = 'resumeAnimated';
+const RESUME_CARD_DELAY_KEY = 'resumeCardDelay';
 
-  return `
-    <article 
-      class="resume-medium-card ${isSelected ? 'resume-medium-card--selected' : ''}" 
-      data-experience-id="${experience.id}"
-      role="button"
-      tabindex="0"
-      aria-pressed="${isSelected}"
-    >
-      <div class="resume-medium-card-header">
-        <div class="resume-medium-card-level" style="background-color: ${levelColor}">
-          <span class="text-xs font-bold uppercase tracking-wider">${experience.experienceLevel}</span>
-        </div>
-        <div class="resume-medium-card-period text-sm text-gray-400 font-medium">
-          ${experience.period}
-        </div>
-      </div>
-      
-      <div class="resume-medium-card-content">
-        <h3 class="resume-medium-card-title text-lg font-bold text-white mb-1">
-          ${experience.title}
-        </h3>
-        <h4 class="resume-medium-card-company text-base text-gray-300 mb-3">
-          ${experience.company}
-        </h4>
-        <p class="resume-medium-card-brief text-sm text-gray-400 leading-relaxed">
-          ${briefDescription}
-        </p>
-      </div>
-    </article>
-  `;
+type ResumeAnimationOptions = {
+  className: string;
+  delayVar?: string;
+  delayMs?: number;
+  onComplete?: () => void;
 };
 
-const renderDetailPlaceholder = (): string => `
-  <div class="resume-detail-content resume-detail-empty">
-    <p class="resume-detail-placeholder text-sm text-gray-400 text-center leading-relaxed max-w-xs">
-      Click on a card for more info
-    </p>
-  </div>
-`;
+type ExperienceRowEntry = {
+  experience: Experience;
+  row: HTMLElement;
+  cardContainer: HTMLElement;
+  chatContainer: HTMLElement;
+  toggleButton: HTMLButtonElement;
+};
 
-const renderDetailContent = (experience: Experience): string => {
+const experienceLookup = new Map<string, Experience>();
+resume.experiences.forEach((experience) => {
+  experienceLookup.set(experience.id, experience);
+});
+
+const experienceRowRegistry = new Map<string, ExperienceRowEntry>();
+const experienceToggleHandlers = new Map<string, (event: Event) => void>();
+const experienceCloseHandlers = new Map<string, (event: Event) => void>();
+
+const getExperienceById = (experienceId: string): Experience | undefined =>
+  experienceLookup.get(experienceId);
+
+const animateElement = (element: HTMLElement | null, options: ResumeAnimationOptions): void => {
+  if (!element) {
+    return;
+  }
+
+  if (element.dataset['resumeAnimating'] === 'true') {
+    return;
+  }
+
+  const { className, delayVar, delayMs, onComplete } = options;
+
+  element.dataset['resumeAnimating'] = 'true';
+
+  if (delayVar && typeof delayMs === 'number') {
+    element.style.setProperty(delayVar, `${delayMs}ms`);
+  }
+
+  element.classList.remove(className);
+  void element.offsetWidth;
+  element.classList.add(className);
+
+  element.addEventListener(
+    'animationend',
+    () => {
+      if (delayVar) {
+        element.style.removeProperty(delayVar);
+      }
+
+      element.classList.remove(className);
+      delete element.dataset['resumeAnimating'];
+      onComplete?.();
+    },
+    { once: true },
+  );
+};
+
+const prepareResumeCards = (cards: HTMLElement[]): void => {
+  cards.forEach((card, index) => {
+    const delay = Math.min(index * RESUME_CARD_DELAY_STEP, RESUME_CARD_DELAY_MAX);
+    card.dataset[RESUME_CARD_ANIMATED_KEY] = 'false';
+    card.dataset[RESUME_CARD_DELAY_KEY] = String(delay);
+    card.classList.add(RESUME_CARD_PENDING_CLASS);
+    card.style.setProperty(RESUME_CARD_DELAY_VAR, `${delay}ms`);
+  });
+};
+
+const animateResumeCard = (card: HTMLElement): void => {
+  const delay = Number(card.dataset[RESUME_CARD_DELAY_KEY] ?? '0');
+  card.classList.remove(RESUME_CARD_PENDING_CLASS);
+  addWillChange(card, ['transform', 'opacity']);
+  animateElement(card, {
+    className: 'resume-card-enter',
+    delayVar: RESUME_CARD_DELAY_VAR,
+    delayMs: delay,
+    onComplete: () => {
+      removeWillChange(card);
+      card.style.removeProperty(RESUME_CARD_DELAY_VAR);
+      delete card.dataset[RESUME_CARD_DELAY_KEY];
+    },
+  });
+};
+
+const initResumeCardScrollAnimations = (cards: HTMLElement[]): void => {
+  if (!cards.length) {
+    return;
+  }
+
+  const triggerAnimation = (card: HTMLElement) => {
+    if (card.dataset[RESUME_CARD_ANIMATED_KEY] === 'true') {
+      return;
+    }
+
+    card.dataset[RESUME_CARD_ANIMATED_KEY] = 'true';
+    animateResumeCard(card);
+  };
+
+  observeIntersection(
+    cards,
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          return;
+        }
+
+        const target = entry.target as HTMLElement;
+        triggerAnimation(target);
+        observer.unobserve(target);
+      });
+    },
+    {
+      rootMargin: '0px 0px -15% 0px',
+      threshold: 0.2,
+    },
+  );
+
+  cards.forEach((card) => {
+    const rect = card.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      triggerAnimation(card);
+    }
+  });
+};
+
+export const applyResumeEntryAnimations = (): void => {
+  const resumeSection = document.querySelector<HTMLElement>(RESUME_SECTION_SELECTOR);
+
+  if (!resumeSection) {
+    return;
+  }
+
+  if (prefersReducedMotion()) {
+    return;
+  }
+
+  const contextIndicator = document.querySelector<HTMLElement>(RESUME_CONTEXT_INDICATOR_SELECTOR);
+  const suggestions = document.querySelector<HTMLElement>(RESUME_CONTEXT_SUGGESTIONS_SELECTOR);
+  const header = resumeSection.querySelector<HTMLElement>(RESUME_HEADER_SELECTOR);
+  const experienceCards = Array.from(
+    resumeSection.querySelectorAll<HTMLElement>(EXPERIENCE_CARD_SELECTOR),
+  );
+
+  requestAnimationFrame(() => {
+    prepareResumeCards(experienceCards);
+
+    animateElement(contextIndicator, {
+      className: 'resume-intro-enter',
+      delayVar: RESUME_INTRO_DELAY_VAR,
+      delayMs: 0,
+    });
+
+    animateElement(suggestions, {
+      className: 'resume-intro-enter',
+      delayVar: RESUME_INTRO_DELAY_VAR,
+      delayMs: 40,
+    });
+
+    animateElement(header, {
+      className: 'resume-intro-enter',
+      delayVar: RESUME_INTRO_DELAY_VAR,
+      delayMs: 80,
+    });
+
+    initResumeCardScrollAnimations(experienceCards);
+  });
+};
+
+
+const renderExperienceContent = (experience: Experience): string => {
   const titleId = `resume-detail-title-${experience.id}`;
   const descriptionId = `resume-detail-description-${experience.id}`;
   const achievementsHeadingId = `${titleId}-achievements`;
   const skillsHeadingId = `${titleId}-skills`;
   const techHeadingId = `${titleId}-technologies`;
+  const safeTitle = escapeHtml(experience.title);
+  const safeCompany = escapeHtml(experience.company);
+  const safeDescription = escapeHtml(experience.description);
 
   const achievementsSection = experience.achievements?.length
     ? `
@@ -71,7 +221,7 @@ const renderDetailContent = (experience: Experience): string => {
           ${experience.achievements.map((achievement) => `
             <li class="resume-detail-achievement-item">
               <span class="resume-detail-achievement-icon" aria-hidden="true">&#10003;</span>
-              <span class="resume-detail-achievement-text">${achievement}</span>
+              <span class="resume-detail-achievement-text">${escapeHtml(achievement)}</span>
             </li>
           `).join('')}
         </ul>
@@ -85,7 +235,7 @@ const renderDetailContent = (experience: Experience): string => {
         <h3 class="resume-detail-section-title" id="${skillsHeadingId}">Core Skills</h3>
         <div class="resume-detail-skills" role="list">
           ${experience.skills.map((skill) => `
-            <span class="resume-detail-skill-tag" role="listitem">${skill}</span>
+            <span class="resume-detail-skill-tag" role="listitem">${escapeHtml(skill)}</span>
           `).join('')}
         </div>
       </section>
@@ -98,7 +248,7 @@ const renderDetailContent = (experience: Experience): string => {
         <h3 class="resume-detail-section-title" id="${techHeadingId}">Technologies</h3>
         <div class="resume-detail-technologies" role="list">
           ${experience.technologies.map((tech) => `
-            <span class="resume-detail-tech-badge" role="listitem">${tech}</span>
+            <span class="resume-detail-tech-badge" role="listitem">${escapeHtml(tech)}</span>
           `).join('')}
         </div>
       </section>
@@ -106,19 +256,59 @@ const renderDetailContent = (experience: Experience): string => {
     : '';
 
   return `
-    <article class="resume-detail-content" aria-labelledby="${titleId}" aria-describedby="${descriptionId}" tabindex="0">
-      <header class="resume-detail-header">
-        <h2 class="resume-detail-title" id="${titleId}">${experience.title}</h2>
-        <p class="resume-detail-company">${experience.company}</p>
-        <p class="resume-detail-period">${experience.period}</p>
-      </header>
-      <p class="resume-detail-description" id="${descriptionId}">
-        ${experience.description}
-      </p>
-      ${achievementsSection}
-      ${skillsSection}
-      ${technologiesSection}
-    </article>
+    <div
+      class="experience-row"
+      data-experience-row
+      data-experience-id="${experience.id}"
+      data-chat-open="false"
+    >
+      <div class="experience-card-container" data-card-container>
+        <article
+          class="resume-detail-content transition-all duration-200 ease-brutal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan hover:border-neon-cyan"
+          data-experience-card
+          data-experience-id="${experience.id}"
+          aria-labelledby="${titleId}"
+          aria-describedby="${descriptionId}"
+          aria-label="Details about ${safeTitle} at ${safeCompany}"
+          tabindex="0"
+        >
+          <header class="resume-detail-header">
+            <div class="resume-detail-heading-row">
+              <div class="resume-medium-card-level" data-experience-level="${experience.experienceLevel}">
+                <span class="text-xs font-bold uppercase tracking-wider">${experience.experienceLevel}</span>
+              </div>
+              <span class="resume-detail-period">${experience.period}</span>
+              <button
+                type="button"
+                class="resume-detail-chat-button ml-auto"
+                data-experience-chat-toggle
+                data-experience-id="${experience.id}"
+                aria-label="Open chat to ask questions and learn more about this role"
+                aria-expanded="false"
+              >
+                <span class="resume-detail-chat-button-icon" aria-hidden="true">💬</span>
+                <span class="resume-detail-chat-button-text">${CHAT_TOGGLE_TEXT_CLOSED}</span>
+              </button>
+            </div>
+            <h2 class="resume-detail-title" id="${titleId}">${safeTitle}</h2>
+            <p class="resume-detail-company">${safeCompany}</p>
+          </header>
+          <p class="resume-detail-description" id="${descriptionId}">
+            ${safeDescription}
+          </p>
+          ${achievementsSection}
+          ${skillsSection}
+          ${technologiesSection}
+        </article>
+      </div>
+      <div
+        class="experience-chat-container"
+        data-chat-container
+        data-experience-id="${experience.id}"
+        hidden
+        aria-hidden="true"
+      ></div>
+    </div>
   `;
 };
 
@@ -145,135 +335,243 @@ export const renderResume = (): string => `
         </div>
       </div>
 
-      <div class="resume-grid-container">
-        <div class="resume-cards-column" data-resume-cards-scroll>
-          ${resume.experiences.map(renderMediumExperienceCard).join('')}
-        </div>
-        <div class="resume-detail-column">
-          <div
-            class="resume-detail-panel resume-detail-fade-in"
-            data-detail-content
-            role="region"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            ${renderDetailPlaceholder()}
-          </div>
-        </div>
-      </div>
-
-      <div class="resume-skills-section mt-16">
-        <h2 class="text-2xl font-bold text-white mb-6">Core Skills</h2>
-        <div class="flex flex-wrap gap-3">
-          ${resume.skills.map(skill => `
-            <span class="resume-core-skill text-sm px-4 py-2 rounded-full bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700 transition-colors cursor-default">
-              ${skill}
-            </span>
-          `).join('')}
-        </div>
-      </div>
-
-      <div class="resume-education-section mt-12">
-        <h2 class="text-2xl font-bold text-white mb-6">Education</h2>
-        <div class="resume-education-card bg-gray-800 rounded-lg p-6 border border-gray-700">
-          ${resume.education.map(edu => `
-            <div class="resume-education-item">
-              <h3 class="text-lg font-semibold text-white">${edu.degree}</h3>
-              <p class="text-gray-300">${edu.school}</p>
-              <p class="text-gray-400 text-sm">${edu.year}</p>
-            </div>
-          `).join('')}
-        </div>
+      <div class="resume-full-experience-list">
+        ${resume.experiences.map(renderExperienceContent).join('')}
       </div>
     </div>
   </section>
 `;
 
-export const initResumeInteractions = (): void => {
-  const cardsContainer = document.querySelector('[data-resume-cards-scroll]');
-  const detailPanel = document.querySelector<HTMLElement>('.resume-detail-panel[data-detail-content]');
-  let detailTransitionTimeout: number | null = null;
-  if (!cardsContainer) return;
+const ensureChatContainerHidden = (chatContainer: HTMLElement): void => {
+  chatContainer.setAttribute('aria-hidden', 'true');
+  if (!chatContainer.hasAttribute('hidden')) {
+    chatContainer.setAttribute('hidden', '');
+  }
+};
 
-  // Handle card clicks
-  const handleCardClick = (event: Event) => {
-    const card = (event.target as HTMLElement).closest('[data-experience-id]');
-    if (!card) return;
+const revealChatContainer = (chatContainer: HTMLElement): void => {
+  chatContainer.removeAttribute('hidden');
+  chatContainer.setAttribute('aria-hidden', 'false');
+};
 
-    const experienceId = card.getAttribute('data-experience-id');
-    if (!experienceId) return;
+const updateChatToggleButton = (entry: ExperienceRowEntry, isOpen: boolean): void => {
+  const { toggleButton } = entry;
+  const label = isOpen
+    ? 'Close chat panel'
+    : 'Open chat to ask questions and learn more about this role';
+  const text = toggleButton.querySelector<HTMLElement>('.resume-detail-chat-button-text');
 
-    if (selectedExperienceId === experienceId) {
+  if (text) {
+    text.textContent = isOpen ? CHAT_TOGGLE_TEXT_OPEN : CHAT_TOGGLE_TEXT_CLOSED;
+  }
+
+  toggleButton.setAttribute('aria-label', label);
+  toggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+};
+
+const openExperienceChatRow = (entry: ExperienceRowEntry): void => {
+  const { experience, row, chatContainer } = entry;
+
+  if (row.dataset['chatOpen'] === 'true') {
+    return;
+  }
+
+  row.dataset['chatOpen'] = 'true';
+  row.classList.add('is-chat-open');
+  revealChatContainer(chatContainer);
+  chatContainer.innerHTML = renderExperienceChat(experience.id, experience);
+  attachExperienceChatListeners(experience.id, experience);
+  updateChatToggleButton(entry, true);
+
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate?.(10);
+  }
+};
+
+const closeExperienceChatRow = (
+  entry: ExperienceRowEntry,
+  options?: { immediate?: boolean },
+): void => {
+  const { experience, row, chatContainer } = entry;
+  const wasOpen = row.dataset['chatOpen'] === 'true';
+
+  updateChatToggleButton(entry, false);
+
+  if (!wasOpen && !options?.immediate) {
+    ensureChatContainerHidden(chatContainer);
+    return;
+  }
+
+  const finalizeClose = () => {
+    cleanupExperienceChat(experience.id);
+    chatContainer.innerHTML = '';
+    ensureChatContainerHidden(chatContainer);
+    row.dataset['chatOpen'] = 'false';
+  };
+
+  row.classList.remove('is-chat-open');
+
+  if (options?.immediate || prefersReducedMotion()) {
+    finalizeClose();
+    return;
+  }
+
+  let fallbackTimeoutId: number | null = null;
+
+  const onTransitionEnd = (event: TransitionEvent) => {
+    if (event.target !== row) {
       return;
     }
 
-    // Update selected state
-    selectedExperienceId = experienceId;
+    row.removeEventListener('transitionend', onTransitionEnd);
 
-    // Update UI - remove selected class from all cards
-    cardsContainer.querySelectorAll('.resume-medium-card').forEach(c => {
-      c.classList.remove('resume-medium-card--selected');
-      c.setAttribute('aria-pressed', 'false');
-    });
+    if (fallbackTimeoutId !== null) {
+      window.clearTimeout(fallbackTimeoutId);
+    }
 
-    // Add selected class to clicked card
-    card.classList.add('resume-medium-card--selected');
-    card.setAttribute('aria-pressed', 'true');
-
-    // Dispatch custom event for detail panel to listen to (will be used in phase 3)
-    const selectionEvent = new CustomEvent('experience-selected', {
-      detail: { experienceId }
-    });
-    document.dispatchEvent(selectionEvent);
+    finalizeClose();
   };
 
-  // Attach event listeners using event delegation
-  cardsContainer.addEventListener('click', handleCardClick);
-  cardsContainer.addEventListener('keydown', (event) => {
-    if ((event as KeyboardEvent).key === 'Enter' || (event as KeyboardEvent).key === ' ') {
-      event.preventDefault();
-      handleCardClick(event);
+  row.addEventListener('transitionend', onTransitionEnd, { once: true });
+
+  fallbackTimeoutId = window.setTimeout(() => {
+    row.removeEventListener('transitionend', onTransitionEnd);
+    finalizeClose();
+  }, 450);
+};
+
+export const initResumeInteractions = (): void => {
+  applyResumeEntryAnimations();
+
+  const cardElements = Array.from(
+    document.querySelectorAll<HTMLElement>(EXPERIENCE_CARD_SELECTOR),
+  );
+
+  cardElements.forEach((card) => {
+    if (card.dataset['listenersAttached'] === 'true') {
+      return;
     }
+
+    card.dataset['listenersAttached'] = 'true';
+
+    card.addEventListener('mouseenter', () =>
+      addWillChange(card, ['transform', 'box-shadow', 'border-color']),
+    );
+    card.addEventListener('mouseleave', () => removeWillChange(card));
+    card.addEventListener('focus', () => addWillChange(card, ['transform', 'box-shadow', 'border-color']));
+    card.addEventListener('blur', () => removeWillChange(card));
   });
 
-  const updateDetailPanel = (content: string) => {
-    if (!detailPanel) return;
+  const experienceRows = Array.from(
+    document.querySelectorAll<HTMLElement>(EXPERIENCE_ROW_SELECTOR),
+  );
 
-    detailPanel.classList.remove('resume-detail-fade-in');
-    detailPanel.classList.add('resume-detail-fade-out');
-
-    if (detailTransitionTimeout !== null) {
-      window.clearTimeout(detailTransitionTimeout);
-    }
-
-    detailTransitionTimeout = window.setTimeout(() => {
-      detailPanel.innerHTML = content;
-      detailPanel.classList.remove('resume-detail-fade-out');
-      // Force reflow to restart the fade-in animation
-      void detailPanel.offsetWidth;
-      detailPanel.classList.add('resume-detail-fade-in');
-      detailTransitionTimeout = null;
-    }, 150);
-  };
-
-  document.addEventListener('experience-selected', (event: Event) => {
-    if (!detailPanel) return;
-
-    const customEvent = event as CustomEvent<{ experienceId?: string }>;
-    const experienceId = customEvent.detail?.experienceId;
+  experienceRows.forEach((row) => {
+    const experienceId = row.dataset['experienceId'];
 
     if (!experienceId) {
-      updateDetailPanel(renderDetailPlaceholder());
       return;
     }
 
-    const experience = resume.experiences.find((item) => item.id === experienceId);
+    const experience = getExperienceById(experienceId);
 
     if (!experience) {
-      updateDetailPanel(renderDetailPlaceholder());
       return;
     }
 
-    updateDetailPanel(renderDetailContent(experience));
+    const toggleButton = row.querySelector<HTMLButtonElement>(EXPERIENCE_CHAT_TOGGLE_SELECTOR);
+    const cardContainer = row.querySelector<HTMLElement>(EXPERIENCE_CARD_CONTAINER_SELECTOR);
+    const chatContainer = row.querySelector<HTMLElement>(EXPERIENCE_CHAT_CONTAINER_SELECTOR);
+
+    if (!toggleButton || !cardContainer || !chatContainer) {
+      return;
+    }
+
+    const existingHandler = experienceToggleHandlers.get(experienceId);
+
+    if (existingHandler) {
+      toggleButton.removeEventListener('click', existingHandler);
+      experienceToggleHandlers.delete(experienceId);
+    }
+
+    const existingCloseHandler = experienceCloseHandlers.get(experienceId);
+
+    if (existingCloseHandler) {
+      row.removeEventListener('experience-chat-close', existingCloseHandler);
+      experienceCloseHandlers.delete(experienceId);
+    }
+
+    const entry: ExperienceRowEntry = {
+      experience,
+      row,
+      cardContainer,
+      chatContainer,
+      toggleButton,
+    };
+
+    experienceRowRegistry.set(experienceId, entry);
+
+    const handleToggle = (event: Event) => {
+      event.preventDefault();
+
+      if (row.dataset['chatOpen'] === 'true') {
+        closeExperienceChatRow(entry);
+      } else {
+        openExperienceChatRow(entry);
+      }
+    };
+
+    toggleButton.addEventListener('click', handleToggle);
+    experienceToggleHandlers.set(experienceId, handleToggle);
+
+    const handleCloseEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<{ experienceId?: string }>;
+
+      if (customEvent.detail?.experienceId === experienceId) {
+        closeExperienceChatRow(entry);
+      }
+    };
+
+    row.addEventListener('experience-chat-close', handleCloseEvent);
+    experienceCloseHandlers.set(experienceId, handleCloseEvent);
   });
+};
+
+export const clearExperienceSelection = (): void => {
+  experienceRowRegistry.forEach((entry) => {
+    if (entry.row.dataset['chatOpen'] === 'true') {
+      closeExperienceChatRow(entry);
+    }
+  });
+};
+
+export const cleanupResumeInteractions = (): void => {
+  experienceToggleHandlers.forEach((handler, experienceId) => {
+    const entry = experienceRowRegistry.get(experienceId);
+
+    if (!entry) {
+      return;
+    }
+
+    entry.toggleButton.removeEventListener('click', handler);
+
+    const closeHandler = experienceCloseHandlers.get(experienceId);
+
+    if (closeHandler) {
+      entry.row.removeEventListener('experience-chat-close', closeHandler);
+      experienceCloseHandlers.delete(experienceId);
+    }
+
+    if (entry.row.dataset['chatOpen'] === 'true') {
+      closeExperienceChatRow(entry, { immediate: true });
+    } else {
+      cleanupExperienceChat(experienceId);
+      ensureChatContainerHidden(entry.chatContainer);
+      entry.chatContainer.innerHTML = '';
+    }
+  });
+
+  experienceToggleHandlers.clear();
+  experienceCloseHandlers.clear();
+  experienceRowRegistry.clear();
 };

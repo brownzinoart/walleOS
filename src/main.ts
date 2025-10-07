@@ -17,8 +17,15 @@ import {
   disableSuggestionChip,
 } from '@/components/SuggestionChips';
 import { renderProjectCards, attachProjectCardListeners } from '@/components/ProjectCard';
-import { renderResume, initResumeInteractions } from '@/components/Resume';
-import content, { featuredProjects, suggestionChips, validateContent } from '@/config/content';
+import { renderResume, initResumeInteractions, clearExperienceSelection, cleanupResumeInteractions } from '@/components/Resume';
+import content, {
+  experienceSuggestionChips,
+  featuredProjects,
+  getExperienceSuggestionChips,
+  suggestionChips,
+  validateContent,
+} from '@/config/content';
+import { getAppSettings } from '@/config/settings';
 import type { ChatState } from '@/types';
 import {
   debounce,
@@ -37,6 +44,16 @@ import {
   subscribeToChatState,
 } from '@/utils/chatState';
 import {
+  clearExperienceContext,
+  getExperienceContext,
+  hasActiveContext,
+  subscribeToExperienceContext,
+} from '@/utils/experienceContext';
+import {
+  attachExperienceContextIndicatorListeners,
+  renderExperienceContextIndicator,
+} from '@/components/ExperienceContextIndicator';
+import {
   initRouter,
   getCurrentRoute,
 } from '@/utils/router';
@@ -46,10 +63,83 @@ const CHAT_ROOT_SELECTOR = '[data-chat-root]';
 const WELCOME_SLOT_SELECTOR = '[data-chat-welcome]';
 const SUGGESTION_SLOT_SELECTOR = '[data-chat-suggestions]';
 const CHAT_INPUT_SELECTOR = '[data-chat-input]';
+const CHAT_CONTEXT_INDICATOR_SELECTOR = '[data-chat-context-indicator]';
+const RESUME_CONTEXT_INDICATOR_SELECTOR = '[data-resume-context-indicator]';
+const RESUME_CONTEXT_SUGGESTIONS_SELECTOR = '[data-resume-context-suggestions]';
 
 let pendingSuggestion: { id: string; text: string } | null = null;
 let currentActiveNavItem: string | null = 'home';
 const reducedMotion = prefersReducedMotion();
+const { clearExperienceContextOnRouteChange } = getAppSettings();
+
+const getActiveExperienceState = () => (hasActiveContext() ? getExperienceContext() : null);
+
+const resolveSuggestionChips = () => {
+  const experienceState = getActiveExperienceState();
+
+  if (experienceState?.experience) {
+    const contextualChips = getExperienceSuggestionChips(experienceState.experience);
+
+    if (contextualChips.length > 0) {
+      return contextualChips;
+    }
+
+    return experienceSuggestionChips;
+  }
+
+  return suggestionChips;
+};
+
+const updateExperienceContextIndicators = () => {
+  const contextState = getActiveExperienceState();
+  const indicatorMarkup = renderExperienceContextIndicator(contextState?.experience ?? null);
+
+  const chatIndicatorSlot = document.querySelector<HTMLElement>(CHAT_CONTEXT_INDICATOR_SELECTOR);
+  const resumeIndicatorSlot = document.querySelector<HTMLElement>(RESUME_CONTEXT_INDICATOR_SELECTOR);
+
+  if (chatIndicatorSlot) {
+    chatIndicatorSlot.innerHTML = indicatorMarkup;
+  }
+
+  if (resumeIndicatorSlot) {
+    resumeIndicatorSlot.innerHTML = indicatorMarkup;
+  }
+
+  if (indicatorMarkup) {
+    attachExperienceContextIndicatorListeners();
+  }
+};
+
+const updateContextualSuggestionChips = () => {
+  const experienceState = getActiveExperienceState();
+  const activeChips = resolveSuggestionChips();
+  const chatState = getChatState();
+
+  const chatSuggestionSlot = document.querySelector<HTMLElement>(SUGGESTION_SLOT_SELECTOR);
+
+  if (chatSuggestionSlot && chatState.messages.length === 0) {
+    chatSuggestionSlot.innerHTML = renderSuggestionChips(activeChips);
+    attachSuggestionChipListeners(handleSuggestionChipClick);
+  }
+
+  const resumeSuggestionSlot = document.querySelector<HTMLElement>(RESUME_CONTEXT_SUGGESTIONS_SELECTOR);
+
+  if (resumeSuggestionSlot) {
+    if (experienceState?.experience) {
+      resumeSuggestionSlot.innerHTML = renderSuggestionChips(
+        getExperienceSuggestionChips(experienceState.experience),
+      );
+      attachSuggestionChipListeners(handleSuggestionChipClick);
+    } else {
+      resumeSuggestionSlot.innerHTML = '';
+    }
+  }
+};
+
+const refreshExperienceContextUI = () => {
+  updateExperienceContextIndicators();
+  updateContextualSuggestionChips();
+};
 
 const showAppLoader = (): HTMLElement | null => {
   if (typeof document === 'undefined') {
@@ -127,8 +217,10 @@ const getMainContent = (): string => {
   // Default chat interface (home, projects, and all other nav items)
   const state = getChatState();
   const hasMessages = state.messages.length > 0;
+  const contextState = getActiveExperienceState();
+  const indicatorMarkup = renderExperienceContextIndicator(contextState?.experience ?? null);
   const welcomeMarkup = hasMessages ? '' : renderWelcomeCard();
-  const suggestionsMarkup = hasMessages ? '' : renderSuggestionChips(suggestionChips);
+  const suggestionsMarkup = hasMessages ? '' : renderSuggestionChips(resolveSuggestionChips());
   const typingMarkup = state.isTyping ? renderTypingIndicator() : '';
 
   return `
@@ -136,6 +228,9 @@ const getMainContent = (): string => {
       class="chat-root mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8"
       data-chat-root
     >
+      <div class="chat-context-indicator" data-chat-context-indicator>
+        ${indicatorMarkup}
+      </div>
       <header class="chat-intro flex flex-col gap-6" data-chat-welcome>
         ${welcomeMarkup}
       </header>
@@ -163,10 +258,27 @@ const handleUserMessage = (message: string) => {
   const matchedSuggestion =
     pendingSuggestion && pendingSuggestion.text === trimmed ? pendingSuggestion : null;
 
+  const activeExperience = getActiveExperienceState();
+  const selectedExperience = activeExperience?.experience ?? null;
+  const experienceContextPayload = selectedExperience
+    ? {
+        experienceId: selectedExperience.id,
+        experience: selectedExperience,
+      }
+    : null;
+  const experienceContextMeta = selectedExperience
+    ? {
+        experienceContext: {
+          experienceId: selectedExperience.id,
+          experienceTitle: `${selectedExperience.title} @ ${selectedExperience.company}`.trim(),
+        },
+      }
+    : undefined;
+
   pendingSuggestion = null;
   setChatInputValueState('');
 
-  const messageAdded = addChatMessage('user', trimmed);
+  const messageAdded = addChatMessage('user', trimmed, experienceContextMeta);
 
   if (!messageAdded) {
     return;
@@ -180,14 +292,14 @@ const handleUserMessage = (message: string) => {
 
   const responseDelay = 500 + Math.random() * 500;
   window.setTimeout(() => {
-    const response = generateMockResponse(trimmed, matchedSuggestion?.id);
+    const response = generateMockResponse(trimmed, matchedSuggestion?.id, experienceContextPayload);
     setChatTyping(false);
     addChatMessage('assistant', response);
   }, responseDelay);
 };
 
 const handleSuggestionChipClick = (chipText: string) => {
-  const chip = suggestionChips.find((item) => item.text === chipText) ?? null;
+  const chip = resolveSuggestionChips().find((item) => item.text === chipText) ?? null;
   pendingSuggestion = chip ? { id: chip.id, text: chip.text } : null;
 
   setChatInputValue(chipText);
@@ -220,13 +332,19 @@ const renderChatView = (state: ChatState) => {
   const hasMessages = state.messages.length > 0;
   const welcomeSlot = chatRoot.querySelector<HTMLElement>(WELCOME_SLOT_SELECTOR);
   const suggestionSlot = chatRoot.querySelector<HTMLElement>(SUGGESTION_SLOT_SELECTOR);
+  const contextIndicatorSlot = chatRoot.querySelector<HTMLElement>(CHAT_CONTEXT_INDICATOR_SELECTOR);
+
+  if (contextIndicatorSlot) {
+    contextIndicatorSlot.innerHTML = renderExperienceContextIndicator(getActiveExperienceState()?.experience ?? null);
+    attachExperienceContextIndicatorListeners();
+  }
 
   if (welcomeSlot) {
     welcomeSlot.innerHTML = hasMessages ? '' : renderWelcomeCard();
   }
 
   if (suggestionSlot) {
-    suggestionSlot.innerHTML = hasMessages ? '' : renderSuggestionChips(suggestionChips);
+    suggestionSlot.innerHTML = hasMessages ? '' : renderSuggestionChips(resolveSuggestionChips());
 
     if (!hasMessages) {
       attachSuggestionChipListeners(handleSuggestionChipClick);
@@ -261,11 +379,19 @@ const rerenderChat = (state: ChatState = getChatState()) => {
 };
 
 const handleRouteChange = () => {
+  const previousNavItem = currentActiveNavItem;
   currentActiveNavItem = getCurrentRoute();
+  const nextNavItem = currentActiveNavItem;
+
+  if (previousNavItem === 'resume' && nextNavItem !== 'resume') {
+    cleanupResumeInteractions();
+  }
+
   const root = document.querySelector<HTMLDivElement>('#app');
   if (root) {
     root.innerHTML = renderLayout(getMainContent());
     initLayout();
+    refreshExperienceContextUI();
 
     // Defer route-specific interactions until DOM updates paint
     requestAnimationFrame(() => {
@@ -279,6 +405,8 @@ const handleRouteChange = () => {
           break;
         case 'resume':
           initResumeInteractions();
+          refreshExperienceContextUI();
+          attachExperienceContextIndicatorListeners();
           break;
         case 'home':
         default:
@@ -286,6 +414,16 @@ const handleRouteChange = () => {
           break;
       }
     });
+  }
+
+  if (
+    clearExperienceContextOnRouteChange &&
+    previousNavItem === 'resume' &&
+    currentActiveNavItem !== 'resume'
+  ) {
+    clearExperienceContext();
+    clearExperienceSelection();
+    refreshExperienceContextUI();
   }
 };
 
@@ -336,6 +474,8 @@ const mount = async () => {
       attachSuggestionChipListeners(handleSuggestionChipClick);
       attachProjectCardListeners();
       applyInitialAnimations();
+      refreshExperienceContextUI();
+      attachExperienceContextIndicatorListeners();
 
       // Initialize router first
       initRouter();
@@ -343,6 +483,8 @@ const mount = async () => {
       // Initialize resume interactions if resume is active
       if (currentActiveNavItem === 'resume') {
         initResumeInteractions();
+        refreshExperienceContextUI();
+        attachExperienceContextIndicatorListeners();
       }
     }, {
       component: 'main',
@@ -388,6 +530,14 @@ subscribeToChatState((state, previousState) => {
   }
 });
 
+subscribeToExperienceContext((context, previousContext) => {
+  refreshExperienceContextUI();
+
+  if (!context.experience && previousContext.experience) {
+    clearExperienceSelection();
+  }
+});
+
 validateContent();
 mount();
 
@@ -409,18 +559,26 @@ const handleNavigationChange = (event: Event) => {
     return;
   }
 
+  const previousNavItem = currentActiveNavItem;
   currentActiveNavItem = navId;
+
+  if (previousNavItem === 'resume' && currentActiveNavItem !== 'resume') {
+    cleanupResumeInteractions();
+  }
 
   // Re-render the main content when navigation changes
   const root = document.querySelector<HTMLDivElement>('#app');
   if (root) {
     root.innerHTML = renderLayout(getMainContent());
     initLayout();
+    refreshExperienceContextUI();
 
     // Defer interactions until after layout render completes
     requestAnimationFrame(() => {
       if (navId === 'resume') {
         initResumeInteractions();
+        refreshExperienceContextUI();
+        attachExperienceContextIndicatorListeners();
       }
 
       if (navId === 'projects') {
@@ -433,6 +591,12 @@ const handleNavigationChange = (event: Event) => {
         attachProjectCardListeners();
       }
     });
+  }
+
+  if (previousNavItem === 'resume' && navId !== 'resume') {
+    clearExperienceContext();
+    clearExperienceSelection();
+    refreshExperienceContextUI();
   }
 };
 

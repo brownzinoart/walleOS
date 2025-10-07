@@ -1,3 +1,5 @@
+import type { ExperienceSuggestionChip as ExperienceSuggestionChipType } from '@/config/content';
+
 export type {
   NavigationItem,
   SocialLink,
@@ -19,6 +21,10 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  experienceContext?: {
+    experienceId: string;
+    experienceTitle: string;
+  };
 }
 
 export interface ChatState {
@@ -26,6 +32,17 @@ export interface ChatState {
   isTyping: boolean;
   inputValue: string;
 }
+
+export interface ExperienceContext {
+  experienceId: string | null;
+  experience: Experience | null;
+  timestamp: Date;
+}
+
+export type ExperienceContextListener = (
+  context: ExperienceContext,
+  previousContext: ExperienceContext,
+) => void;
 
 export interface ComponentProps {
   className?: string;
@@ -57,6 +74,8 @@ export interface Experience {
   experienceLevel: 'Junior' | 'Mid' | 'Senior' | 'Lead' | 'Principal';
   technologies?: string[];
 }
+
+export type ExperienceSuggestionChip = ExperienceSuggestionChipType;
 
 export interface ResumeData {
   experiences: Experience[];
