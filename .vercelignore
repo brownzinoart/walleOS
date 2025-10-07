@@ -44,5 +44,4 @@ README.md
 WallyMo_Resume_Oct'25.txt
 
 # Config files not needed in production
-.eslintrc.json
 .prettierrc
