@@ -107,6 +107,41 @@ WalleGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neo
 - **Sidebar not scoring active sections** – confirm each section exposes `id` or `data-section-id` that matches the navigation config.
 - **Scroll sticks on mobile** – verify `visualViewport` is available; fallback behaviour scrolls inputs into view when unavailable.
 
+## Deployment
+
+### Deploy to Vercel
+
+This project is configured for seamless deployment on Vercel.
+
+#### Option 1: Deploy via Vercel Dashboard (Recommended)
+
+1. Push your code to a Git repository (GitHub, GitLab, or Bitbucket)
+2. Go to [vercel.com](https://vercel.com) and sign in
+3. Click "New Project" and import your repository
+4. Vercel will auto-detect the Vite framework and use the settings from `vercel.json`
+5. Click "Deploy"
+
+#### Option 2: Deploy via Vercel CLI
+
+1. Install Vercel CLI: `npm i -g vercel`
+2. Run `vercel` for a preview deployment
+3. Run `vercel --prod` for a production deployment
+
+#### Configuration
+
+The project includes a `vercel.json` configuration file that:
+- Sets the correct build command with TypeScript type-checking
+- Configures SPA routing fallback
+- Optimizes caching for static assets
+
+#### Environment Variables
+
+If your project requires environment variables, add them in the Vercel dashboard under Project Settings → Environment Variables.
+
+#### Custom Domain
+
+To add a custom domain, go to Project Settings → Domains in the Vercel dashboard.
+
 ## Contributing
 - Lint with `npm run lint` (ESLint + TypeScript)
 - Follow Conventional Commits

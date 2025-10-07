@@ -225,7 +225,7 @@ const getMainContent = (): string => {
 
   return `
     <section
-      class="chat-root mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8"
+      class="chat-root content-container flex flex-1 flex-col gap-8"
       data-chat-root
     >
       <div class="chat-context-indicator" data-chat-context-indicator>

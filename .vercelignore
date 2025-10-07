@@ -1,0 +1,48 @@
+# Development directories
+.roo/
+.serena/
+docs/
+
+# Tests
+src/__tests__/
+*.test.ts
+*.spec.ts
+playwright.config.ts
+vitest.config.ts
+
+# Build artifacts
+dist/
+.nyc_output/
+coverage/
+
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+
+# Documentation (optional - remove if you want docs deployed)
+AGENTS.md
+README.md
+*.md
+
+# Backup files
+*.bak
+
+# Personal files
+WallyMo_Resume_Oct'25.txt
+
+# Config files not needed in production
+.eslintrc.json
+.prettierrc

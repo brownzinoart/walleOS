@@ -113,7 +113,7 @@ export const renderProjectCards = (projects: FeaturedProject[]): string => {
 
   return `
     <section class="project-cards-section mt-16" data-project-cards data-section-id="projects" id="projects">
-      <div class="project-cards-inner max-w-5xl mx-auto flex flex-col gap-8">
+      <div class="project-cards-inner content-container flex flex-col gap-8">
         <header class="flex flex-col gap-2">
           <p class="project-cards-eyebrow">Featured Work</p>
           <h2 class="project-cards-heading">Featured Projects</h2>

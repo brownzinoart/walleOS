@@ -183,7 +183,7 @@ const handleSubmit = (onSubmit: (message: string) => void) => {
 
 export const renderChatInput = (): string => `
   <div
-    class="chat-input-container fixed inset-x-0 bottom-0 z-10 w-full max-w-3xl mx-auto px-4 pb-4 md:static md:px-0 md:pb-0"
+    class="chat-input-container fixed inset-x-0 bottom-0 z-10 content-container px-4 pb-4 md:static md:px-0 md:pb-0"
     data-chat-input-container
   >
     <div class="flex gap-2 border-2 border-gray-800 bg-gray-900 rounded-lg p-3 focus-within:border-neon-cyan focus-within:shadow-brutal transition-all">

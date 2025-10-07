@@ -301,8 +301,8 @@ export const setActiveNavItem = (itemId: string | null, options: SetActiveOption
 export const handleNavActivation = (itemId: string, behavior: ScrollBehavior = 'smooth') => {
   // Import router functions dynamically to avoid circular dependencies
   import('@/utils/router').then(({ navigateTo }) => {
-    // For projects, resume, and other dedicated pages, use routing
-    if (itemId === 'projects' || itemId === 'resume') {
+    // Route to dedicated pages (including home) so URL reflects active tab
+    if (itemId === 'home' || itemId === 'projects' || itemId === 'resume') {
       navigateTo(itemId);
       setActiveNavItem(itemId);
       emitNavigationEvent(itemId);
