@@ -7,12 +7,19 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
   --backdrop-filter-strength: blur(18px);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
 }
 
 * {
@@ -108,7 +115,7 @@ button.chip:active {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: rgba(10, 10, 12, 0.94);
+  background: var(--color-overlay-strong);
   z-index: 999;
   color: var(--color-neon-cyan, #00ffff);
   letter-spacing: 0.08em;
@@ -126,14 +133,14 @@ button.chip:active {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 9999px;
-  border: 3px solid rgba(0, 255, 255, 0.25);
-  border-top-color: rgba(0, 255, 255, 0.95);
+  border: 3px solid rgba(var(--color-neon-cyan-rgb), 0.25);
+  border-top-color: rgba(var(--color-neon-cyan-rgb), 0.95);
   animation: appLoaderSpin 640ms linear infinite;
 }
 
 .app-loader__label {
   font-size: 0.75rem;
-  text-shadow: 0 0 12px rgba(0, 255, 255, 0.35);
+  text-shadow: 0 0 12px rgba(var(--color-neon-cyan-rgb), 0.35);
 }
 
 .app-error {
@@ -142,8 +149,8 @@ button.chip:active {
   display: grid;
   place-items: center;
   padding: 2rem;
-  background: #0a0a0a;
-  color: #ff6b00;
+  background: var(--color-bg-primary);
+  color: var(--color-neon-orange);
   font-weight: 600;
   text-align: center;
 }
@@ -167,5 +174,63 @@ button.chip:active {
 @layer utilities {
   .content-container {
     @apply w-full max-w-5xl mx-auto;
+  }
+
+  /* Semantic theme utilities map design tokens to reusable class names. */
+  .bg-surface-primary {
+    background-color: var(--color-bg-primary);
+  }
+
+  .bg-surface-secondary {
+    background-color: var(--color-bg-secondary);
+  }
+
+  .bg-surface-tertiary {
+    background-color: var(--color-bg-tertiary);
+  }
+
+  .bg-surface-card {
+    background-color: var(--color-surface-card);
+  }
+
+  .bg-surface-muted {
+    background-color: var(--color-surface-muted);
+  }
+
+  .bg-surface-hover {
+    background-color: var(--color-surface-hover);
+  }
+
+  .text-primary {
+    color: var(--color-text-primary);
+  }
+
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .text-tertiary {
+    color: var(--color-text-tertiary);
+  }
+
+  .border-default {
+    border-color: var(--color-border);
+  }
+
+  .border-strong {
+    border-color: var(--color-border-strong);
+  }
+
+  .hover-surface {
+    transition: background-color var(--transition-fast);
+  }
+
+  .hover-surface:hover {
+    background-color: var(--color-surface-hover);
+  }
+
+  .focus-ring-theme:focus-visible {
+    outline: var(--focus-ring-width, 3px) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset, 2px);
   }
 }

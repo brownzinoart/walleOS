@@ -1,4 +1,5 @@
 import { renderSidebar, initSidebarInteractions, setActiveNavItem } from './Sidebar';
+import { attachThemeToggleListeners } from './ThemeToggle';
 import { renderMobileNav, attachMobileNavListeners } from './MobileNav';
 
 const SIDEBAR_SELECTOR = '[data-sidebar]';
@@ -64,7 +65,7 @@ const closeSidebar = (
 };
 
 export const renderLayout = (mainContent: string): string => `
-  <div class="layout-root relative min-h-screen text-white">
+  <div class="layout-root relative min-h-screen text-primary">
     ${renderMobileNav()}
     <div class="layout-container grid grid-cols-1 md:grid-cols-[280px_1fr]">
       <div
@@ -98,6 +99,9 @@ export const initLayout = (): void => {
   }
 
   initSidebarInteractions();
+  
+  // Attach theme toggle listeners
+  attachThemeToggleListeners();
 
   if (layoutState.activeNavItem) {
     setActiveNavItem(layoutState.activeNavItem, { silent: true });

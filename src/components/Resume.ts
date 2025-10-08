@@ -264,7 +264,7 @@ const renderExperienceContent = (experience: Experience): string => {
     >
       <div class="experience-card-container" data-card-container>
         <article
-          class="resume-detail-content transition-all duration-200 ease-brutal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan hover:border-neon-cyan"
+          class="resume-detail-content transition-all duration-200 ease-brutal focus-ring-theme hover:border-neon-cyan"
           data-experience-card
           data-experience-id="${experience.id}"
           aria-labelledby="${titleId}"
@@ -316,17 +316,17 @@ export const renderResume = (): string => `
   <section class="resume-section" data-section-id="resume">
     <div class="resume-container max-w-7xl mx-auto">
       <div class="resume-header mb-12">
-        <h1 class="resume-title text-4xl md:text-5xl font-black text-white mb-6">
+        <h1 class="resume-title text-4xl md:text-5xl font-black text-primary mb-6">
           Professional Journey
         </h1>
-        <p class="resume-summary text-lg text-gray-400 max-w-3xl leading-relaxed">
+        <p class="resume-summary text-lg text-secondary max-w-3xl leading-relaxed">
           ${resume.summary}
         </p>
         <div class="resume-header-actions mt-8">
           <a
             href="${resume.resumeFileUrl || '/resume.pdf'}"
             download="Wally_Resume.pdf"
-            class="resume-download-button inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-bold rounded-md border-2 border-gray-700 hover:border-neon-cyan transition-all"
+            class="resume-download-button inline-flex items-center gap-2 px-6 py-3 bg-surface-secondary text-primary font-bold rounded-md border-2 border-default hover:border-neon-cyan transition-all"
             aria-label="Download resume as PDF"
           >
             <span aria-hidden="true">⬇️</span>

@@ -1,7 +1,7 @@
-# WalleGPT Portfolio Product Requirements Document
+# WallyGPT Portfolio Product Requirements Document
 
 ## 1. Background
-- WalleGPT evolves into a personal, conversational portfolio site that mirrors Wally's voice and visual style.
+- WallyGPT evolves into a personal, conversational portfolio site that mirrors Wally's voice and visual style.
 - The experience should feel like a bespoke ChatGPT wrapper, grounded in curated portfolio content and tone extracted from the RAG corpus Wally supplies.
 - Goal: give recruiters, collaborators, and curious visitors a fast, delightful way to explore Wally's work and personality.
 

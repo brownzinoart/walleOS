@@ -180,7 +180,7 @@ const updateExperienceCharCount = (experienceId: string): void => {
   charCount.classList.toggle('is-visible', isVisible);
   charCount.classList.toggle('is-warning', isOverLimit);
   charCount.classList.toggle('text-neon-magenta', isOverLimit);
-  charCount.classList.toggle('text-gray-500', !isOverLimit);
+  charCount.classList.toggle('text-tertiary', !isOverLimit);
 
   if (isOverLimit) {
     textarea.setAttribute('aria-invalid', 'true');
@@ -500,7 +500,7 @@ export const renderExperienceChat = (experienceId: string, experience: Experienc
 
   return `
     <section
-      class="experience-chat grid h-full grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl border border-gray-800/80 bg-gray-950/80 backdrop-blur"
+      class="experience-chat grid h-full grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl border border-default bg-surface-card backdrop-blur"
       data-experience-chat
       data-experience-id="${escapedId}"
       role="region"
@@ -520,7 +520,7 @@ export const renderExperienceChat = (experienceId: string, experience: Experienc
       </header>
       <div class="experience-chat-body px-4 py-4">
         <div
-          class="experience-chat-messages flex flex-col gap-3 overflow-y-auto px-3 py-4 border border-gray-800/60 rounded-lg bg-gray-900/70 ${hasMessages ? '' : 'is-empty'}"
+          class="experience-chat-messages flex flex-col gap-3 overflow-y-auto px-3 py-4 border border-default rounded-lg bg-surface-muted ${hasMessages ? '' : 'is-empty'}"
           data-experience-messages
           role="log"
           aria-live="polite"
@@ -529,7 +529,7 @@ export const renderExperienceChat = (experienceId: string, experience: Experienc
           ${messageMarkup}
         </div>
         <div
-          class="experience-chat-typing text-sm text-gray-400 transition-opacity ${isTyping ? '' : 'hidden'}"
+          class="experience-chat-typing text-sm text-secondary transition-opacity ${isTyping ? '' : 'hidden'}"
           data-experience-typing
           aria-live="polite"
           aria-hidden="${isTyping ? 'false' : 'true'}"
@@ -537,16 +537,16 @@ export const renderExperienceChat = (experienceId: string, experience: Experienc
           Thinking through this experience...
         </div>
       </div>
-      <div class="experience-chat-footer border-t border-gray-800/60 bg-gray-950/80 px-4 py-4" data-experience-footer>
+      <div class="experience-chat-footer border-t border-default bg-surface-muted px-4 py-4" data-experience-footer>
         ${
           hasMessages
             ? ''
             : `<div class="experience-chat-suggestions" data-experience-suggestions>${suggestionMarkup}</div>`
         }
         <form class="experience-chat-input space-y-2" data-experience-input novalidate>
-          <div class="flex items-end gap-3 border border-gray-800 bg-gray-900/80 rounded-lg p-3 focus-within:border-neon-cyan focus-within:shadow-brutal transition-all">
+          <div class="flex items-end gap-3 border border-default bg-surface-muted rounded-lg p-3 focus-within:border-neon-cyan focus-within:shadow-brutal transition-all">
             <textarea
-              class="experience-chat-textarea chat-input-textarea flex-1 bg-transparent text-white resize-none outline-none min-h-[44px] max-h-[200px] text-base leading-relaxed placeholder-gray-500"
+              class="experience-chat-textarea chat-input-textarea flex-1 bg-transparent text-primary resize-none outline-none min-h-[44px] max-h-[200px] text-base leading-relaxed"
               placeholder="Ask something about this experience..."
               aria-label="Chat message input for experience"
               rows="1"
@@ -559,7 +559,7 @@ export const renderExperienceChat = (experienceId: string, experience: Experienc
               data-experience-textarea>${escapeHtml(inputValue)}</textarea>
             <button
               type="submit"
-              class="chat-input-send-button px-4 py-2 bg-neon-cyan text-black font-bold rounded-md hover:bg-neon-lime transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="chat-input-send-button px-4 py-2 bg-surface-secondary text-primary font-bold rounded-md border-2 border-default hover:border-neon-cyan hover-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               data-experience-send-button
               aria-label="Send experience message"
               aria-disabled="true"
@@ -571,7 +571,7 @@ export const renderExperienceChat = (experienceId: string, experience: Experienc
           </div>
           <div class="flex justify-end">
             <span
-              class="chat-input-char-count text-xs text-gray-500"
+              class="chat-input-char-count text-xs text-tertiary"
               data-experience-char-count
               role="status"
               aria-live="polite"

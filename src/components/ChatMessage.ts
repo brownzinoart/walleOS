@@ -22,8 +22,8 @@ const formatTimestamp = (timestamp: Date): string => {
 export const renderChatMessage = (message: ChatMessage): string => {
   const isUser = message.role === 'user';
   const variantClasses = isUser
-    ? 'chat-message-user ml-auto bg-neon-cyan text-black shadow-brutal rounded-lg rounded-br-sm'
-    : 'chat-message-assistant mr-auto bg-gray-800 text-white border-2 border-neon-magenta rounded-lg rounded-bl-sm';
+    ? 'chat-message-user ml-auto bg-surface-card text-primary border-2 border-neon-cyan shadow-brutal rounded-lg rounded-br-sm'
+    : 'chat-message-assistant mr-auto bg-surface-secondary text-primary border-2 border-neon-magenta rounded-lg rounded-bl-sm';
 
   const timestamp = formatTimestamp(message.timestamp);
   const content = escapeHtml(message.content);
@@ -36,7 +36,7 @@ export const renderChatMessage = (message: ChatMessage): string => {
       aria-live="polite"
     >
       <p class="leading-relaxed">${content}</p>
-      ${timestamp ? `<span class="mt-2 block text-xs opacity-70">${timestamp}</span>` : ''}
+      ${timestamp ? `<span class="mt-2 block text-xs text-tertiary">${timestamp}</span>` : ''}
     </article>
   `;
 };

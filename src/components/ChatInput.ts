@@ -186,9 +186,9 @@ export const renderChatInput = (): string => `
     class="chat-input-container fixed inset-x-0 bottom-0 z-10 content-container px-4 pb-4 md:static md:px-0 md:pb-0"
     data-chat-input-container
   >
-    <div class="flex gap-2 border-2 border-gray-800 bg-gray-900 rounded-lg p-3 focus-within:border-neon-cyan focus-within:shadow-brutal transition-all">
+    <div class="flex gap-2 border-2 border-default bg-surface-muted rounded-lg p-3 focus-within:border-neon-cyan focus-within:shadow-brutal transition-all">
       <textarea
-        class="chat-input-textarea flex-1 bg-transparent text-white resize-none outline-none min-h-[44px] max-h-[200px] text-base leading-relaxed placeholder-gray-500"
+        class="chat-input-textarea flex-1 bg-transparent text-primary resize-none outline-none min-h-[44px] max-h-[200px] text-base leading-relaxed"
         placeholder="Ask me anything..."
         aria-label="Chat message input"
         rows="1"
@@ -202,7 +202,7 @@ export const renderChatInput = (): string => `
       ></textarea>
       <button
         type="button"
-        class="chat-input-send-button px-4 py-2 bg-neon-cyan text-black font-bold rounded-md hover:bg-neon-lime transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="chat-input-send-button px-4 py-2 bg-surface-secondary text-primary font-bold rounded-md border-2 border-default hover:border-neon-cyan hover-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         data-chat-send
         aria-label="Send message"
         aria-disabled="true"

@@ -1,25 +1,54 @@
 :root {
-  /* Surface colors */
+  /* === Surface Colors (fallback: dark) === */
   --color-bg-primary: #0a0a0a;
   --color-bg-secondary: #1a1a1a;
   --color-bg-tertiary: #2a2a2a;
+  --color-surface-card: #111118;
+  --color-surface-muted: #18181f;
+  --color-surface-hover: rgba(var(--color-text-primary-rgb), 0.08);
+  --color-overlay: rgba(0, 0, 0, 0.6);
+  --color-overlay-strong: rgba(0, 0, 0, 0.8);
+  --color-shadow: rgba(0, 0, 0, 0.65);
 
-  /* Typography colors */
+  /* === Surface RGB Tokens === */
+  --color-bg-primary-rgb: 10, 10, 10;
+  --color-bg-secondary-rgb: 26, 26, 26;
+  --color-bg-tertiary-rgb: 42, 42, 42;
+  --color-surface-card-rgb: 17, 17, 24;
+  --color-surface-muted-rgb: 24, 24, 31;
+
+  /* === Typography Tokens === */
   --color-text-primary: #ffffff;
   --color-text-secondary: #a0a0a0;
   --color-text-tertiary: #666666;
+  --color-text-primary-rgb: 255, 255, 255;
+  --color-text-secondary-rgb: 160, 160, 160;
+  --color-text-tertiary-rgb: 102, 102, 102;
 
-  /* Accent palette */
+  /* === Accent Palette (fallback: dark) === */
   --color-neon-cyan: #00ffff;
   --color-neon-magenta: #ff00ff;
   --color-neon-lime: #ccff00;
   --color-neon-orange: #ff6b00;
+  --color-neon-cyan-rgb: 0, 255, 255;
+  --color-neon-magenta-rgb: 255, 0, 255;
+  --color-neon-lime-rgb: 204, 255, 0;
+  --color-neon-orange-rgb: 255, 107, 0;
+  --color-branding-base: #007a88;
+  --color-branding-base-rgb: 0, 122, 136;
 
-  /* Borders */
+  /* === Border Tokens === */
   --color-border: #333333;
   --color-border-strong: #ffffff;
+  --color-border-rgb: 51, 51, 51;
+  --color-border-strong-rgb: 255, 255, 255;
 
-  /* Spacing scale */
+  /* === Surface Alpha Utilities === */
+  --color-surface-alpha-08: rgba(var(--color-text-primary-rgb), 0.08);
+  --color-surface-alpha-12: rgba(var(--color-text-primary-rgb), 0.12);
+  --color-surface-alpha-16: rgba(var(--color-text-primary-rgb), 0.16);
+
+  /* === Spacing Scale === */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
@@ -28,7 +57,7 @@
   --spacing-2xl: 3rem;
   --spacing-3xl: 4rem;
 
-  /* Typography */
+  /* === Typography Scale === */
   --font-sans: 'Space Grotesk', 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
   --font-size-xs: 0.75rem;
@@ -44,23 +73,107 @@
   --font-weight-bold: 700;
   --font-weight-black: 900;
 
-  /* Effects */
+  /* === Effects & Motion === */
   --shadow-brutal: 4px 4px 0px var(--color-neon-cyan);
   --shadow-brutal-lg: 8px 8px 0px var(--color-neon-magenta);
-  --border-radius-sm: 2px;
-  --border-radius-md: 4px;
-  --border-radius-lg: 8px;
-  --transition-fast: 150ms ease-in-out;
-  --transition-base: 250ms ease-in-out;
-  --transition-slow: 400ms ease-in-out;
-  --will-change-transform: transform;
-  --will-change-opacity: opacity;
-  --will-change-auto: auto;
-  --transition-reduced: 50ms linear;
-  --animation-duration-reduced: 100ms;
-  --gpu-accelerate: translateZ(0);
-  --backface-hidden: hidden;
   --focus-ring-width: 3px;
   --focus-ring-offset: 2px;
   --focus-ring-color: var(--color-neon-cyan);
+  --focus-ring-color-rgb: var(--color-neon-cyan-rgb);
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 250ms ease-in-out;
+  --transition-slow: 400ms ease-in-out;
+  --transition-reduced: 50ms linear;
+  --animation-duration-reduced: 100ms;
+  --will-change-transform: transform;
+  --will-change-opacity: opacity;
+  --will-change-auto: auto;
+  --gpu-accelerate: translateZ(0);
+  --backface-hidden: hidden;
+}
+
+/* === Dark Theme Overrides === */
+[data-theme='dark'] {
+  --color-bg-primary: #0a0a0a;
+  --color-bg-secondary: #1a1a1a;
+  --color-bg-tertiary: #2a2a2a;
+  --color-surface-card: #111118;
+  --color-surface-muted: #18181f;
+  --color-surface-hover: rgba(var(--color-text-primary-rgb), 0.08);
+  --color-overlay: rgba(0, 0, 0, 0.6);
+  --color-overlay-strong: rgba(0, 0, 0, 0.8);
+  --color-shadow: rgba(0, 0, 0, 0.65);
+  --color-bg-primary-rgb: 10, 10, 10;
+  --color-bg-secondary-rgb: 26, 26, 26;
+  --color-bg-tertiary-rgb: 42, 42, 42;
+  --color-surface-card-rgb: 17, 17, 24;
+  --color-surface-muted-rgb: 24, 24, 31;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #a0a0a0;
+  --color-text-tertiary: #666666;
+  --color-text-primary-rgb: 255, 255, 255;
+  --color-text-secondary-rgb: 160, 160, 160;
+  --color-text-tertiary-rgb: 102, 102, 102;
+  --color-neon-cyan: #00ffff;
+  --color-neon-magenta: #ff00ff;
+  --color-neon-lime: #ccff00;
+  --color-neon-orange: #ff6b00;
+  --color-neon-cyan-rgb: 0, 255, 255;
+  --color-neon-magenta-rgb: 255, 0, 255;
+  --color-neon-lime-rgb: 204, 255, 0;
+  --color-neon-orange-rgb: 255, 107, 0;
+  --color-branding-base: #00ffff;
+  --color-branding-base-rgb: 0, 255, 255;
+  --color-border: #333333;
+  --color-border-strong: #ffffff;
+  --color-border-rgb: 51, 51, 51;
+  --color-border-strong-rgb: 255, 255, 255;
+  --color-surface-alpha-08: rgba(var(--color-text-primary-rgb), 0.08);
+  --color-surface-alpha-12: rgba(var(--color-text-primary-rgb), 0.12);
+  --color-surface-alpha-16: rgba(var(--color-text-primary-rgb), 0.16);
+  --shadow-brutal: 4px 4px 0px var(--color-neon-cyan);
+  --shadow-brutal-lg: 8px 8px 0px var(--color-neon-magenta);
+}
+
+/* === Light Theme Overrides === */
+[data-theme='light'] {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f3f3f3;
+  --color-bg-tertiary: #e4e4e4;
+  --color-surface-card: #f8f8f8;
+  --color-surface-muted: #f0f0f0;
+  --color-surface-hover: rgba(var(--color-text-primary-rgb), 0.04);
+  --color-overlay: rgba(0, 0, 0, 0.15);
+  --color-overlay-strong: rgba(0, 0, 0, 0.28);
+  --color-shadow: rgba(10, 10, 10, 0.14);
+  --color-bg-primary-rgb: 255, 255, 255;
+  --color-bg-secondary-rgb: 243, 243, 243;
+  --color-bg-tertiary-rgb: 228, 228, 228;
+  --color-surface-card-rgb: 248, 248, 248;
+  --color-surface-muted-rgb: 240, 240, 240;
+  --color-text-primary: #0a0a0a;
+  --color-text-secondary: #4e4e4e;
+  --color-text-tertiary: #8a8a8a;
+  --color-text-primary-rgb: 10, 10, 10;
+  --color-text-secondary-rgb: 78, 78, 78;
+  --color-text-tertiary-rgb: 138, 138, 138;
+  --color-neon-cyan: #007a88;
+  --color-neon-magenta: #a200a8;
+  --color-neon-lime: #6a8a00;
+  --color-neon-orange: #c25100;
+  --color-neon-cyan-rgb: 0, 122, 136;
+  --color-neon-magenta-rgb: 162, 0, 168;
+  --color-neon-lime-rgb: 106, 138, 0;
+  --color-neon-orange-rgb: 194, 81, 0;
+  --color-branding-base: #007a88;
+  --color-branding-base-rgb: 0, 122, 136;
+  --color-border: #c6c6c6;
+  --color-border-strong: #0a0a0a;
+  --color-border-rgb: 198, 198, 198;
+  --color-border-strong-rgb: 10, 10, 10;
+  --color-surface-alpha-08: rgba(var(--color-text-primary-rgb), 0.08);
+  --color-surface-alpha-12: rgba(var(--color-text-primary-rgb), 0.12);
+  --color-surface-alpha-16: rgba(var(--color-text-primary-rgb), 0.16);
+  --shadow-brutal: 4px 4px 0px var(--color-neon-cyan);
+  --shadow-brutal-lg: 8px 8px 0px var(--color-neon-magenta);
 }

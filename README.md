@@ -1,6 +1,6 @@
-# WalleGPT Portfolio
+# WallyGPT Portfolio
 
-WalleGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neon energy with unapologetic Brutalist structure. Phase 1 establishes the technical and visual foundation for the chat-first interface described in the product requirements.
+WallyGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neon energy with unapologetic Brutalist structure. Phase 1 establishes the technical and visual foundation for the chat-first interface described in the product requirements.
 
 ## Project Overview
 - Product requirements: [`docs/PRD.md`](docs/PRD.md)

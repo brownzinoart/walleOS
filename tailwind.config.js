@@ -1,8 +1,16 @@
+const withOpacityValue = (variable) => ({ opacityValue }) => {
+  if (opacityValue === undefined) {
+    return `rgb(var(${variable}) / 1)`;
+  }
+
+  return `rgb(var(${variable}) / ${opacityValue})`;
+};
+
 const neonPalette = {
-  'neon-cyan': '#00FFFF',
-  'neon-magenta': '#FF00FF',
-  'neon-lime': '#CCFF00',
-  'neon-orange': '#FF6B00'
+  'neon-cyan': withOpacityValue('--color-neon-cyan-rgb'),
+  'neon-magenta': withOpacityValue('--color-neon-magenta-rgb'),
+  'neon-lime': withOpacityValue('--color-neon-lime-rgb'),
+  'neon-orange': withOpacityValue('--color-neon-orange-rgb')
 };
 
 const grayscale = {
@@ -22,6 +30,7 @@ const grayscale = {
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: ['class', "[data-theme='dark']"],
   theme: {
     extend: {
       colors: {

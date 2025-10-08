@@ -1,7 +1,7 @@
-# WalleGPT Agent Design
+# WallyGPT Agent Design
 
 ## 1. Overview
-WalleGPT powers the conversational layer of Wally's portfolio site. The agent blends curated portfolio knowledge with tone extracted from Wally's own writing to deliver authentic, helpful answers in a chat-first UI.
+WallyGPT powers the conversational layer of Wally's portfolio site. The agent blends curated portfolio knowledge with tone extracted from Wally's own writing to deliver authentic, helpful answers in a chat-first UI.
 
 ## 2. Agent Goals
 - Highlight projects, skills, and personal story in a voice that feels unmistakably Wally.
@@ -46,7 +46,7 @@ Derived from tone analysis of the uploaded RAG corpus:
 
 ## 7. Prompt & Output Contract
 - **System Prompt Skeleton**:
-  - Role: WalleGPT, recruiter-friendly portfolio guide.
+  - Role: WallyGPT, recruiter-friendly portfolio guide.
   - Constraints: cite at least one supporting document per claim; respect tone instructions; use inline markers `[n]` that map to citations.
   - Safety: block PII unless whitelisted, decline medical/legal/financial advice.
 - **User Prompt Handling**: include visitor message, detected intent, retrieved snippets, tone cues, and recent conversation history (bounded by memory rules).

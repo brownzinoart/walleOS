@@ -58,6 +58,8 @@ import {
   getCurrentRoute,
 } from '@/utils/router';
 import { renderProjectsPage, initProjectsPageInteractions } from '@/components/ProjectsPage';
+import { initTheme, subscribeToTheme, getTheme } from '@/utils/theme';
+import { attachThemeToggleListeners, cleanupThemeToggle } from '@/components/ThemeToggle';
 
 const CHAT_ROOT_SELECTOR = '[data-chat-root]';
 const WELCOME_SLOT_SELECTOR = '[data-chat-welcome]';
@@ -187,7 +189,7 @@ const applyInitialAnimations = () => {
 
 const renderTypingIndicator = (): string => `
   <article
-    class="chat-message chat-message-assistant mr-auto bg-gray-800 text-white border-2 border-neon-magenta rounded-lg rounded-bl-sm max-w-[80%] md:max-w-[70%] p-4"
+    class="chat-message chat-message-assistant mr-auto bg-surface-secondary text-primary border-2 border-neon-magenta rounded-lg rounded-bl-sm max-w-[80%] md:max-w-[70%] p-4"
     data-typing-indicator
     aria-live="polite"
   >
@@ -195,7 +197,7 @@ const renderTypingIndicator = (): string => `
       <span class="typing-dot"></span>
       <span class="typing-dot typing-dot-delay"></span>
       <span class="typing-dot typing-dot-delay-xl"></span>
-      <span class="ml-3 uppercase tracking-widest text-xs text-gray-300">Typing</span>
+      <span class="ml-3 uppercase tracking-widest text-xs text-secondary">Typing</span>
     </div>
   </article>
 `;
@@ -389,9 +391,15 @@ const handleRouteChange = () => {
 
   const root = document.querySelector<HTMLDivElement>('#app');
   if (root) {
+    // Cleanup theme toggle before re-render to prevent leaks
+    cleanupThemeToggle();
+
     root.innerHTML = renderLayout(getMainContent());
     initLayout();
     refreshExperienceContextUI();
+    
+    // Reattach theme toggle listeners after route change
+    attachThemeToggleListeners();
 
     // Defer route-specific interactions until DOM updates paint
     requestAnimationFrame(() => {
@@ -429,6 +437,9 @@ const handleRouteChange = () => {
 
 const mount = async () => {
   const loader = showAppLoader();
+  
+  // Initialize theme before any rendering
+  initTheme();
 
   // Register error recovery strategies
   errorBoundary.registerRecoveryStrategy('mount', () => {
@@ -538,6 +549,16 @@ subscribeToExperienceContext((context, previousContext) => {
   }
 });
 
+// Subscribe to theme changes and update DOM
+subscribeToTheme((theme) => {
+  document.documentElement.dataset['theme'] = theme;
+});
+
+// Initialize theme attribute on mount
+if (typeof document !== 'undefined') {
+  document.documentElement.dataset['theme'] = getTheme();
+}
+
 validateContent();
 mount();
 
@@ -569,9 +590,15 @@ const handleNavigationChange = (event: Event) => {
   // Re-render the main content when navigation changes
   const root = document.querySelector<HTMLDivElement>('#app');
   if (root) {
+    // Cleanup theme toggle before re-render to prevent leaks
+    cleanupThemeToggle();
+
     root.innerHTML = renderLayout(getMainContent());
     initLayout();
     refreshExperienceContextUI();
+    
+    // Reattach theme toggle listeners
+    attachThemeToggleListeners();
 
     // Defer interactions until after layout render completes
     requestAnimationFrame(() => {
@@ -602,4 +629,4 @@ const handleNavigationChange = (event: Event) => {
 
 document.addEventListener('sidebar:navigate', handleNavigationChange);
 
-console.info('WalleGPT content configuration loaded:', content);
+console.info('WallyGPT content configuration loaded:', content);

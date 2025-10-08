@@ -1,14 +1,13 @@
 import { branding, navigation, contact } from '@/config/content';
+import { renderThemeToggle } from './ThemeToggle';
 import type { NavigationItem, SocialLink } from '@/types';
-import { prefersReducedMotion, observeIntersection, rafThrottle, addWillChange, removeWillChange } from '@/utils/performance';
+import { prefersReducedMotion, observeIntersection, addWillChange, removeWillChange } from '@/utils/performance';
 
 const NEON_COLORS = ['var(--color-neon-cyan)', 'var(--color-neon-magenta)', 'var(--color-neon-lime)', 'var(--color-neon-orange)'];
 const FALLBACK_NEON_COLOR = 'var(--color-neon-cyan)';
 
 const SIDEBAR_SELECTOR = '[data-sidebar]';
 const NAV_ITEM_SELECTOR = '[data-sidebar-nav-item]';
-const NAV_CONTAINER_SELECTOR = '[data-sidebar-nav-container]';
-const NAV_SCROLLABLE_SELECTOR = '[data-sidebar-nav-scrollable]';
 const SOCIAL_LINK_SELECTOR = '[data-sidebar-social-link]';
 const BRANDING_SELECTOR = '[data-sidebar-branding]';
 const ANNOUNCER_SELECTOR = '[data-sidebar-announcer]';
@@ -27,8 +26,6 @@ const navItemRefs = new Map<string, HTMLButtonElement>();
 const sectionRefs = new Map<string, HTMLElement>();
 
 let sidebarRoot: HTMLElement | null = null;
-let navContainerRef: HTMLElement | null = null;
-let navScrollableRef: HTMLElement | null = null;
 let announcerRef: HTMLElement | null = null;
 let brandingRef: HTMLElement | null = null;
 let skipLinkRef: HTMLAnchorElement | null = null;
@@ -75,8 +72,6 @@ const findSectionTarget = (navId: string): HTMLElement | null => {
 
 const cacheSidebarElements = () => {
   sidebarRoot = document.querySelector<HTMLElement>(SIDEBAR_SELECTOR);
-  navContainerRef = sidebarRoot?.querySelector<HTMLElement>(NAV_CONTAINER_SELECTOR) ?? null;
-  navScrollableRef = sidebarRoot?.querySelector<HTMLElement>(NAV_SCROLLABLE_SELECTOR) ?? null;
   announcerRef = sidebarRoot?.querySelector<HTMLElement>(ANNOUNCER_SELECTOR) ?? null;
   brandingRef = sidebarRoot?.querySelector<HTMLElement>(BRANDING_SELECTOR) ?? null;
   skipLinkRef = sidebarRoot?.querySelector<HTMLAnchorElement>(SKIP_LINK_SELECTOR) ?? null;
@@ -141,7 +136,10 @@ const setupBrandingInteractions = () => {
 
   brandingRef.addEventListener('pointerleave', () => {
     resetBrandingCycle();
-    brandingRef?.style.setProperty('--branding-accent', 'var(--color-neon-cyan)');
+    brandingRef?.style.setProperty(
+      '--branding-accent',
+      'var(--color-branding-base, var(--color-neon-cyan))'
+    );
     brandingRef?.style.setProperty('--branding-glow-x', '0px');
     brandingRef?.style.setProperty('--branding-glow-y', '0px');
     if (brandingRef) {
@@ -178,36 +176,6 @@ const setupSocialLinkInteractions = () => {
       removeWillChange(link);
     });
   });
-};
-
-const updateScrollIndicators = () => {
-  if (!navScrollableRef || !navContainerRef) {
-    return;
-  }
-
-  const topIndicator = navContainerRef.querySelector<HTMLElement>('[data-scroll-indicator="top"]');
-  const bottomIndicator = navContainerRef.querySelector<HTMLElement>('[data-scroll-indicator="bottom"]');
-
-  if (!topIndicator || !bottomIndicator) {
-    return;
-  }
-
-  const { scrollTop, scrollHeight, clientHeight } = navScrollableRef;
-
-  topIndicator.classList.toggle('is-visible', scrollTop > 8);
-  bottomIndicator.classList.toggle('is-visible', scrollTop + clientHeight < scrollHeight - 8);
-};
-
-const setupScrollIndicators = () => {
-  if (!navScrollableRef) {
-    return;
-  }
-
-  updateScrollIndicators();
-  const throttled = rafThrottle(updateScrollIndicators);
-
-  navScrollableRef.addEventListener('scroll', throttled);
-  window.addEventListener('resize', throttled);
 };
 
 const findSectionNodes = () => {
@@ -362,7 +330,6 @@ export const initSidebarInteractions = (): void => {
   setupSkipLink();
   setupBrandingInteractions();
   setupSocialLinkInteractions();
-  setupScrollIndicators();
   setupNavItemInteractions();
 
   findSectionNodes();
@@ -408,47 +375,50 @@ export const renderSidebar = (): string => {
 
   return `
     <aside
-      class="sidebar flex h-full flex-col justify-between border-r border-[var(--color-border,#222)] bg-gray-900 p-6 text-white"
+      class="sidebar flex h-full flex-col justify-between border-r border-default bg-surface-secondary p-6 text-primary"
       role="navigation"
       aria-label="Main navigation"
       data-sidebar
     >
       <a href="#main-content" class="sidebar-skip-link" data-sidebar-skip>Skip to main content</a>
-      <div class="flex flex-col gap-10">
-        <div class="sidebar-branding group cursor-pointer" data-sidebar-branding>
-          <span
-            class="sidebar-branding-title text-heading-2 font-black tracking-tight"
-            style="--branding-accent: var(--color-neon-cyan);"
-          >
-            ${branding.name}
-          </span>
-          <p class="sidebar-branding-tagline mt-3 max-w-xs text-sm text-gray-400">
-            ${branding.tagline}
-          </p>
-        </div>
-        <div class="sidebar-nav-container relative" data-sidebar-nav-container>
-          <div class="sidebar-scroll-indicator sidebar-scroll-indicator--top" data-scroll-indicator="top"></div>
-         <div class="sidebar-nav-scroll" data-sidebar-nav-scrollable>
-           <nav class="sidebar-nav" aria-label="Primary navigation">
-              ${navigation.map((item) => renderNavItem(item, item.id === activeNavId)).join('')}
-            </nav>
+      <div class="flex flex-col gap-8">
+        <div class="sidebar-header">
+          <div class="sidebar-branding group cursor-pointer" data-sidebar-branding>
+            <span
+              class="sidebar-branding-title text-heading-2 font-black tracking-tight"
+              style="--branding-accent: var(--color-branding-base, var(--color-neon-cyan));"
+            >
+              ${branding.name}
+            </span>
+            <p class="sidebar-branding-tagline mt-3 max-w-xs text-sm text-secondary">
+              ${branding.tagline}
+            </p>
           </div>
-          <div class="sidebar-scroll-indicator sidebar-scroll-indicator--bottom" data-scroll-indicator="bottom"></div>
+          <div class="sidebar-header-toggle">
+            ${renderThemeToggle()}
+          </div>
+        </div>
+        <div class="sidebar-nav-container" data-sidebar-nav-container>
+          <nav class="sidebar-nav" aria-label="Primary navigation">
+            ${navigation.map((item) => renderNavItem(item, item.id === activeNavId)).join('')}
+          </nav>
         </div>
       </div>
-      <div class="mt-10 border-t border-[var(--color-border,#222)] pt-6 text-sm text-gray-400">
-        <div class="flex flex-col gap-3">
-          <a
-            class="font-medium text-white transition-colors hover:text-[var(--color-neon-cyan)] focus-visible:text-[var(--color-neon-cyan)]"
-            href="${emailLink}"
-          >
-            ${contact.email}
-          </a>
-          <div class="sidebar-socials" aria-label="Social links">
-            ${contact.socials.map(renderSocialLink).join('')}
+      <div class="sidebar-utilities">
+        <div class="mt-8 border-t border-default pt-6 text-sm text-secondary">
+          <div class="flex flex-col gap-3">
+            <a
+              class="font-medium text-primary transition-colors hover:text-[var(--color-neon-cyan)] focus-visible:text-[var(--color-neon-cyan)]"
+              href="${emailLink}"
+            >
+              ${contact.email}
+            </a>
+            <div class="sidebar-socials" aria-label="Social links">
+              ${contact.socials.map(renderSocialLink).join('')}
+            </div>
           </div>
+          <span class="sr-only" aria-live="polite" data-sidebar-announcer></span>
         </div>
-        <span class="sr-only" aria-live="polite" data-sidebar-announcer></span>
       </div>
     </aside>
   `;

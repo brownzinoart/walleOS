@@ -10,7 +10,7 @@ const renderHeroSection = (): string => `
       <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-6">
         Projects Showcase
       </h1>
-      <p class="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+      <p class="text-xl md:text-2xl text-secondary max-w-3xl mx-auto leading-relaxed">
         Take a look at some of my previous projects that I've worked on. Each project represents a unique challenge and showcases different aspects of my development skills and creative problem-solving.
       </p>
     </div>
