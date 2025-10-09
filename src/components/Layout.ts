@@ -77,7 +77,7 @@ export const renderLayout = (mainContent: string): string => `
         ${renderSidebar()}
       </div>
       <main
-        class="main-content-area w-full min-h-screen p-6 pt-20 md:p-12"
+        class="main-content-area w-full min-h-screen"
         data-main-content
         role="main"
         aria-label="Main content"

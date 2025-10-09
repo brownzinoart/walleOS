@@ -114,7 +114,7 @@ export const renderProjectCards = (projects: FeaturedProject[]): string => {
           <p class="project-cards-eyebrow">Featured Work</p>
           <h2 class="project-cards-heading">Featured Projects</h2>
         </header>
-        <div class="project-cards-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="project-cards-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           ${cardsMarkup}
         </div>
       </div>

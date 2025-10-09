@@ -22,7 +22,7 @@ export const renderProjectsPage = (): string => `
     ${renderHeroSection()}
     <section class="projects-content -mt-12 md:-mt-16 pt-4 md:pt-6 pb-12" data-project-cards>
       <div class="max-w-7xl mx-auto px-6">
-        <div class="project-cards-grid grid grid-cols-1 md:grid-cols-2 gap-6" data-project-cards-grid>
+        <div class="project-cards-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-project-cards-grid>
           ${featuredProjects.map((project: FeaturedProject, index) => renderProjectCard(project, index)).join('')}
         </div>
       </div>
