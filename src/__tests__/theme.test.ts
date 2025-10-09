@@ -29,8 +29,16 @@ describe('theme utils', () => {
 
     // Verify notifications captured transitions
     expect(seen.length).toBeGreaterThanOrEqual(2);
-    expect(seen[0].endsWith('->light')).toBe(true);
-    expect(seen[seen.length - 1].endsWith('->dark')).toBe(true);
+    const firstTransition = seen[0];
+    if (!firstTransition) {
+      throw new Error('expected at least one theme transition');
+    }
+    const lastTransition = seen[seen.length - 1];
+    if (!lastTransition) {
+      throw new Error('expected a final theme transition value');
+    }
+    expect(firstTransition.endsWith('->light')).toBe(true);
+    expect(lastTransition.endsWith('->dark')).toBe(true);
 
     unsubscribe();
   });

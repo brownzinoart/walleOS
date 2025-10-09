@@ -103,6 +103,14 @@ export default {
         slow: '400ms'
       }
     },
+    /**
+     * Breakpoint system (Desktop 1024px+ is the source of truth)
+     * - Mobile: 0-767px (max-width: 767px)
+     * - Tablet: 768-1023px (min-width: 768px, max-width: 1023px)
+     * - Desktop: 1024px+ (min-width: 1024px)
+     * Tailwind's `md` breakpoint targets tablet-specific styles, while `lg` represents desktop.
+     * Start with desktop-first decisions at `lg` and adapt down for tablet and mobile experiences.
+     */
     screens: {
       sm: '640px',
       md: '768px',

@@ -20,7 +20,15 @@ const layoutState: LayoutState = {
   activeNavItem: null,
 };
 
-const isDesktop = () => window.matchMedia('(min-width: 768px)').matches;
+const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
+
+const isOffCanvasSidebar = (el: HTMLElement) => {
+  try {
+    return getComputedStyle(el).position === 'fixed';
+  } catch {
+    return !isDesktop();
+  }
+};
 
 const setSidebarOpenState = (
   sidebar: HTMLElement,
@@ -31,17 +39,17 @@ const setSidebarOpenState = (
   const sidebarElement = sidebar;
   const overlayElement = overlay;
   const triggerElement = trigger;
-  const desktop = isDesktop();
-  const sidebarHidden = desktop ? false : !shouldOpen;
-  const showOverlay = shouldOpen && !desktop;
+  const offCanvas = isOffCanvasSidebar(sidebar);
+  const sidebarHidden = offCanvas ? !shouldOpen : false;
+  const showOverlay = shouldOpen && offCanvas;
 
   layoutState.isSidebarOpen = showOverlay;
 
   sidebarElement.classList.toggle('translate-x-0', shouldOpen);
   sidebarElement.classList.toggle('-translate-x-full', !shouldOpen);
-  sidebarElement.classList.toggle('sidebar-open', shouldOpen && !desktop);
-  sidebarElement.classList.toggle('sidebar-closed', !shouldOpen && !desktop);
-  sidebarElement.classList.toggle('shadow-brutal-lg', shouldOpen && !desktop);
+  sidebarElement.classList.toggle('sidebar-open', shouldOpen && offCanvas);
+  sidebarElement.classList.toggle('sidebar-closed', !shouldOpen && offCanvas);
+  sidebarElement.classList.toggle('shadow-brutal-lg', shouldOpen && offCanvas);
   sidebarElement.setAttribute('aria-hidden', String(sidebarHidden));
 
   overlayElement.classList.toggle('overlay-visible', showOverlay);
@@ -57,7 +65,7 @@ const closeSidebar = (
   overlay: HTMLElement,
   trigger: HTMLElement
 ) => {
-  if (!layoutState.isSidebarOpen && !isDesktop()) {
+  if (!layoutState.isSidebarOpen && isOffCanvasSidebar(sidebar)) {
     return;
   }
 
@@ -146,7 +154,7 @@ export const initLayout = (): void => {
   });
 
   window.addEventListener('resize', () => {
-    if (isDesktop()) {
+    if (!isOffCanvasSidebar(sidebar)) {
       closeSidebar(sidebar, overlay, trigger);
     }
   });

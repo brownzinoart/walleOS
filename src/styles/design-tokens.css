@@ -48,6 +48,12 @@
   --color-surface-alpha-12: rgba(var(--color-text-primary-rgb), 0.12);
   --color-surface-alpha-16: rgba(var(--color-text-primary-rgb), 0.16);
 
+  /* === Breakpoint System (Desktop 1024px+ is Source of Truth) === */
+  --breakpoint-mobile-max: 767px;
+  --breakpoint-tablet-min: 768px;
+  --breakpoint-tablet-max: 1023px;
+  --breakpoint-desktop-min: 1024px;
+
   /* === Spacing Scale === */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
@@ -131,6 +137,10 @@
   --color-surface-alpha-08: rgba(var(--color-text-primary-rgb), 0.08);
   --color-surface-alpha-12: rgba(var(--color-text-primary-rgb), 0.12);
   --color-surface-alpha-16: rgba(var(--color-text-primary-rgb), 0.16);
+  --breakpoint-mobile-max: 767px;
+  --breakpoint-tablet-min: 768px;
+  --breakpoint-tablet-max: 1023px;
+  --breakpoint-desktop-min: 1024px;
   --shadow-brutal: 4px 4px 0px var(--color-neon-cyan);
   --shadow-brutal-lg: 8px 8px 0px var(--color-neon-magenta);
 }
@@ -174,6 +184,10 @@
   --color-surface-alpha-08: rgba(var(--color-text-primary-rgb), 0.08);
   --color-surface-alpha-12: rgba(var(--color-text-primary-rgb), 0.12);
   --color-surface-alpha-16: rgba(var(--color-text-primary-rgb), 0.16);
+  --breakpoint-mobile-max: 767px;
+  --breakpoint-tablet-min: 768px;
+  --breakpoint-tablet-max: 1023px;
+  --breakpoint-desktop-min: 1024px;
   --shadow-brutal: 4px 4px 0px var(--color-neon-cyan);
   --shadow-brutal-lg: 8px 8px 0px var(--color-neon-magenta);
 }
