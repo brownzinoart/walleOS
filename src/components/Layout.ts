@@ -4,7 +4,6 @@ import { renderMobileNav, attachMobileNavListeners } from './MobileNav';
 
 const SIDEBAR_SELECTOR = '[data-sidebar]';
 const MOBILE_NAV_TRIGGER = '[data-mobile-nav-trigger]';
-const MOBILE_NAV_OVERLAY = '[data-mobile-nav-overlay]';
 
 type LayoutState = {
   isSidebarOpen: boolean;
@@ -20,6 +19,8 @@ const layoutState: LayoutState = {
   activeNavItem: null,
 };
 
+let lockedScrollY = 0;
+
 const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
 
 const isOffCanvasSidebar = (el: HTMLElement) => {
@@ -30,20 +31,33 @@ const isOffCanvasSidebar = (el: HTMLElement) => {
   }
 };
 
-const setSidebarOpenState = (
-  sidebar: HTMLElement,
-  overlay: HTMLElement,
-  trigger: HTMLElement,
-  shouldOpen: boolean
-) => {
+const setSidebarOpenState = (sidebar: HTMLElement, trigger: HTMLElement, shouldOpen: boolean) => {
   const sidebarElement = sidebar;
-  const overlayElement = overlay;
   const triggerElement = trigger;
   const offCanvas = isOffCanvasSidebar(sidebar);
   const sidebarHidden = offCanvas ? !shouldOpen : false;
-  const showOverlay = shouldOpen && offCanvas;
+  const offCanvasOpen = shouldOpen && offCanvas;
 
-  layoutState.isSidebarOpen = showOverlay;
+  layoutState.isSidebarOpen = offCanvasOpen;
+
+  // Lock body scroll on mobile when sidebar is open
+  if (offCanvasOpen) {
+    lockedScrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.top = `-${lockedScrollY}px`;
+  } else {
+    const topValue = document.body.style.top;
+    const y = Math.abs(parseInt(topValue || '0', 10)) || 0;
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.top = '';
+    if (topValue) {
+      window.scrollTo(0, y);
+    }
+  }
 
   sidebarElement.classList.toggle('translate-x-0', shouldOpen);
   sidebarElement.classList.toggle('-translate-x-full', !shouldOpen);
@@ -52,40 +66,52 @@ const setSidebarOpenState = (
   sidebarElement.classList.toggle('shadow-brutal-lg', shouldOpen && offCanvas);
   sidebarElement.setAttribute('aria-hidden', String(sidebarHidden));
 
-  overlayElement.classList.toggle('overlay-visible', showOverlay);
-  overlayElement.classList.toggle('overlay-hidden', !showOverlay);
-  overlayElement.setAttribute('aria-hidden', String(!showOverlay));
+  const main = document.querySelector<HTMLElement>('[data-main-content]');
 
-  triggerElement.classList.toggle('open', showOverlay);
-  triggerElement.setAttribute('aria-expanded', String(showOverlay));
+  if (main) {
+    const mainWithInert = main as HTMLElement & { inert?: boolean };
+    const supportsInert =
+      'inert' in HTMLElement.prototype || typeof mainWithInert.inert !== 'undefined';
+
+    if (offCanvasOpen) {
+      mainWithInert.setAttribute('aria-hidden', 'true');
+      if (supportsInert) {
+        mainWithInert.inert = true;
+      }
+    } else {
+      mainWithInert.removeAttribute('aria-hidden');
+      if (supportsInert) {
+        mainWithInert.inert = false;
+      }
+    }
+  }
+
+  triggerElement.classList.toggle('open', offCanvasOpen);
+  triggerElement.setAttribute('aria-expanded', String(offCanvasOpen));
 };
 
-const closeSidebar = (
-  sidebar: HTMLElement,
-  overlay: HTMLElement,
-  trigger: HTMLElement
-) => {
+const closeSidebar = (sidebar: HTMLElement, trigger: HTMLElement) => {
   if (!layoutState.isSidebarOpen && isOffCanvasSidebar(sidebar)) {
     return;
   }
 
-  setSidebarOpenState(sidebar, overlay, trigger, false);
+  setSidebarOpenState(sidebar, trigger, false);
 };
 
 export const renderLayout = (mainContent: string): string => `
   <div class="layout-root relative min-h-screen text-primary">
     ${renderMobileNav()}
-    <div class="layout-container grid grid-cols-1 md:grid-cols-[280px_1fr]">
+    <div class="layout-container grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr]">
       <div
         id="sidebar-drawer"
-        class="sidebar-container fixed inset-y-0 left-0 z-40 w-[280px] -translate-x-full transform transition-transform duration-300 ease-in-out md:static md:z-auto md:h-full md:w-[280px] md:translate-x-0"
+        class="sidebar-container fixed inset-0 z-40 w-full -translate-x-full transform transition-transform duration-300 ease-in-out md:static md:z-auto md:inset-auto md:h-full md:w-[240px] md:translate-x-0 lg:w-[280px] lg:static lg:z-auto lg:h-full lg:translate-x-0"
         data-sidebar
         aria-hidden="true"
       >
         ${renderSidebar()}
       </div>
       <main
-        class="main-content-area w-full min-h-screen p-6 pt-20 md:p-12"
+        class="main-content-area w-full min-h-screen p-6 pt-20 md:p-8 md:pt-20 lg:p-12"
         data-main-content
         role="main"
         aria-label="Main content"
@@ -100,9 +126,8 @@ export const renderLayout = (mainContent: string): string => `
 export const initLayout = (): void => {
   const sidebar = document.querySelector<HTMLElement>(SIDEBAR_SELECTOR);
   const trigger = document.querySelector<HTMLElement>(MOBILE_NAV_TRIGGER);
-  const overlay = document.querySelector<HTMLElement>(MOBILE_NAV_OVERLAY);
 
-  if (!sidebar || !trigger || !overlay) {
+  if (!sidebar || !trigger) {
     return;
   }
 
@@ -115,10 +140,10 @@ export const initLayout = (): void => {
     setActiveNavItem(layoutState.activeNavItem, { silent: true });
   }
 
-  setSidebarOpenState(sidebar, overlay, trigger, false);
+  setSidebarOpenState(sidebar, trigger, false);
 
   const toggleSidebar = () => {
-    setSidebarOpenState(sidebar, overlay, trigger, !layoutState.isSidebarOpen);
+    setSidebarOpenState(sidebar, trigger, !layoutState.isSidebarOpen);
   };
 
   const handleSidebarNavigate = (event: Event) => {
@@ -132,7 +157,7 @@ export const initLayout = (): void => {
     layoutState.activeNavItem = navId;
 
     if (!isDesktop()) {
-      closeSidebar(sidebar, overlay, trigger);
+      closeSidebar(sidebar, trigger);
     }
   };
 
@@ -149,13 +174,13 @@ export const initLayout = (): void => {
 
   attachMobileNavListeners(toggleSidebar, {
     getIsOpen: () => layoutState.isSidebarOpen,
-    close: () => closeSidebar(sidebar, overlay, trigger),
+    close: () => closeSidebar(sidebar, trigger),
     sidebar,
   });
 
   window.addEventListener('resize', () => {
     if (!isOffCanvasSidebar(sidebar)) {
-      closeSidebar(sidebar, overlay, trigger);
+      closeSidebar(sidebar, trigger);
     }
   });
 };

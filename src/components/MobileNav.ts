@@ -1,7 +1,7 @@
-import { addWillChange, removeWillChange, rafThrottle, prefersReducedMotion } from '@/utils/performance';
+import { addWillChange, removeWillChange, prefersReducedMotion } from '@/utils/performance';
 
 const MOBILE_NAV_TRIGGER = '[data-mobile-nav-trigger]';
-const MOBILE_NAV_OVERLAY = '[data-mobile-nav-overlay]';
+const MOBILE_NAV_CLOSE = '[data-mobile-nav-close]';
 const SIDEBAR_DRAWER = '#sidebar-drawer';
 
 const FOCUSABLE_SELECTORS = [
@@ -106,11 +106,6 @@ const applyFocusState = (sidebar: HTMLElement, trigger: HTMLElement, isOpen: boo
   });
 };
 
-const syncAriaAttributes = (trigger: HTMLElement, overlay: HTMLElement, isOpen: boolean) => {
-  trigger.setAttribute('aria-expanded', String(isOpen));
-  overlay.setAttribute('aria-hidden', String(!isOpen));
-};
-
 const manageWillChange = (sidebar: HTMLElement, isOpening: boolean) => {
   if (prefersReducedMotion()) {
     removeWillChange(sidebar);
@@ -130,139 +125,10 @@ const manageWillChange = (sidebar: HTMLElement, isOpening: boolean) => {
   sidebar.addEventListener('transitionend', handleTransitionEnd, { once: true });
 };
 
-const createSwipeGesture = (
-  sidebar: HTMLElement,
-  overlay: HTMLElement,
-  config: Required<Pick<MobileNavConfig, 'getIsOpen' | 'close'>>
-) => {
-  if (prefersReducedMotion()) {
-    return;
-  }
-
-  let startX = 0;
-  let startY = 0;
-  let latestX = 0;
-  let startTime = 0;
-  let isDragging = false;
-  let directionLocked: boolean | null = null;
-
-  const sidebarWidth = () => sidebar.getBoundingClientRect().width || 1;
-
-  const updatePosition = rafThrottle((translateX: number) => {
-    sidebar.style.transform = `translate3d(${translateX}px, 0, 0)`;
-    const opacity = Math.max(0, Math.min(1, 1 + translateX / sidebarWidth()));
-    overlay.style.opacity = opacity.toString();
-  });
-
-  const resetStyles = () => {
-    sidebar.style.transition = '';
-    sidebar.style.transform = '';
-    overlay.style.opacity = '';
-    updatePosition.cancel?.();
-  };
-
-  const handleTouchStart = (event: TouchEvent) => {
-    if (!config.getIsOpen()) {
-      return;
-    }
-
-    const touch = event.touches[0];
-
-    if (!touch) {
-      return;
-    }
-
-    startX = touch.clientX;
-    startY = touch.clientY;
-    latestX = startX;
-    startTime = event.timeStamp;
-    isDragging = true;
-    directionLocked = null;
-    sidebar.style.transition = 'none';
-    addWillChange(sidebar, ['transform']);
-  };
-
-  const handleTouchMove = (event: TouchEvent) => {
-    if (!isDragging) {
-      return;
-    }
-
-    const touch = event.touches[0];
-
-    if (!touch) {
-      return;
-    }
-
-    const deltaX = touch.clientX - startX;
-    const deltaY = touch.clientY - startY;
-
-    if (directionLocked === null) {
-      directionLocked = Math.abs(deltaX) > Math.abs(deltaY);
-    }
-
-    if (directionLocked === false) {
-      resetStyles();
-      removeWillChange(sidebar);
-      isDragging = false;
-      return;
-    }
-
-    event.preventDefault();
-
-    latestX = touch.clientX;
-
-    if (deltaX >= 0) {
-      updatePosition(0);
-      return;
-    }
-
-    const translateX = Math.max(deltaX, -sidebarWidth());
-    updatePosition(translateX);
-  };
-
-  const shouldCloseOnRelease = (deltaX: number, elapsed: number) => {
-    const velocity = Math.abs(deltaX) / Math.max(elapsed, 1);
-    return deltaX < -80 || velocity > 0.45;
-  };
-
-  const handleTouchEnd = (event: TouchEvent) => {
-    if (!isDragging) {
-      return;
-    }
-
-    const deltaX = latestX - startX;
-    const elapsed = event.timeStamp - startTime;
-
-    resetStyles();
-    removeWillChange(sidebar);
-
-    if (shouldCloseOnRelease(deltaX, elapsed)) {
-      config.close();
-    }
-
-    isDragging = false;
-  };
-
-  const handleTouchCancel = () => {
-    if (!isDragging) {
-      return;
-    }
-
-    resetStyles();
-    removeWillChange(sidebar);
-    isDragging = false;
-  };
-
-  sidebar.addEventListener('touchstart', handleTouchStart, { passive: true });
-  sidebar.addEventListener('touchmove', handleTouchMove, { passive: false });
-  sidebar.addEventListener('touchend', handleTouchEnd);
-  sidebar.addEventListener('touchcancel', handleTouchCancel);
-};
-
 export const renderMobileNav = (): string => `
   <button
     type="button"
-    class="hamburger md:hidden focus:outline-none"
+    class="hamburger md:hidden lg:hidden focus:outline-none"
     data-mobile-nav-trigger
     aria-label="Toggle navigation menu"
     aria-expanded="false"
@@ -272,23 +138,18 @@ export const renderMobileNav = (): string => `
     <span class="hamburger-bar"></span>
     <span class="hamburger-bar"></span>
   </button>
-  <div
-    class="mobile-overlay md:hidden overlay-hidden"
-    data-mobile-nav-overlay
-    aria-hidden="true"
-    aria-label="Close navigation menu"
-  ></div>
 `;
 
 export const attachMobileNavListeners = (
   toggleCallback: () => void,
   config: MobileNavConfig = {}
 ): void => {
+  // Swipe-to-close was intentionally removed with the full-screen menu pattern.
   const trigger = document.querySelector<HTMLButtonElement>(MOBILE_NAV_TRIGGER);
-  const overlay = document.querySelector<HTMLDivElement>(MOBILE_NAV_OVERLAY);
+  const closeButton = document.querySelector<HTMLButtonElement>(MOBILE_NAV_CLOSE);
   const sidebar = getSidebarElement(config.sidebar);
 
-  if (!trigger || !overlay || !sidebar) {
+  if (!trigger || !sidebar) {
     return;
   }
 
@@ -326,7 +187,7 @@ export const attachMobileNavListeners = (
     }
 
     lastKnownState = isOpen;
-    syncAriaAttributes(trigger, overlay, isOpen);
+    trigger.setAttribute('aria-expanded', String(isOpen));
     applyFocusState(sidebar, trigger, isOpen);
 
     if (!isOpen) {
@@ -343,24 +204,24 @@ export const attachMobileNavListeners = (
 
   trigger.addEventListener('click', handleToggle);
 
-  overlay.addEventListener('click', () => {
-    closeNav();
-  });
+  if (closeButton) {
+    closeButton.addEventListener('click', () => {
+      closeNav();
+    });
 
-  overlay.addEventListener('touchstart', () => {
-    // Ensure overlay taps register quickly on touch devices
-    closeNav();
-  });
+    closeButton.addEventListener(
+      'touchstart',
+      () => {
+        closeNav();
+      },
+      { passive: true }
+    );
+  }
 
   window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (event.key === 'Escape' && getIsOpen()) {
       closeNav();
     }
-  });
-
-  createSwipeGesture(sidebar, overlay, {
-    getIsOpen,
-    close: closeNav,
   });
 
   syncState(true);

@@ -39,6 +39,77 @@
 - [ ] Send button is visible and interactive
 - [ ] Experience context indicator (if shown) is clear
 
+## Mobile Navigation & Chat Input Layout
+
+### Chat Input Positioning
+
+The chat input uses **static positioning on all breakpoints**, appearing in the normal document flow:
+
+**Layout Order:**
+1. Chat context indicator
+2. Welcome card (when no messages)
+3. Suggestion chips (when no messages)
+4. Chat messages container
+5. **Chat input** ← Always in this position
+
+**Key Decisions:**
+- Static positioning on mobile matches desktop layout
+- No fixed positioning or z-index conflicts
+- Appears naturally after suggestion chips
+- Scrolls with page content
+- Accessible when mobile menu is closed
+
+### Full-Screen Mobile Menu
+
+The mobile navigation uses a full-screen overlay pattern:
+
+**Mobile (< 768px):**
+- Hamburger button in top left opens menu
+- Sidebar slides in at full width (100vw × 100vh)
+- Close button (X) in top right
+- Body scroll locked when menu is open
+- Sidebar content scrollable
+- Covers all page content including chat input
+
+**Tablet/Desktop (≥ 768px):**
+- Static sidebar (no hamburger or close button)
+- Chat input in normal flow
+- No overlay or scroll locking
+
+**Implementation Details:**
+
+1. **Body Scroll Lock:**
+   ```javascript
+   // When menu opens
+   document.body.style.overflow = 'hidden';
+   document.body.style.position = 'fixed';
+   ```
+
+2. **Chat Input:**
+   ```html
+   <div class="chat-input-container content-container px-4 pb-4 md:px-0 md:pb-0">
+   ```
+   - No fixed positioning
+   - No z-index needed
+   - Part of normal document flow
+
+3. **Sidebar:**
+   ```html
+   <div class="sidebar-container fixed inset-0 z-40 w-full ...">
+   ```
+   - Full-screen on mobile
+   - Static on tablet/desktop
+
+**Testing Checklist:**
+- [ ] Chat input visible below suggestions on mobile (menu closed)
+- [ ] Chat input scrolls with page content
+- [ ] Mobile menu opens full-screen
+- [ ] Body scroll locked when menu open
+- [ ] Close button (X) closes menu
+- [ ] Chat input accessible after closing menu
+- [ ] No z-index conflicts
+- [ ] Layout matches desktop on all breakpoints
+
 ## Projects Page
 - [ ] Page headline is readable
 - [ ] Page description has proper contrast

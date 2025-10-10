@@ -375,11 +375,22 @@ export const renderSidebar = (): string => {
 
   return `
     <aside
-      class="sidebar flex h-full flex-col justify-between border-r border-default bg-surface-secondary p-6 text-primary"
+      class="sidebar flex h-full flex-col justify-between border-r border-default bg-surface-secondary p-6 text-primary overflow-y-auto"
       role="navigation"
       aria-label="Main navigation"
       data-sidebar
     >
+      <button
+        type="button"
+        class="sidebar-close-button md:hidden lg:hidden fixed top-4 right-4 z-50 w-12 h-12 flex items-center justify-center rounded-lg border-2 border-neon-cyan bg-surface-secondary hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan transition-all"
+        data-mobile-nav-close
+        aria-label="Close navigation menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-neon-cyan">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       <a href="#main-content" class="sidebar-skip-link" data-sidebar-skip>Skip to main content</a>
       <div class="flex flex-col gap-8">
         <div class="sidebar-header">

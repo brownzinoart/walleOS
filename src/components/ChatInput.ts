@@ -181,9 +181,18 @@ const handleSubmit = (onSubmit: (message: string) => void) => {
   updateSendButtonState();
 };
 
+/**
+ * Renders the chat input component.
+ *
+ * Positioning:
+ * - Static positioning on all breakpoints (part of normal document flow)
+ * - Appears after suggestion chips and chat messages
+ * - Matches desktop layout on mobile
+ * - No z-index conflicts since it's not overlapping with other elements
+ */
 export const renderChatInput = (): string => `
   <div
-    class="chat-input-container fixed inset-x-0 bottom-0 z-10 content-container px-4 pb-4 md:static md:px-0 md:pb-0"
+    class="chat-input-container content-container px-4 pb-4 md:px-0 md:pb-0"
     data-chat-input-container
   >
     <div class="flex gap-2 border-2 border-default bg-surface-muted rounded-lg p-3 focus-within:border-neon-cyan focus-within:shadow-brutal transition-all">
