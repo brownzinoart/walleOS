@@ -375,7 +375,7 @@ export const renderSidebar = (): string => {
 
   return `
     <aside
-      class="sidebar flex h-full flex-col border-r border-default bg-surface-secondary p-6 text-primary"
+      class="sidebar flex h-full flex-col border-r border-default bg-surface-secondary p-3 text-primary md:p-5 lg:p-6"
       role="navigation"
       aria-label="Main navigation"
       data-sidebar
@@ -392,16 +392,16 @@ export const renderSidebar = (): string => {
         </svg>
       </button>
       <a href="#main-content" class="sidebar-skip-link" data-sidebar-skip>Skip to main content</a>
-      <div class="sidebar-content flex flex-col gap-8">
+      <div class="sidebar-content flex flex-col gap-3">
         <div class="sidebar-header">
           <div class="sidebar-branding group cursor-pointer" data-sidebar-branding>
             <span
-              class="sidebar-branding-title text-heading-2 font-black tracking-tight"
+              class="sidebar-branding-title text-xl font-black tracking-tight md:text-heading-2"
               style="--branding-accent: var(--color-branding-base, var(--color-neon-cyan));"
             >
               ${branding.name}
             </span>
-            <p class="sidebar-branding-tagline mt-3 max-w-xs text-sm text-secondary">
+            <p class="sidebar-branding-tagline mt-1 max-w-xs text-sm text-secondary">
               ${branding.tagline}
             </p>
           </div>
@@ -416,9 +416,10 @@ export const renderSidebar = (): string => {
         <div class="sidebar-theme-toggle-wrapper">
           ${renderThemeToggle()}
         </div>
+        <div class="sidebar-footer-divider" aria-hidden="true"></div>
         <div class="sidebar-utilities">
-          <div class="pt-6 text-sm text-secondary">
-            <div class="flex flex-col gap-3">
+          <div class="text-sm text-secondary">
+            <div class="flex flex-col gap-2 pt-3">
               <a
                 class="font-medium text-primary transition-colors hover:text-[var(--color-neon-cyan)] focus-visible:text-[var(--color-neon-cyan)]"
                 href="${emailLink}"
