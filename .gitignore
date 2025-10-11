@@ -9,3 +9,9 @@ Thumbs.db
 .idea/
 coverage/
 .turbo/
+.next/
+.vercel/
+playwright-report/
+test-results/
+.nyc_output/
+.eslintcache
