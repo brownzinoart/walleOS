@@ -1,7 +1,8 @@
+import { renderThemeToggle } from '@/components/ThemeToggle';
+import { branding } from '@/config/content';
 import { addWillChange, removeWillChange, prefersReducedMotion } from '@/utils/performance';
 
 const MOBILE_NAV_TRIGGER = '[data-mobile-nav-trigger]';
-const MOBILE_NAV_CLOSE = '[data-mobile-nav-close]';
 const SIDEBAR_DRAWER = '#sidebar-drawer';
 
 const FOCUSABLE_SELECTORS = [
@@ -126,18 +127,24 @@ const manageWillChange = (sidebar: HTMLElement, isOpening: boolean) => {
 };
 
 export const renderMobileNav = (): string => `
-  <button
-    type="button"
-    class="hamburger md:hidden lg:hidden focus:outline-none"
-    data-mobile-nav-trigger
-    aria-label="Toggle navigation menu"
-    aria-expanded="false"
-    aria-controls="sidebar-drawer"
-  >
-    <span class="hamburger-bar"></span>
-    <span class="hamburger-bar"></span>
-    <span class="hamburger-bar"></span>
-  </button>
+  <nav class="mobile-nav-bar md:hidden lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-surface-secondary/95 backdrop-blur">
+    <button
+      type="button"
+      class="hamburger focus:outline-none"
+      data-mobile-nav-trigger
+      aria-label="Toggle navigation menu"
+      aria-expanded="false"
+      aria-controls="sidebar-drawer"
+    >
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+    </button>
+    <div class="mobile-nav-logo">${branding.name}</div>
+    <div class="mobile-nav-actions">
+      ${renderThemeToggle()}
+    </div>
+  </nav>
 `;
 
 export const attachMobileNavListeners = (
@@ -146,8 +153,8 @@ export const attachMobileNavListeners = (
 ): void => {
   // Swipe-to-close was intentionally removed with the full-screen menu pattern.
   const trigger = document.querySelector<HTMLButtonElement>(MOBILE_NAV_TRIGGER);
-  const closeButton = document.querySelector<HTMLButtonElement>(MOBILE_NAV_CLOSE);
   const sidebar = getSidebarElement(config.sidebar);
+  const mobileNavBar = trigger?.closest<HTMLElement>('.mobile-nav-bar') ?? null;
 
   if (!trigger || !sidebar) {
     return;
@@ -189,6 +196,13 @@ export const attachMobileNavListeners = (
     lastKnownState = isOpen;
     trigger.setAttribute('aria-expanded', String(isOpen));
     applyFocusState(sidebar, trigger, isOpen);
+    if (mobileNavBar) {
+      if (isOpen) {
+        mobileNavBar.setAttribute('data-open', 'true');
+      } else {
+        mobileNavBar.removeAttribute('data-open');
+      }
+    }
 
     if (!isOpen) {
       removeWillChange(sidebar);
@@ -203,20 +217,6 @@ export const attachMobileNavListeners = (
   };
 
   trigger.addEventListener('click', handleToggle);
-
-  if (closeButton) {
-    closeButton.addEventListener('click', () => {
-      closeNav();
-    });
-
-    closeButton.addEventListener(
-      'touchstart',
-      () => {
-        closeNav();
-      },
-      { passive: true }
-    );
-  }
 
   window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (event.key === 'Escape' && getIsOpen()) {

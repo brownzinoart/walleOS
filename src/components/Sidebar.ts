@@ -405,7 +405,7 @@ export const renderSidebar = (): string => {
               ${branding.tagline}
             </p>
           </div>
-          <div class="sidebar-header-toggle">
+          <div class="sidebar-header-toggle hidden md:block lg:block">
             ${renderThemeToggle()}
           </div>
         </div>

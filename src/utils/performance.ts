@@ -215,6 +215,93 @@ export const prefersReducedMotion = (): boolean => {
   return prefersReducedMotionCached;
 };
 
+let isMobileViewportCached: boolean | null = null;
+let mobileViewportMediaQuery: MediaQueryList | null = null;
+let mobileViewportListener: ((event: MediaQueryListEvent) => void) | null = null;
+const mobileViewportSubscribers = new Set<(isMobile: boolean) => void>();
+
+const evaluateMobileViewport = (): boolean => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false;
+  }
+
+  return window.matchMedia('(max-width: 768px)').matches;
+};
+
+const ensureMobileViewportListener = () => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return;
+  }
+
+  if (mobileViewportMediaQuery && mobileViewportListener) {
+    return;
+  }
+
+  mobileViewportMediaQuery = window.matchMedia('(max-width: 768px)');
+
+  mobileViewportListener = (event: MediaQueryListEvent) => {
+    const matches =
+      typeof event.matches === 'boolean'
+        ? event.matches
+        : mobileViewportMediaQuery?.matches ?? evaluateMobileViewport();
+
+    isMobileViewportCached = matches;
+    mobileViewportSubscribers.forEach((subscriber) => {
+      subscriber(matches);
+    });
+  };
+
+  if (typeof mobileViewportMediaQuery.addEventListener === 'function') {
+    mobileViewportMediaQuery.addEventListener('change', mobileViewportListener);
+  } else if (typeof mobileViewportMediaQuery.addListener === 'function') {
+    mobileViewportMediaQuery.addListener(mobileViewportListener);
+  }
+
+  isMobileViewportCached = mobileViewportMediaQuery.matches;
+};
+
+export const isMobileViewport = (): boolean => {
+  if (isMobileViewportCached === null) {
+    isMobileViewportCached = evaluateMobileViewport();
+  }
+
+  ensureMobileViewportListener();
+
+  return Boolean(isMobileViewportCached);
+};
+
+export const cleanupMobileViewportListener = (): void => {
+  if (mobileViewportMediaQuery && mobileViewportListener) {
+    if (typeof mobileViewportMediaQuery.removeEventListener === 'function') {
+      mobileViewportMediaQuery.removeEventListener('change', mobileViewportListener);
+    } else if (typeof mobileViewportMediaQuery.removeListener === 'function') {
+      mobileViewportMediaQuery.removeListener(mobileViewportListener);
+    }
+  }
+
+  mobileViewportSubscribers.clear();
+  mobileViewportMediaQuery = null;
+  mobileViewportListener = null;
+  isMobileViewportCached = null;
+};
+
+export const subscribeToMobileViewportChange = (
+  callback: (isMobile: boolean) => void,
+): (() => void) => {
+  if (typeof callback !== 'function') {
+    return () => undefined;
+  }
+
+  mobileViewportSubscribers.add(callback);
+
+  const currentState = isMobileViewport();
+  callback(currentState);
+
+  return () => {
+    mobileViewportSubscribers.delete(callback);
+  };
+};
+
 export const measurePerformance = <T>(label: string, callback: () => T): T => {
   if (typeof performance === 'undefined' || typeof performance.mark !== 'function') {
     return callback();

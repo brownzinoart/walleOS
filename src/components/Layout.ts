@@ -1,3 +1,4 @@
+import { getCurrentRoute } from '@/utils/router';
 import { renderSidebar, initSidebarInteractions, setActiveNavItem } from './Sidebar';
 import { attachThemeToggleListeners } from './ThemeToggle';
 import { renderMobileNav, attachMobileNavListeners } from './MobileNav';
@@ -98,41 +99,49 @@ const closeSidebar = (sidebar: HTMLElement, trigger: HTMLElement) => {
   setSidebarOpenState(sidebar, trigger, false);
 };
 
-export const renderLayout = (mainContent: string): string => `
-  <div class="layout-root relative min-h-screen text-primary">
-    ${renderMobileNav()}
-    <div class="layout-container grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr]">
-      <div
-        id="sidebar-drawer"
-        class="sidebar-container fixed inset-0 z-40 w-full -translate-x-full transform transition-transform duration-300 ease-in-out md:static md:z-auto md:inset-auto md:h-full md:w-[240px] md:translate-x-0 lg:w-[280px] lg:static lg:z-auto lg:h-full lg:translate-x-0"
-        data-sidebar
-        aria-hidden="true"
-      >
-        ${renderSidebar()}
+export const renderLayout = (mainContent: string): string => {
+  const hasWindow = typeof window !== 'undefined';
+  const isHomeRoute = hasWindow ? getCurrentRoute() === 'home' : false;
+  const isMobileViewport = hasWindow ? !isDesktop() : false;
+  const shouldRenderMobileNav = isHomeRoute && isMobileViewport;
+  const mobileNavMarkup = shouldRenderMobileNav ? renderMobileNav() : '';
+
+  return `
+    <div class="layout-root relative min-h-screen text-primary">
+      ${mobileNavMarkup}
+      <div class="layout-container grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr]">
+        <div
+          id="sidebar-drawer"
+          class="sidebar-container fixed inset-0 z-40 w-full -translate-x-full transform transition-transform duration-300 ease-in-out md:static md:z-auto md:inset-auto md:h-full md:w-[240px] md:translate-x-0 lg:w-[280px] lg:static lg:z-auto lg:h-full lg:translate-x-0"
+          data-sidebar
+          aria-hidden="true"
+        >
+          ${renderSidebar()}
+        </div>
+        <main
+          class="main-content-area w-full min-h-screen p-6 pt-20 md:p-8 md:pt-20 lg:p-12"
+          data-main-content
+          role="main"
+          aria-label="Main content"
+          id="main-content"
+        >
+          ${mainContent}
+        </main>
       </div>
-      <main
-        class="main-content-area w-full min-h-screen p-6 pt-20 md:p-8 md:pt-20 lg:p-12"
-        data-main-content
-        role="main"
-        aria-label="Main content"
-        id="main-content"
-      >
-        ${mainContent}
-      </main>
     </div>
-  </div>
-`;
+  `;
+};
 
 export const initLayout = (): void => {
   const sidebar = document.querySelector<HTMLElement>(SIDEBAR_SELECTOR);
   const trigger = document.querySelector<HTMLElement>(MOBILE_NAV_TRIGGER);
 
-  if (!sidebar || !trigger) {
+  if (!sidebar) {
     return;
   }
 
   initSidebarInteractions();
-  
+
   // Attach theme toggle listeners
   attachThemeToggleListeners();
 
@@ -140,11 +149,25 @@ export const initLayout = (): void => {
     setActiveNavItem(layoutState.activeNavItem, { silent: true });
   }
 
-  setSidebarOpenState(sidebar, trigger, false);
+  if (trigger) {
+    setSidebarOpenState(sidebar, trigger, false);
 
-  const toggleSidebar = () => {
-    setSidebarOpenState(sidebar, trigger, !layoutState.isSidebarOpen);
-  };
+    const toggleSidebar = () => {
+      setSidebarOpenState(sidebar, trigger, !layoutState.isSidebarOpen);
+    };
+
+    attachMobileNavListeners(toggleSidebar, {
+      getIsOpen: () => layoutState.isSidebarOpen,
+      close: () => closeSidebar(sidebar, trigger),
+      sidebar,
+    });
+
+    window.addEventListener('resize', () => {
+      if (!isOffCanvasSidebar(sidebar)) {
+        closeSidebar(sidebar, trigger);
+      }
+    });
+  }
 
   const handleSidebarNavigate = (event: Event) => {
     const customEvent = event as CustomEvent<{ id: string }>;
@@ -156,7 +179,7 @@ export const initLayout = (): void => {
 
     layoutState.activeNavItem = navId;
 
-    if (!isDesktop()) {
+    if (trigger && !isDesktop()) {
       closeSidebar(sidebar, trigger);
     }
   };
@@ -171,16 +194,4 @@ export const initLayout = (): void => {
 
   document.addEventListener('sidebar:navigate', handleSidebarNavigate);
   document.addEventListener('sidebar:active-change', handleActiveChange);
-
-  attachMobileNavListeners(toggleSidebar, {
-    getIsOpen: () => layoutState.isSidebarOpen,
-    close: () => closeSidebar(sidebar, trigger),
-    sidebar,
-  });
-
-  window.addEventListener('resize', () => {
-    if (!isOffCanvasSidebar(sidebar)) {
-      closeSidebar(sidebar, trigger);
-    }
-  });
 };

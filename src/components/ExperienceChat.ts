@@ -34,7 +34,7 @@ const EXPERIENCE_SEND_BUTTON_SELECTOR = '[data-experience-send-button]';
 const EXPERIENCE_SEND_LABEL_SELECTOR = '[data-experience-send-label]';
 const EXPERIENCE_SEND_SPINNER_SELECTOR = '[data-experience-send-spinner]';
 const EXPERIENCE_CHAR_COUNT_SELECTOR = '[data-experience-char-count]';
-const EXPERIENCE_CHAT_CLOSE_SELECTOR = '[data-experience-chat-close]';
+export const EXPERIENCE_CHAT_CLOSE_SELECTOR = '[data-experience-chat-close]';
 const EXPERIENCE_FOOTER_SELECTOR = '[data-experience-footer]';
 
 const MESSAGE_LENGTH_LIMIT = 600;
@@ -508,13 +508,14 @@ export const renderExperienceChat = (experienceId: string, experience: Experienc
     >
       <header class="experience-chat-header">
         <div class="experience-chat-header-content">
-          <p class="experience-chat-header-title">${escapeHtml(experience.title)}</p>
+          <p class="experience-chat-header-title" id="experience-chat-title-${escapedId}">${escapeHtml(experience.title)}</p>
           <p class="experience-chat-header-company">${escapeHtml(experience.company)}</p>
         </div>
         <button
           type="button"
           class="experience-chat-close-button"
           aria-label="Close chat"
+          aria-keyshortcuts="Escape"
           data-experience-chat-close
         >&times;</button>
       </header>

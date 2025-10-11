@@ -2,11 +2,19 @@ import {
   attachExperienceChatListeners,
   cleanupExperienceChat,
   renderExperienceChat,
+  EXPERIENCE_CHAT_CLOSE_SELECTOR,
 } from '@/components/ExperienceChat';
 import { resume } from '@/config/content';
 import type { Experience } from '@/types';
 import { escapeHtml } from '@/utils/dom';
-import { addWillChange, removeWillChange, prefersReducedMotion, observeIntersection } from '@/utils/performance';
+import {
+  addWillChange,
+  removeWillChange,
+  prefersReducedMotion,
+  observeIntersection,
+  isMobileViewport,
+  subscribeToMobileViewportChange,
+} from '@/utils/performance';
 
 const RESUME_SECTION_SELECTOR = '.resume-section';
 const RESUME_HEADER_SELECTOR = '.resume-header';
@@ -19,6 +27,7 @@ const EXPERIENCE_ROW_SELECTOR = '[data-experience-row]';
 const EXPERIENCE_CHAT_TOGGLE_SELECTOR = '[data-experience-chat-toggle]';
 const EXPERIENCE_CHAT_CONTAINER_SELECTOR = '[data-chat-container]';
 const EXPERIENCE_CARD_CONTAINER_SELECTOR = '[data-card-container]';
+const EXPERIENCE_ARIA_LIVE_SELECTOR = '[data-experience-aria-live]';
 
 const CHAT_TOGGLE_TEXT_OPEN = 'Close Chat';
 const CHAT_TOGGLE_TEXT_CLOSED = 'Chat About This Role';
@@ -52,6 +61,10 @@ resume.experiences.forEach((experience) => {
 const experienceRowRegistry = new Map<string, ExperienceRowEntry>();
 const experienceToggleHandlers = new Map<string, (event: Event) => void>();
 const experienceCloseHandlers = new Map<string, (event: Event) => void>();
+const experienceTouchHandlers = new Map<string, (event: TouchEvent) => void>();
+const experienceEscapeHandlers = new Map<string, (event: KeyboardEvent) => void>();
+let lastTouchInteractionTime = 0;
+let mobileViewportUnsubscribe: (() => void) | null = null;
 
 const getExperienceById = (experienceId: string): Experience | undefined =>
   experienceLookup.get(experienceId);
@@ -262,6 +275,13 @@ const renderExperienceContent = (experience: Experience): string => {
       data-experience-id="${experience.id}"
       data-chat-open="false"
     >
+      <div
+        class="sr-only"
+        data-experience-aria-live
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
       <div class="experience-card-container" data-card-container>
         <article
           class="resume-detail-content transition-all duration-200 ease-brutal focus-ring-theme hover:border-neon-cyan"
@@ -382,9 +402,45 @@ const openExperienceChatRow = (entry: ExperienceRowEntry): void => {
   chatContainer.innerHTML = renderExperienceChat(experience.id, experience);
   attachExperienceChatListeners(experience.id, experience);
   updateChatToggleButton(entry, true);
+  const mobileViewportActive = isMobileViewport();
+
+  if (mobileViewportActive) {
+    const closeButton = chatContainer.querySelector<HTMLButtonElement>(EXPERIENCE_CHAT_CLOSE_SELECTOR);
+
+    if (closeButton) {
+      const focusCloseButton = () => closeButton.focus({ preventScroll: false });
+
+      if (prefersReducedMotion()) {
+        focusCloseButton();
+      } else {
+        requestAnimationFrame(() => {
+          focusCloseButton();
+        });
+      }
+    }
+
+    const liveRegion = row.querySelector<HTMLElement>(EXPERIENCE_ARIA_LIVE_SELECTOR);
+
+    if (liveRegion) {
+      liveRegion.textContent = `Chat opened for ${experience.title}`;
+      window.setTimeout(() => {
+        if (liveRegion.textContent === `Chat opened for ${experience.title}`) {
+          liveRegion.textContent = '';
+        }
+      }, 1000);
+    }
+
+    const originalRole = chatContainer.getAttribute('role');
+    chatContainer.dataset['originalRole'] = originalRole ?? '';
+    chatContainer.setAttribute('role', 'dialog');
+    chatContainer.setAttribute('aria-modal', 'true');
+    chatContainer.setAttribute('aria-labelledby', `experience-chat-title-${experience.id}`);
+  }
+
+  attachEscapeKeyHandlerForMobile(experience.id, entry);
 
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-    navigator.vibrate?.(10);
+    navigator.vibrate?.([8, 12, 8]);
   }
 };
 
@@ -402,7 +458,38 @@ const closeExperienceChatRow = (
     return;
   }
 
+  const mobileViewportActive = isMobileViewport();
+
+  if (mobileViewportActive && (wasOpen || options?.immediate)) {
+    entry.toggleButton.focus({ preventScroll: true });
+
+    const liveRegion = row.querySelector<HTMLElement>(EXPERIENCE_ARIA_LIVE_SELECTOR);
+
+    if (liveRegion) {
+      liveRegion.textContent = 'Chat closed';
+      window.setTimeout(() => {
+        if (liveRegion.textContent === 'Chat closed') {
+          liveRegion.textContent = '';
+        }
+      }, 1000);
+    }
+
+    const originalRole = chatContainer.dataset['originalRole'] ?? '';
+
+    chatContainer.removeAttribute('aria-modal');
+    chatContainer.removeAttribute('aria-labelledby');
+
+    if (originalRole) {
+      chatContainer.setAttribute('role', originalRole);
+    } else {
+      chatContainer.removeAttribute('role');
+    }
+
+    delete chatContainer.dataset['originalRole'];
+  }
+
   const finalizeClose = () => {
+    removeEscapeKeyHandlerForMobile(experience.id);
     cleanupExperienceChat(experience.id);
     chatContainer.innerHTML = '';
     ensureChatContainerHidden(chatContainer);
@@ -418,12 +505,17 @@ const closeExperienceChatRow = (
 
   let fallbackTimeoutId: number | null = null;
 
+  const cleanupTransitionListeners = () => {
+    row.removeEventListener('transitionend', onTransitionEnd);
+    chatContainer.removeEventListener('transitionend', onTransitionEnd);
+  };
+
   const onTransitionEnd = (event: TransitionEvent) => {
-    if (event.target !== row) {
+    if (event.target !== event.currentTarget) {
       return;
     }
 
-    row.removeEventListener('transitionend', onTransitionEnd);
+    cleanupTransitionListeners();
 
     if (fallbackTimeoutId !== null) {
       window.clearTimeout(fallbackTimeoutId);
@@ -433,11 +525,103 @@ const closeExperienceChatRow = (
   };
 
   row.addEventListener('transitionend', onTransitionEnd, { once: true });
+  chatContainer.addEventListener('transitionend', onTransitionEnd, { once: true });
 
   fallbackTimeoutId = window.setTimeout(() => {
-    row.removeEventListener('transitionend', onTransitionEnd);
+    cleanupTransitionListeners();
     finalizeClose();
   }, 450);
+};
+
+/**
+ * Attach touchstart listeners for quick chat toggling on mobile viewports.
+ * Ensures touch interactions receive immediate feedback without duplicating click handlers.
+ */
+const attachTouchListenersForMobile = (experienceId: string, entry: ExperienceRowEntry): void => {
+  if (!isMobileViewport()) {
+    return;
+  }
+
+  if (experienceTouchHandlers.has(experienceId)) {
+    return;
+  }
+
+  const handler = (event: TouchEvent) => {
+    event.preventDefault();
+    lastTouchInteractionTime = Date.now();
+
+    if (entry.row.dataset['chatOpen'] === 'true') {
+      closeExperienceChatRow(entry);
+      return;
+    }
+
+    openExperienceChatRow(entry);
+  };
+
+  entry.toggleButton.addEventListener('touchstart', handler, { passive: false });
+  experienceTouchHandlers.set(experienceId, handler);
+};
+
+/**
+ * Remove touchstart listeners when the viewport exceeds the mobile breakpoint.
+ * Prevents lingering listeners when users resize or rotate their device.
+ */
+const removeTouchListenersForMobile = (experienceId: string, entry: ExperienceRowEntry): void => {
+  const handler = experienceTouchHandlers.get(experienceId);
+
+  if (!handler) {
+    return;
+  }
+
+  entry.toggleButton.removeEventListener('touchstart', handler);
+  experienceTouchHandlers.delete(experienceId);
+};
+
+/**
+ * Attach an Escape key listener that closes the mobile chat overlay and restores
+ * focus to the toggle button for improved keyboard accessibility on small screens.
+ * This listener is only active while the viewport matches the mobile breakpoint.
+ */
+const attachEscapeKeyHandlerForMobile = (experienceId: string, entry: ExperienceRowEntry): void => {
+  if (!isMobileViewport()) {
+    return;
+  }
+
+  if (experienceEscapeHandlers.has(experienceId)) {
+    return;
+  }
+
+  const handler = (event: KeyboardEvent) => {
+    if (event.key !== 'Escape') {
+      return;
+    }
+
+    if (entry.row.dataset['chatOpen'] !== 'true') {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    closeExperienceChatRow(entry);
+  };
+
+  document.addEventListener('keydown', handler);
+  experienceEscapeHandlers.set(experienceId, handler);
+};
+
+/**
+ * Remove the Escape key listener that is scoped to the mobile chat overlay when the
+ * viewport changes or the chat row unmounts, preventing orphaned handlers.
+ */
+const removeEscapeKeyHandlerForMobile = (experienceId: string): void => {
+  const handler = experienceEscapeHandlers.get(experienceId);
+
+  if (!handler) {
+    return;
+  }
+
+  document.removeEventListener('keydown', handler);
+  experienceEscapeHandlers.delete(experienceId);
 };
 
 export const initResumeInteractions = (): void => {
@@ -513,6 +697,11 @@ export const initResumeInteractions = (): void => {
 
     const handleToggle = (event: Event) => {
       event.preventDefault();
+      const timeSinceLastTouch = Date.now() - lastTouchInteractionTime;
+
+      if (timeSinceLastTouch < 500) {
+        return;
+      }
 
       if (row.dataset['chatOpen'] === 'true') {
         closeExperienceChatRow(entry);
@@ -535,6 +724,47 @@ export const initResumeInteractions = (): void => {
     row.addEventListener('experience-chat-close', handleCloseEvent);
     experienceCloseHandlers.set(experienceId, handleCloseEvent);
   });
+
+  if (mobileViewportUnsubscribe) {
+    mobileViewportUnsubscribe();
+    mobileViewportUnsubscribe = null;
+  }
+
+  mobileViewportUnsubscribe = subscribeToMobileViewportChange((isMobile) => {
+    experienceRowRegistry.forEach((entry, experienceId) => {
+      if (entry.row.dataset['chatOpen'] === 'true') {
+        if (!isMobile) {
+          const { chatContainer } = entry;
+          const originalRole = chatContainer.dataset['originalRole'] ?? '';
+          chatContainer.removeAttribute('aria-modal');
+          chatContainer.removeAttribute('aria-labelledby');
+          if (originalRole) chatContainer.setAttribute('role', originalRole);
+          else chatContainer.removeAttribute('role');
+        } else {
+          const { chatContainer, experience } = entry;
+          if (!chatContainer.dataset['originalRole']) {
+            const originalRole = chatContainer.getAttribute('role');
+            chatContainer.dataset['originalRole'] = originalRole ?? '';
+          }
+          chatContainer.setAttribute('role', 'dialog');
+          chatContainer.setAttribute('aria-modal', 'true');
+          chatContainer.setAttribute('aria-labelledby', `experience-chat-title-${experience.id}`);
+        }
+      }
+
+      if (isMobile) {
+        attachTouchListenersForMobile(experienceId, entry);
+        if (entry.row.dataset['chatOpen'] === 'true') {
+          attachEscapeKeyHandlerForMobile(experienceId, entry);
+        } else {
+          removeEscapeKeyHandlerForMobile(experienceId);
+        }
+      } else {
+        removeTouchListenersForMobile(experienceId, entry);
+        removeEscapeKeyHandlerForMobile(experienceId);
+      }
+    });
+  });
 };
 
 export const clearExperienceSelection = (): void => {
@@ -546,6 +776,11 @@ export const clearExperienceSelection = (): void => {
 };
 
 export const cleanupResumeInteractions = (): void => {
+  if (mobileViewportUnsubscribe) {
+    mobileViewportUnsubscribe();
+    mobileViewportUnsubscribe = null;
+  }
+
   experienceToggleHandlers.forEach((handler, experienceId) => {
     const entry = experienceRowRegistry.get(experienceId);
 
@@ -569,9 +804,17 @@ export const cleanupResumeInteractions = (): void => {
       ensureChatContainerHidden(entry.chatContainer);
       entry.chatContainer.innerHTML = '';
     }
+
+    removeTouchListenersForMobile(experienceId, entry);
+    removeEscapeKeyHandlerForMobile(experienceId);
   });
 
   experienceToggleHandlers.clear();
   experienceCloseHandlers.clear();
+  experienceTouchHandlers.clear();
+  Array.from(experienceEscapeHandlers.keys()).forEach((experienceId) => {
+    removeEscapeKeyHandlerForMobile(experienceId);
+  });
+  experienceEscapeHandlers.clear();
   experienceRowRegistry.clear();
 };

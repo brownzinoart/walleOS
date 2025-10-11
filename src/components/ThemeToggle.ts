@@ -6,40 +6,37 @@ const SELECTORS = {
   button: '[data-theme-toggle-button]'
 } as const;
 
-let buttonEl: HTMLButtonElement | null = null;
+type ToggleHandlers = {
+  onClick: (event: MouseEvent) => void;
+  onKeyDown: (event: KeyboardEvent) => void;
+  onMouseEnter: (event: MouseEvent) => void;
+  onMouseLeave: (event: MouseEvent) => void;
+  onFocus: (event: FocusEvent) => void;
+  onBlur: (event: FocusEvent) => void;
+};
+
+type ToggleInstance = {
+  handlers: ToggleHandlers;
+  unsubscribe: () => void;
+};
+
+const toggleInstances = new Map<HTMLButtonElement, ToggleInstance>();
 let unsubscribeTheme: (() => void) | null = null;
 
-// Track attachment per button to prevent duplicate listeners
-const attachedButtons = new WeakSet<HTMLButtonElement>();
-
-// Bound handlers for proper cleanup
-let onClick: ((e: MouseEvent) => void) | null = null;
-let onKeyDown: ((e: KeyboardEvent) => void) | null = null;
-let onMouseEnter: ((e: MouseEvent) => void) | null = null;
-let onMouseLeave: ((e: MouseEvent) => void) | null = null;
-let onFocus: ((e: FocusEvent) => void) | null = null;
-let onBlur: ((e: FocusEvent) => void) | null = null;
-
-function cacheToggleElements(): void {
-  buttonEl = document.querySelector(SELECTORS.button) as HTMLButtonElement | null;
-}
-
-function updateToggleUI(theme: Theme): void {
-  if (!buttonEl) return;
-
+function updateToggleUI(button: HTMLButtonElement, theme: Theme): void {
   // Accessibility and state sync
   const isLight = theme === 'light';
-  buttonEl.setAttribute('aria-checked', isLight ? 'true' : 'false');
-  buttonEl.setAttribute('data-state', theme);
+  button.setAttribute('aria-checked', isLight ? 'true' : 'false');
+  button.setAttribute('data-state', theme);
 
   // Update sr-only label for screen readers
-  const srLabel = buttonEl.querySelector('[data-theme-toggle-label]') as HTMLElement | null;
+  const srLabel = button.querySelector('[data-theme-toggle-label]') as HTMLElement | null;
   if (srLabel) {
     srLabel.textContent = theme === 'dark' ? 'Dark mode' : 'Light mode';
   }
 
   // Visual states primarily handled via CSS; ensure transient effects are clean
-  buttonEl.classList.toggle('ring-2', false);
+  button.classList.toggle('ring-2', false);
 }
 
 function handleToggleClick(): void {
@@ -74,52 +71,73 @@ export const renderThemeToggle = (): string => {
 };
 
 export const attachThemeToggleListeners = (): void => {
-  cacheToggleElements();
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>(SELECTORS.button));
 
-  if (!buttonEl) return;
+  if (!buttons.length) return;
 
-  // Guard against double attachment
-  if (attachedButtons.has(buttonEl)) return;
-  attachedButtons.add(buttonEl);
+  if (!unsubscribeTheme) {
+    unsubscribeTheme = subscribeToTheme((theme) => {
+      for (const button of toggleInstances.keys()) {
+        updateToggleUI(button, theme);
+      }
+    });
+  }
 
-  // Subscribe to theme changes and update UI reactively
-  unsubscribeTheme = subscribeToTheme((theme) => {
-    updateToggleUI(theme);
-  });
+  const theme = getTheme();
 
-  // Initialize UI state
-  updateToggleUI(getTheme());
-
-  // Event handlers
-  onClick = () => handleToggleClick();
-  onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleToggleClick();
+  for (const button of buttons) {
+    if (toggleInstances.has(button)) {
+      updateToggleUI(button, theme);
+      continue;
     }
-  };
 
-  const addWC = () => {
-    if (!prefersReducedMotion() && buttonEl) {
-      addWillChange(buttonEl, ['transform', 'box-shadow', 'border-color']);
-    }
-  };
-  const removeWC = () => {
-    if (buttonEl) removeWillChange(buttonEl);
-  };
+    const onClick = () => handleToggleClick();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleToggleClick();
+      }
+    };
 
-  // Typed wrapper functions to avoid unnecessary casts
-  onMouseEnter = () => addWC();
-  onMouseLeave = () => removeWC();
-  onFocus = () => addWC();
-  onBlur = () => removeWC();
+    const addWC = () => {
+      if (!prefersReducedMotion()) {
+        addWillChange(button, ['transform', 'box-shadow', 'border-color']);
+      }
+    };
 
-  buttonEl.addEventListener('click', onClick);
-  buttonEl.addEventListener('keydown', onKeyDown);
-  buttonEl.addEventListener('mouseenter', onMouseEnter);
-  buttonEl.addEventListener('mouseleave', onMouseLeave);
-  buttonEl.addEventListener('focus', onFocus);
-  buttonEl.addEventListener('blur', onBlur);
+    const removeWC = () => {
+      removeWillChange(button);
+    };
+
+    const onMouseEnter = () => addWC();
+    const onMouseLeave = () => removeWC();
+    const onFocus = () => addWC();
+    const onBlur = () => removeWC();
+
+    button.addEventListener('click', onClick);
+    button.addEventListener('keydown', onKeyDown);
+    button.addEventListener('mouseenter', onMouseEnter);
+    button.addEventListener('mouseleave', onMouseLeave);
+    button.addEventListener('focus', onFocus);
+    button.addEventListener('blur', onBlur);
+
+    const unsubscribe = () => {
+      button.removeEventListener('click', onClick);
+      button.removeEventListener('keydown', onKeyDown);
+      button.removeEventListener('mouseenter', onMouseEnter);
+      button.removeEventListener('mouseleave', onMouseLeave);
+      button.removeEventListener('focus', onFocus);
+      button.removeEventListener('blur', onBlur);
+      removeWillChange(button);
+    };
+
+    toggleInstances.set(button, {
+      handlers: { onClick, onKeyDown, onMouseEnter, onMouseLeave, onFocus, onBlur },
+      unsubscribe
+    });
+
+    updateToggleUI(button, theme);
+  }
 };
 
 export const cleanupThemeToggle = (): void => {
@@ -128,25 +146,9 @@ export const cleanupThemeToggle = (): void => {
     unsubscribeTheme = null;
   }
 
-  if (buttonEl) {
-    if (onClick) buttonEl.removeEventListener('click', onClick);
-    if (onKeyDown) buttonEl.removeEventListener('keydown', onKeyDown);
-    if (onMouseEnter) buttonEl.removeEventListener('mouseenter', onMouseEnter);
-    if (onMouseLeave) buttonEl.removeEventListener('mouseleave', onMouseLeave);
-    if (onFocus) buttonEl.removeEventListener('focus', onFocus);
-    if (onBlur) buttonEl.removeEventListener('blur', onBlur);
-
-    removeWillChange(buttonEl);
-
-    // Allow future re-attachment
-    attachedButtons.delete(buttonEl);
+  for (const instance of toggleInstances.values()) {
+    instance.unsubscribe();
   }
 
-  buttonEl = null;
-  onClick = null;
-  onKeyDown = null;
-  onMouseEnter = null;
-  onMouseLeave = null;
-  onFocus = null;
-  onBlur = null;
+  toggleInstances.clear();
 };
