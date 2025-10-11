@@ -159,14 +159,14 @@ export const initLayout = (): void => {
       sidebar,
     });
 
-    attachThemeToggleListeners();
-
     window.addEventListener('resize', () => {
       if (!isOffCanvasSidebar(sidebar)) {
         closeSidebar(sidebar, trigger);
       }
     });
   }
+
+  attachThemeToggleListeners();
 
   const handleSidebarNavigate = (event: Event) => {
     const customEvent = event as CustomEvent<{ id: string }>;

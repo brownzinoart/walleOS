@@ -224,21 +224,31 @@ const getMainContent = (): string => {
   const welcomeMarkup = hasMessages ? '' : renderWelcomeCard();
   const suggestionsMarkup = hasMessages ? '' : renderSuggestionChips(resolveSuggestionChips());
   const typingMarkup = state.isTyping ? renderTypingIndicator() : '';
+  const welcomeSection = welcomeMarkup.trim().length > 0
+    ? `
+      <header class="chat-intro flex flex-col gap-4" data-chat-welcome>
+        ${welcomeMarkup}
+      </header>
+    `
+    : '';
+  const suggestionsSection = suggestionsMarkup.trim().length > 0
+    ? `
+      <div class="chat-suggestions" data-chat-suggestions>
+        ${suggestionsMarkup}
+      </div>
+    `
+    : '';
 
   return `
     <section
-      class="chat-root content-container flex flex-1 flex-col gap-8"
+      class="chat-root content-container flex flex-1 flex-col gap-5"
       data-chat-root
     >
       <div class="chat-context-indicator" data-chat-context-indicator>
         ${indicatorMarkup}
       </div>
-      <header class="chat-intro flex flex-col gap-6" data-chat-welcome>
-        ${welcomeMarkup}
-      </header>
-      <div class="chat-suggestions" data-chat-suggestions>
-        ${suggestionsMarkup}
-      </div>
+      ${welcomeSection}
+      ${suggestionsSection}
       ${renderChatContainer(state.messages, {
         showEmptyState: false,
         emptyStateContent: '',
@@ -332,8 +342,8 @@ const renderChatView = (state: ChatState) => {
   }
 
   const hasMessages = state.messages.length > 0;
-  const welcomeSlot = chatRoot.querySelector<HTMLElement>(WELCOME_SLOT_SELECTOR);
-  const suggestionSlot = chatRoot.querySelector<HTMLElement>(SUGGESTION_SLOT_SELECTOR);
+  let welcomeSlot = chatRoot.querySelector<HTMLElement>(WELCOME_SLOT_SELECTOR);
+  let suggestionSlot = chatRoot.querySelector<HTMLElement>(SUGGESTION_SLOT_SELECTOR);
   const contextIndicatorSlot = chatRoot.querySelector<HTMLElement>(CHAT_CONTEXT_INDICATOR_SELECTOR);
 
   if (contextIndicatorSlot) {
@@ -341,16 +351,55 @@ const renderChatView = (state: ChatState) => {
     attachExperienceContextIndicatorListeners();
   }
 
-  if (welcomeSlot) {
-    welcomeSlot.innerHTML = hasMessages ? '' : renderWelcomeCard();
+  const welcomeMarkup = hasMessages ? '' : renderWelcomeCard();
+  const hasWelcomeContent = welcomeMarkup.trim().length > 0;
+
+  if (hasWelcomeContent) {
+    if (!welcomeSlot) {
+      const header = document.createElement('header');
+      header.className = 'chat-intro flex flex-col gap-4';
+      header.setAttribute('data-chat-welcome', '');
+
+      if (contextIndicatorSlot) {
+        contextIndicatorSlot.insertAdjacentElement('afterend', header);
+      } else {
+        chatRoot.insertAdjacentElement('afterbegin', header);
+      }
+
+      welcomeSlot = header;
+    }
+
+    welcomeSlot.innerHTML = welcomeMarkup;
+  } else if (welcomeSlot) {
+    welcomeSlot.remove();
+    welcomeSlot = null;
   }
 
-  if (suggestionSlot) {
-    suggestionSlot.innerHTML = hasMessages ? '' : renderSuggestionChips(resolveSuggestionChips());
+  const suggestionsMarkup = hasMessages ? '' : renderSuggestionChips(resolveSuggestionChips());
+  const hasSuggestionContent = suggestionsMarkup.trim().length > 0;
 
-    if (!hasMessages) {
-      attachSuggestionChipListeners(handleSuggestionChipClick);
+  if (hasSuggestionContent) {
+    if (!suggestionSlot) {
+      const suggestionsContainer = document.createElement('div');
+      suggestionsContainer.className = 'chat-suggestions';
+      suggestionsContainer.setAttribute('data-chat-suggestions', '');
+
+      const insertionTarget = welcomeSlot ?? contextIndicatorSlot;
+
+      if (insertionTarget) {
+        insertionTarget.insertAdjacentElement('afterend', suggestionsContainer);
+      } else {
+        chatRoot.insertAdjacentElement('afterbegin', suggestionsContainer);
+      }
+
+      suggestionSlot = suggestionsContainer;
     }
+
+    suggestionSlot.innerHTML = suggestionsMarkup;
+    attachSuggestionChipListeners(handleSuggestionChipClick);
+  } else if (suggestionSlot) {
+    suggestionSlot.remove();
+    suggestionSlot = null;
   }
 
   const chatContainer = chatRoot.querySelector<HTMLElement>(CHAT_CONTAINER_SELECTOR);

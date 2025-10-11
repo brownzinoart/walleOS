@@ -1373,7 +1373,7 @@
 
 .project-cards-section {
   width: 100%;
-  padding: var(--spacing-3xl, 4rem) var(--spacing-md, 1rem) var(--spacing-3xl, 4rem);
+  padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem) var(--spacing-3xl, 4rem);
 }
 
 .project-cards-eyebrow {
@@ -1835,7 +1835,7 @@
 
 @media (max-width: 767px) {
   .project-cards-section {
-    padding: var(--spacing-2xl, 3rem) var(--spacing-sm, 0.5rem) var(--spacing-3xl, 4rem);
+    padding: var(--spacing-md, 1rem) var(--spacing-sm, 0.5rem) var(--spacing-3xl, 4rem);
   }
 
   .project-card-content {

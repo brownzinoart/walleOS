@@ -1,7 +1,7 @@
 import { branding } from '@/config/content';
 
 export const renderWelcomeCard = (): string => {
-  const { name, greeting, tagline } = branding;
+  const { name, greeting } = branding;
 
   return `
     <section
@@ -14,7 +14,6 @@ export const renderWelcomeCard = (): string => {
       <h1 id="welcome-card-heading" class="text-3xl md:text-4xl font-black leading-tight mb-4">
         ${greeting}
       </h1>
-      <p class="text-secondary text-base md:text-lg leading-relaxed">${tagline}</p>
     </section>
   `;
 };

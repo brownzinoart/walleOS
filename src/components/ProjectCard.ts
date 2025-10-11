@@ -108,8 +108,8 @@ export const renderProjectCards = (projects: FeaturedProject[]): string => {
   const cardsMarkup = projects.map((project, index) => renderProjectCard(project, index)).join('');
 
   return `
-    <section class="project-cards-section mt-16" data-project-cards data-section-id="projects" id="projects">
-      <div class="project-cards-inner content-container flex flex-col gap-8">
+    <section class="project-cards-section mt-8" data-project-cards data-section-id="projects" id="projects">
+      <div class="project-cards-inner content-container flex flex-col gap-6">
         <header class="flex flex-col gap-2">
           <p class="project-cards-eyebrow">Featured Work</p>
           <h2 class="project-cards-heading">Featured Projects</h2>
