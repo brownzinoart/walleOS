@@ -1,4 +1,5 @@
 import { branding } from '@/config/content';
+import { renderThemeToggle } from '@/components/ThemeToggle';
 import { addWillChange, removeWillChange, prefersReducedMotion } from '@/utils/performance';
 
 const MOBILE_NAV_TRIGGER = '[data-mobile-nav-trigger]';
@@ -140,6 +141,9 @@ export const renderMobileNav = (): string => `
       <span class="hamburger-bar"></span>
     </button>
     <div class="mobile-nav-logo">${branding.name}</div>
+    <div class="mobile-nav-theme-toggle" data-mobile-nav-theme-toggle>
+      ${renderThemeToggle()}
+    </div>
   </nav>
 `;
 
@@ -190,7 +194,6 @@ export const attachMobileNavListeners = (
     }
 
     lastKnownState = isOpen;
-    trigger.setAttribute('aria-expanded', String(isOpen));
     applyFocusState(sidebar, trigger, isOpen);
     if (mobileNavBar) {
       if (isOpen) {

@@ -142,9 +142,6 @@ export const initLayout = (): void => {
 
   initSidebarInteractions();
 
-  // Attach theme toggle listeners
-  attachThemeToggleListeners();
-
   if (layoutState.activeNavItem) {
     setActiveNavItem(layoutState.activeNavItem, { silent: true });
   }
@@ -161,6 +158,8 @@ export const initLayout = (): void => {
       close: () => closeSidebar(sidebar, trigger),
       sidebar,
     });
+
+    attachThemeToggleListeners();
 
     window.addEventListener('resize', () => {
       if (!isOffCanvasSidebar(sidebar)) {
