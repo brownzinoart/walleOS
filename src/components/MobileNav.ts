@@ -1,4 +1,3 @@
-import { renderThemeToggle } from '@/components/ThemeToggle';
 import { branding } from '@/config/content';
 import { addWillChange, removeWillChange, prefersReducedMotion } from '@/utils/performance';
 
@@ -141,9 +140,6 @@ export const renderMobileNav = (): string => `
       <span class="hamburger-bar"></span>
     </button>
     <div class="mobile-nav-logo">${branding.name}</div>
-    <div class="mobile-nav-actions">
-      ${renderThemeToggle()}
-    </div>
   </nav>
 `;
 

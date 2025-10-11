@@ -375,7 +375,7 @@ export const renderSidebar = (): string => {
 
   return `
     <aside
-      class="sidebar flex h-full flex-col justify-between border-r border-default bg-surface-secondary p-6 text-primary overflow-y-auto"
+      class="sidebar flex h-full flex-col border-r border-default bg-surface-secondary p-6 text-primary"
       role="navigation"
       aria-label="Main navigation"
       data-sidebar
@@ -392,7 +392,7 @@ export const renderSidebar = (): string => {
         </svg>
       </button>
       <a href="#main-content" class="sidebar-skip-link" data-sidebar-skip>Skip to main content</a>
-      <div class="flex flex-col gap-8">
+      <div class="sidebar-content flex flex-col gap-8">
         <div class="sidebar-header">
           <div class="sidebar-branding group cursor-pointer" data-sidebar-branding>
             <span
@@ -405,9 +405,6 @@ export const renderSidebar = (): string => {
               ${branding.tagline}
             </p>
           </div>
-          <div class="sidebar-header-toggle hidden md:block lg:block">
-            ${renderThemeToggle()}
-          </div>
         </div>
         <div class="sidebar-nav-container" data-sidebar-nav-container>
           <nav class="sidebar-nav" aria-label="Primary navigation">
@@ -415,20 +412,25 @@ export const renderSidebar = (): string => {
           </nav>
         </div>
       </div>
-      <div class="sidebar-utilities">
-        <div class="mt-8 border-t border-default pt-6 text-sm text-secondary">
-          <div class="flex flex-col gap-3">
-            <a
-              class="font-medium text-primary transition-colors hover:text-[var(--color-neon-cyan)] focus-visible:text-[var(--color-neon-cyan)]"
-              href="${emailLink}"
-            >
-              ${contact.email}
-            </a>
-            <div class="sidebar-socials" aria-label="Social links">
-              ${contact.socials.map(renderSocialLink).join('')}
+      <div class="sidebar-footer">
+        <div class="sidebar-theme-toggle-wrapper">
+          ${renderThemeToggle()}
+        </div>
+        <div class="sidebar-utilities">
+          <div class="pt-6 text-sm text-secondary">
+            <div class="flex flex-col gap-3">
+              <a
+                class="font-medium text-primary transition-colors hover:text-[var(--color-neon-cyan)] focus-visible:text-[var(--color-neon-cyan)]"
+                href="${emailLink}"
+              >
+                ${contact.email}
+              </a>
+              <div class="sidebar-socials" aria-label="Social links">
+                ${contact.socials.map(renderSocialLink).join('')}
+              </div>
             </div>
+            <span class="sr-only" aria-live="polite" data-sidebar-announcer></span>
           </div>
-          <span class="sr-only" aria-live="polite" data-sidebar-announcer></span>
         </div>
       </div>
     </aside>
