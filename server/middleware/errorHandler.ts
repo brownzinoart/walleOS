@@ -1,0 +1,76 @@
+import type { NextFunction, Request, Response } from 'express';
+import { serverLogger } from './logger.js';
+import { ValidationError } from './validation.js';
+import { OllamaServiceError } from '../services/ollama.js';
+
+const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction): void => {
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+
+  const requestId = res.locals.requestId;
+  const baseContext = {
+    requestId,
+    path: req.originalUrl,
+    method: req.method,
+  };
+
+  if (err instanceof ValidationError) {
+    serverLogger.warn('Validation error', {
+      ...baseContext,
+      details: err.details,
+    });
+
+    res.status(400).json({
+      error: {
+        message: err.message,
+        code: err.code,
+        details: err.details,
+        requestId,
+      },
+    });
+    return;
+  }
+
+  if (err instanceof OllamaServiceError) {
+    serverLogger.error('Ollama service error', err, baseContext);
+    res.status(503).json({
+      error: {
+        message: err.message,
+        code: err.code,
+        details: err.details,
+        requestId,
+      },
+    });
+    return;
+  }
+
+  const errorObject = err as { status?: number; statusCode?: number; message?: string; code?: string };
+
+  if (errorObject?.status === 429 || errorObject?.statusCode === 429) {
+    serverLogger.warn('Rate limit triggered', baseContext);
+    res.status(429).json({
+      error: {
+        message: 'Too many requests, please try again in a few minutes.',
+        code: 'RATE_LIMIT_EXCEEDED',
+        requestId,
+      },
+    });
+    return;
+  }
+
+  const message = errorObject?.message ?? 'Internal server error';
+
+  serverLogger.error('Unhandled error', err instanceof Error ? err : new Error(message), baseContext);
+
+  res.status(500).json({
+    error: {
+      message: 'An unexpected error occurred.',
+      code: 'INTERNAL_SERVER_ERROR',
+      requestId,
+    },
+  });
+};
+
+export default errorHandler;

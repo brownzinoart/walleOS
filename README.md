@@ -32,6 +32,14 @@ WallyGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neo
    npm run preview
    ```
 
+## Backend Server
+- **Prerequisites:** Node.js 18+ and [Ollama](https://ollama.com/) installed locally with the `llama3.1:8b-instruct` model pulled.
+- **Setup:** Copy `.env.example` to `.env`, customise values (e.g. `OLLAMA_HOST`, `FRONTEND_URL`), then run `npm install` to ensure backend dependencies are installed.
+- **Run Development Server:** `npm run dev:server` starts the Express API on `http://localhost:3001`. Use `npm run build:server` followed by `npm run start:server` for the compiled output.
+- **API Endpoints:** `POST /api/chat` streams chat tokens over Server-Sent Events, and `GET /api/health` reports backend + Ollama status.
+- **Verify Ollama:** Use `ollama list` to confirm the model is available and `ollama serve` to start the local inference service before running the backend.
+- **Further Reading:** A detailed walkthrough will live in `docs/OLLAMA_SETUP.md` in a future update.
+
 ## Project Structure
 - `src/main.ts` – application entry point and future UI bootstrapper
 - `src/styles/` – Tailwind layer setup, design tokens, and typography utilities
