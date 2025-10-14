@@ -1,11 +1,12 @@
 import { Router } from 'express';
+import type express from 'express';
 import { checkOllamaHealth } from '../services/ollama.js';
 import config from '../config/env.js';
 import type { HealthCheckResponse } from '../types/index.js';
 
 const router = Router();
 
-router.get('/', async (_req, res, next) => {
+router.get('/', async (_req: express.Request, res: express.Response, next: express.NextFunction) => {
   try {
     const ollamaStatus = await checkOllamaHealth();
 
@@ -18,8 +19,11 @@ router.get('/', async (_req, res, next) => {
           model: config.ollamaModel,
         },
       },
-      requestId: res.locals.requestId,
     };
+
+    if (res.locals.requestId) {
+      response.requestId = res.locals.requestId;
+    }
 
     res.status(200).json(response);
   } catch (error) {

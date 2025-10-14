@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express';
+import type express from 'express';
 import { performance } from 'node:perf_hooks';
 import { randomUUID } from 'node:crypto';
 import config from '../config/env.js';
@@ -83,7 +83,7 @@ const levelFromEnv = (() => {
 
 export const serverLogger = new ServerLogger(levelFromEnv);
 
-export const requestLogger = (req: Request, res: Response, next: NextFunction): void => {
+export const requestLogger = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
   const start = performance.now();
   const requestId = randomUUID();
   res.locals.requestId = requestId;

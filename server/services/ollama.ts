@@ -1,4 +1,4 @@
-import Ollama from 'ollama';
+import { Ollama } from 'ollama';
 import config from '../config/env.js';
 import { serverLogger } from '../middleware/logger.js';
 import type { ChatRequest, ChatStreamEvent, OllamaMessage } from '../types/index.js';
@@ -12,16 +12,23 @@ export class OllamaServiceError extends Error {
 
   constructor(message: string, details?: Record<string, unknown>) {
     super(message);
-    this.details = details;
+    if (details) {
+      this.details = details;
+    }
   }
 }
 
 export const checkOllamaHealth = async (): Promise<{ healthy: boolean }> => {
   try {
     const models = await ollamaClient.list();
-    const healthy = Array.isArray(models.models)
-      ? models.models.some(model => model.name === config.ollamaModel)
-      : false;
+    const modelList = Array.isArray(models.models) ? models.models : [];
+    const healthy = modelList.some(model => {
+      if (!model || typeof model !== 'object' || !('name' in model)) {
+        return false;
+      }
+      const modelName = (model as { name?: string }).name;
+      return modelName === config.ollamaModel;
+    });
 
     return { healthy };
   } catch (error) {

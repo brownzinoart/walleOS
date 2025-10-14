@@ -33,6 +33,8 @@ Derived from tone analysis of the uploaded RAG corpus:
 - `fetch_doc(id)` → fetches full snippet for grounding and citations.
 - `get_snippet(tag)` → retrieves reusable voice seeds (e.g., signature phrases).
 - `redact(text)` → masks PII flagged as sensitive unless explicitly whitelisted.
+- `context7_search(query)` → resolves library IDs and metadata from the Context7 MCP proxy.
+- `context7_docs(libraryId, tokens?, topic?)` → fetches up-to-date documentation from Context7 for grounding technical answers.
 - Data stores: `resume`, `projects`, `skills`, `timeline`, `plans`, plus optional `for_fun`.
 
 ## 6. Conversation Architecture
@@ -92,4 +94,3 @@ Derived from tone analysis of the uploaded RAG corpus:
 - Multi-agent orchestration (e.g., research sub-agent for live search, writer agent for newsletter blurbs).
 - Personalization layer detecting recruiter vs. peer to adjust tone intensity.
 - Audio or video companion responses using same tone metadata.
-

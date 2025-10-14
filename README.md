@@ -5,6 +5,7 @@ WallyGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neo
 ## Project Overview
 - Product requirements: [`docs/PRD.md`](docs/PRD.md)
 - Conversational agent architecture: [`docs/agents.md`](docs/agents.md)
+- Context7 MCP proxy walkthrough: [`docs/context7-integration.md`](docs/context7-integration.md)
 - Resume content populated from Wally's professional background, showcasing 10+ years across AI implementation, UX design leadership, and account management with highlights in AI/LLM strategy, design systems, enterprise UX, and pharmaceutical marketing
 
 ## Tech Stack
@@ -33,12 +34,20 @@ WallyGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neo
    ```
 
 ## Backend Server
+> **Heads up:** The Express + Ollama backend is for local development only and is not deployed to Vercel. The frontend gracefully falls back to mock responses when no API is available.
+
 - **Prerequisites:** Node.js 18+ and [Ollama](https://ollama.com/) installed locally with the `llama3.1:8b-instruct` model pulled.
-- **Setup:** Copy `.env.example` to `.env`, customise values (e.g. `OLLAMA_HOST`, `FRONTEND_URL`), then run `npm install` to ensure backend dependencies are installed.
-- **Run Development Server:** `npm run dev:server` starts the Express API on `http://localhost:3001`. Use `npm run build:server` followed by `npm run start:server` for the compiled output.
+- **Setup:** Copy `.env.example` to `.env`, customise values (e.g. `OLLAMA_HOST`, `FRONTEND_URL`), then navigate to the backend directory with `cd server` and run `npm install` to install backend dependencies separately.
+- **Run Development Server:** From within `server/`, run `npm run dev` to start the Express API on `http://localhost:3001`. Use `npm run build` followed by `npm run start` inside the same directory for the compiled output.
 - **API Endpoints:** `POST /api/chat` streams chat tokens over Server-Sent Events, and `GET /api/health` reports backend + Ollama status.
+- **Context7 Proxy (optional):** When `CONTEXT7_API_KEY` is configured, the backend exposes `GET /api/context7/search?q=<query>` and `GET /api/context7/docs?id=<libraryId>[&tokens=5000][&topic=intro]` as thin wrappers around the Context7 MCP documentation service. These endpoints let you surface fresh library docs to the chat or experimentation workflows without wiring the MCP client yourself.
 - **Verify Ollama:** Use `ollama list` to confirm the model is available and `ollama serve` to start the local inference service before running the backend.
 - **Further Reading:** A detailed walkthrough will live in `docs/OLLAMA_SETUP.md` in a future update.
+
+### Deployment
+- Only the frontend deploys to Vercel; the backend remains local or must be hosted separately on a service like Railway, Render, or DigitalOcean.
+- The longer-term plan is to swap the local Ollama integration for a production-ready provider (OpenAI, Anthropic, hosted LLM service) before shipping.
+- See `docs/DEPLOYMENT.md` for a deeper breakdown of the split deployment architecture.
 
 ## Project Structure
 - `src/main.ts` – application entry point and future UI bootstrapper

@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express';
+import type express from 'express';
 import type { ChatRequest } from '../types/index.js';
 
 export interface ValidationErrorDetail {
@@ -16,7 +16,7 @@ export class ValidationError extends Error {
   }
 }
 
-export const validateChatRequest = (req: Request, _res: Response, next: NextFunction): void => {
+export const validateChatRequest = (req: express.Request, _res: express.Response, next: express.NextFunction): void => {
   const payload = req.body as Partial<ChatRequest>;
   const errors: ValidationErrorDetail[] = [];
 

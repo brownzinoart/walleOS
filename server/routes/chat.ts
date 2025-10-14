@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import type express from 'express';
 import { validateChatRequest } from '../middleware/validation.js';
 import { serverLogger } from '../middleware/logger.js';
 import { streamChatResponse } from '../services/ollama.js';
@@ -6,7 +7,7 @@ import type { ChatRequest, ChatStreamEvent } from '../types/index.js';
 
 const router = Router();
 
-router.post('/', validateChatRequest, async (req, res, _next) => {
+router.post('/', validateChatRequest, async (req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const body = req.body as ChatRequest;
   const requestId = res.locals.requestId;
 
@@ -34,10 +35,15 @@ router.post('/', validateChatRequest, async (req, res, _next) => {
         break;
       }
 
-      const payload: ChatStreamEvent = {
-        token: event.token,
-        done: event.done,
-      };
+      const payload: ChatStreamEvent =
+        event.token !== undefined
+          ? {
+              token: event.token,
+              done: event.done,
+            }
+          : {
+              done: event.done,
+            };
 
       res.write(`data: ${JSON.stringify(payload)}\n\n`);
 

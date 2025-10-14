@@ -1,0 +1,244 @@
+{
+  "_README": "PERSONAL CONTEXT DATABASE - FILL IN YOUR OWN WORDS",
+  "_INSTRUCTIONS": "Replace the placeholder content below with your authentic experiences, thoughts, and stories. Write as you would naturally speak about these topics. The more detailed and genuine, the better the AI will understand and represent you.",
+
+  "personal": {
+    "introduction": {
+      "shortBio": "WRITE YOUR SHORT BIO HERE - How would you introduce yourself to someone new?",
+      "coreIdentity": "WRITE YOUR CORE IDENTITY HERE - What defines you as a person and professional?",
+      "currentFocus": "WRITE YOUR CURRENT FOCUS HERE - What are you working on and excited about right now?",
+      "originStory": "WRITE YOUR ORIGIN STORY HERE - How did you get into UX/design/AI? What was your journey?"
+    },
+
+    "dailyLife": {
+      "morningRitual": "DESCRIBE YOUR MORNING ROUTINE HERE - What starts your day? Coffee ritual, exercise, planning?",
+      "workStyle": "DESCRIBE YOUR WORK STYLE HERE - How do you approach your work? When are you most productive?",
+      "eveningWindDown": "DESCRIBE YOUR EVENING ROUTINE HERE - How do you transition out of work mode?",
+      "weekendVibes": "DESCRIBE YOUR WEEKENDS HERE - How do you spend your free time? Hobbies, relaxation?"
+    },
+
+    "values": {
+      "coreBeliefs": [
+        "WRITE YOUR CORE BELIEF 1 HERE - What's fundamentally important to you?",
+        "WRITE YOUR CORE BELIEF 2 HERE - What guides your decisions?",
+        "WRITE YOUR CORE BELIEF 3 HERE - What do you stand for?"
+      ],
+      "workPhilosophy": "WRITE YOUR WORK PHILOSOPHY HERE - How do you approach your work and career?",
+      "designPhilosophy": "WRITE YOUR DESIGN PHILOSOPHY HERE - What guides your design decisions?",
+      "aiPhilosophy": "WRITE YOUR AI PHILOSOPHY HERE - How do you think about AI and its role in your work?"
+    },
+
+    "funFacts": {
+      "personalQuirks": [
+        {
+          "quirk": "WRITE A PERSONAL QUIRK HERE",
+          "story": "WRITE THE STORY BEHIND IT HERE"
+        },
+        {
+          "quirk": "WRITE ANOTHER PERSONAL QUIRK HERE",
+          "story": "WRITE THE STORY BEHIND IT HERE"
+        }
+      ],
+      "hobbies": [
+        {
+          "hobby": "WRITE A HOBBY HERE",
+          "description": "DESCRIBE WHY YOU ENJOY IT AND HOW YOU GOT INTO IT",
+          "frequency": "How often do you do this?"
+        }
+      ],
+      "interests": [
+        {
+          "topic": "WRITE AN INTEREST HERE",
+          "level": "casual|moderate|expert",
+          "description": "DESCRIBE YOUR INTEREST AND EXPERIENCE WITH THIS TOPIC"
+        }
+      ]
+    }
+  },
+
+  "professional": {
+    "careerJourney": {
+      "origin": "WRITE HOW YOU STARTED YOUR CAREER HERE - What was your first job or pivotal moment?",
+      "transitions": [
+        {
+          "from": "PREVIOUS ROLE/PHASE",
+          "to": "NEXT ROLE/PHASE",
+          "reason": "WHY DID YOU MAKE THIS CHANGE?",
+          "lessons": "WHAT DID YOU LEARN FROM THIS TRANSITION?"
+        }
+      ],
+      "currentChapter": "WRITE ABOUT YOUR CURRENT CAREER PHASE HERE - What are you building now?",
+      "futureVision": "WRITE ABOUT YOUR CAREER VISION HERE - Where do you see yourself going?"
+    },
+
+    "experiences": {
+      "REPLACE_WITH_YOUR_EXPERIENCES": [
+        {
+          "id": "your-company-role-id",
+          "title": "YOUR ACTUAL JOB TITLE",
+          "company": "YOUR ACTUAL COMPANY NAME",
+          "period": "ACTUAL DATES YOU WORKED HERE",
+          "situation": "WHAT WAS HAPPENING WHEN YOU STARTED? What was the company/team situation?",
+          "role": "WHAT WAS YOUR SPECIFIC ROLE? What were you responsible for?",
+          "challenges": [
+            {
+              "challenge": "DESCRIBE A MAJOR CHALLENGE YOU FACED",
+              "approach": "HOW DID YOU APPROACH SOLVING IT?",
+              "solution": "WHAT WAS THE OUTCOME?",
+              "impact": "WHAT WAS THE BUSINESS/PERSONAL IMPACT?"
+            }
+          ],
+          "achievements": [
+            {
+              "achievement": "DESCRIBE A MAJOR ACHIEVEMENT",
+              "context": "WHAT MADE THIS ACHIEVEMENT SIGNIFICANT?",
+              "skills": ["SKILL_USED_1", "SKILL_USED_2"],
+              "impact": "WHAT WAS THE MEASURABLE IMPACT?"
+            }
+          ],
+          "learnings": [
+            {
+              "lesson": "WHAT DID YOU LEARN FROM THIS EXPERIENCE?",
+              "application": "HOW DO YOU APPLY THIS LEARNING NOW?"
+            }
+          ],
+          "proudMoments": [
+            "A MOMENT WHEN YOU FELT PARTICULARLY PROUD",
+            "A TIME WHEN YOU KNEW YOU MADE A DIFFERENCE"
+          ],
+          "technologies": [
+            "LIST THE ACTUAL TECHNOLOGIES, TOOLS, OR METHODOLOGIES YOU USED"
+          ],
+          "teamContext": "DESCRIBE THE TEAM ENVIRONMENT - Size, dynamics, your role in the team"
+        }
+      ]
+    },
+
+    "expertise": {
+      "aiAndTech": {
+        "approach": "DESCRIBE YOUR APPROACH TO AI AND TECHNOLOGY HERE",
+        "experience": "HOW DID YOU GET EXPERIENCE WITH AI/TECH?",
+        "philosophy": "WHAT'S YOUR PHILOSOPHY ABOUT AI IN WORK/PRODUCTS?",
+        "currentWork": "WHAT ARE YOU CURRENTLY BUILDING OR EXPLORING?"
+      },
+
+      "design": {
+        "process": "DESCRIBE YOUR DESIGN PROCESS IN YOUR OWN WORDS",
+        "principles": "WHAT DESIGN PRINCIPLES GUIDE YOUR WORK?",
+        "tools": "WHAT TOOLS AND METHODS DO YOU USE?",
+        "userFocus": "HOW DO YOU THINK ABOUT USERS AND THEIR EXPERIENCE?"
+      },
+
+      "leadership": {
+        "style": "DESCRIBE YOUR LEADERSHIP STYLE IN YOUR OWN WORDS",
+        "teamBuilding": "HOW DO YOU BUILD AND SUPPORT TEAMS?",
+        "decisionMaking": "HOW DO YOU MAKE DECISIONS?",
+        "mentoring": "HOW DO YOU MENTOR AND DEVELOP OTHERS?"
+      }
+    }
+  },
+
+  "stories": {
+    "challengeStories": [
+      {
+        "title": "NAME THIS CHALLENGE STORY",
+        "situation": "WHAT WAS THE SITUATION?",
+        "obstacle": "WHAT WAS THE MAIN OBSTACLE?",
+        "approach": "HOW DID YOU APPROACH IT?",
+        "solution": "WHAT DID YOU DO?",
+        "result": "WHAT HAPPENED?",
+        "reflection": "WHAT DID YOU LEARN?"
+      }
+    ],
+
+    "successStories": [
+      {
+        "title": "NAME THIS SUCCESS STORY",
+        "goal": "WHAT WERE YOU TRYING TO ACHIEVE?",
+        "challenge": "WHAT MADE IT DIFFICULT?",
+        "breakthrough": "WHAT WAS THE KEY INSIGHT OR MOMENT?",
+        "result": "WHAT WAS THE OUTCOME?",
+        "legacy": "HOW DOES THIS SUCCESS CONTINUE TO IMPACT?"
+      }
+    ],
+
+    "learningStories": [
+      {
+        "title": "NAME THIS LEARNING EXPERIENCE",
+        "context": "WHAT WAS THE SITUATION?",
+        "mistake": "WHAT WENT WRONG OR WHAT DIDN'T WORK?",
+        "realization": "WHAT DID YOU REALIZE?",
+        "change": "HOW DID YOU CHANGE YOUR APPROACH?",
+        "ongoing": "HOW DO YOU APPLY THIS LEARNING NOW?"
+      }
+    ]
+  },
+
+  "communication": {
+    "tones": {
+      "professional": {
+        "description": "HOW DO YOU COMMUNICATE PROFESSIONALLY?",
+        "triggerScenarios": ["WHEN WOULD YOU USE THIS TONE?"],
+        "example": "GIVE AN EXAMPLE OF HOW YOU'D COMMUNICATE PROFESSIONALLY"
+      },
+      "casual": {
+        "description": "HOW DO YOU COMMUNICATE CASUALLY?",
+        "triggerScenarios": ["WHEN WOULD YOU USE THIS TONE?"],
+        "example": "GIVE AN EXAMPLE OF HOW YOU'D COMMUNICATE CASUALLY"
+      },
+      "technical": {
+        "description": "HOW DO YOU EXPLAIN TECHNICAL CONCEPTS?",
+        "triggerScenarios": ["WHEN WOULD YOU USE THIS TONE?"],
+        "example": "GIVE AN EXAMPLE OF HOW YOU'D EXPLAIN SOMETHING TECHNICAL"
+      },
+      "mentor": {
+        "description": "HOW DO YOU MENTOR AND GUIDE OTHERS?",
+        "triggerScenarios": ["WHEN WOULD YOU USE THIS TONE?"],
+        "example": "GIVE AN EXAMPLE OF HOW YOU'D MENTOR SOMEONE"
+      }
+    },
+
+    "phrases": {
+      "favorites": [
+        "PHRASES YOU COMMONLY USE",
+        "EXPRESSIONS THAT REPRESENT YOUR THINKING"
+      ],
+      "explanations": [
+        "HOW DO YOU EXPLAIN COMPLEX IDEAS?",
+        "HOW DO YOU BREAK DOWN TECHNICAL CONCEPTS?"
+      ]
+    }
+  },
+
+  "contextMappings": {
+    "queryTypes": {
+      "career": {
+        "keywords": ["career", "job", "work", "experience", "background", "journey"],
+        "tone": "professional",
+        "content": ["professional.careerJourney", "professional.experiences"]
+      },
+      "technical": {
+        "keywords": ["technical", "technology", "AI", "implementation", "code", "system"],
+        "tone": "technical",
+        "content": ["professional.expertise.aiAndTech", "professional.expertise.design"]
+      },
+      "personal": {
+        "keywords": ["personal", "life", "outside", "hobby", "fun", "about you"],
+        "tone": "casual",
+        "content": ["personal.funFacts", "personal.dailyLife"]
+      },
+      "advice": {
+        "keywords": ["advice", "recommend", "suggest", "should", "help", "guide"],
+        "tone": "mentor",
+        "content": ["stories", "professional.expertise.leadership"]
+      }
+    }
+  },
+
+  "_metadata": {
+    "lastUpdated": "2024-01-01T00:00:00.000Z",
+    "version": "1.0.0",
+    "author": "WALLY'S AUTHENTIC VOICE",
+    "note": "This document contains my genuine thoughts, experiences, and stories in my own words. It represents who I am and how I think about my work and life."
+  }
+}

@@ -1,9 +1,10 @@
-import type { NextFunction, Request, Response } from 'express';
+import type express from 'express';
 import { serverLogger } from './logger.js';
 import { ValidationError } from './validation.js';
 import { OllamaServiceError } from '../services/ollama.js';
+import { Context7ServiceError } from '../services/context7.js';
 
-const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction): void => {
+const errorHandler = (err: unknown, req: express.Request, res: express.Response, next: express.NextFunction): void => {
   if (res.headersSent) {
     next(err);
     return;
@@ -36,6 +37,30 @@ const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunct
   if (err instanceof OllamaServiceError) {
     serverLogger.error('Ollama service error', err, baseContext);
     res.status(503).json({
+      error: {
+        message: err.message,
+        code: err.code,
+        details: err.details,
+        requestId,
+      },
+    });
+    return;
+  }
+
+  if (err instanceof Context7ServiceError) {
+    const status = err.status ?? 502;
+    const context = {
+      ...baseContext,
+      details: err.details,
+    };
+
+    if (status >= 500) {
+      serverLogger.error('Context7 service error', err, context);
+    } else {
+      serverLogger.warn('Context7 service warning', context);
+    }
+
+    res.status(status).json({
       error: {
         message: err.message,
         code: err.code,

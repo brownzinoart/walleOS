@@ -1,6 +1,7 @@
 # Development directories
 .roo/
 .serena/
+server/
 docs/
 
 # Tests
