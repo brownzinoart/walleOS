@@ -99,6 +99,7 @@ async function requestWithRetry<T>(
   } = options;
 
   let lastError: ApiServiceError;
+  let timeoutId: NodeJS.Timeout | undefined;
 
   for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
     try {
@@ -234,7 +235,6 @@ export async function* streamChatResponse(
   options: RequestOptions = {}
 ): AsyncGenerator<ChatStreamEvent> {
   const {
-    maxRetries = 0, // Streaming requests are not retried by default
     timeout = REQUEST_TIMEOUT,
     headers = {},
   } = options;
@@ -386,8 +386,8 @@ class RequestQueue {
     reject: (error: ApiServiceError) => void;
     priority: number;
   }> = [];
-  private activeRequests = 0;
   private maxConcurrent = 3;
+  private processing = false;
 
   async enqueue(request: ChatRequest, priority = 0): Promise<AsyncGenerator<ChatStreamEvent>> {
     return new Promise((resolve, reject) => {

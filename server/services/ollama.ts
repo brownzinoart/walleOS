@@ -2,7 +2,7 @@ import { Ollama } from 'ollama';
 import config from '../config/env.js';
 import { serverLogger } from '../middleware/logger.js';
 import type { ChatRequest, ChatStreamEvent, OllamaMessage } from '../types/index.js';
-import { buildExperienceContextPrompt, buildSystemPrompt } from './promptBuilder.js';
+import { buildSystemPrompt, buildUserPromptWithRAG } from './promptBuilder.js';
 
 const ollamaClient = new Ollama({ host: config.ollamaHost });
 
@@ -65,14 +65,23 @@ export const streamChatResponse = async function* (
   let messages: OllamaMessage[];
 
   try {
+    // Build system prompt (now async with RAG integration)
+    const systemPrompt = await buildSystemPrompt();
+
+    // Build user prompt with RAG context
+    const userPrompt = await buildUserPromptWithRAG(
+      request.message.trim(),
+      request.experienceContext?.experienceId
+    );
+
     messages = [
       {
         role: 'system',
-        content: buildSystemPrompt(),
+        content: systemPrompt,
       },
       {
         role: 'user',
-        content: buildUserPrompt(request),
+        content: userPrompt,
       },
     ];
   } catch (error) {

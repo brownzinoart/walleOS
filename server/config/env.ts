@@ -45,7 +45,7 @@ const envConfig: ServerEnvConfig = {
   ollamaHost: getString(process.env['OLLAMA_HOST'], 'http://localhost:11434'),
   serverPort: parseNumber(process.env['SERVER_PORT'], 3001),
   frontendUrl: getString(process.env['FRONTEND_URL'], 'http://localhost:3000'),
-  ollamaModel: getString(process.env['OLLAMA_MODEL'], 'llama3.1:8b-instruct'),
+  ollamaModel: getString(process.env['OLLAMA_MODEL'], 'llama3.1:8b'),
   rateLimitWindowMs: parseNumber(process.env['RATE_LIMIT_WINDOW_MS'], 900_000),
   rateLimitMaxRequests: parseNumber(process.env['RATE_LIMIT_MAX_REQUESTS'], 100),
   logLevel: parseLogLevel(process.env['LOG_LEVEL'], 'info'),
