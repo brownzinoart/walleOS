@@ -36,7 +36,7 @@ export const renderChatContainer = (
 
   return `
     <section
-      class="chat-container flex flex-col gap-4 overflow-y-auto flex-1 px-4 md:px-0 pb-32 md:pb-8"
+      class="chat-container flex flex-col gap-4 overflow-y-auto flex-1 max-h-[80vh] px-4 md:px-0 pb-32 md:pb-8"
       data-chat-container
       aria-live="polite"
       aria-describedby="chat-instructions"

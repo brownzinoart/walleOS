@@ -20,7 +20,7 @@ import {
   type ExperienceChatState,
   type ExperienceChatStateListener,
 } from '@/utils/experienceChatState';
-import { generateMockResponse } from '@/utils/chatState';
+import { streamChatResponse, type ChatRequest } from '@/services/api';
 import { addWillChange, debounce, removeWillChange, type DebouncedFunction } from '@/utils/performance';
 import { escapeHtml } from '@/utils/dom';
 
@@ -40,8 +40,6 @@ const EXPERIENCE_FOOTER_SELECTOR = '[data-experience-footer]';
 const MESSAGE_LENGTH_LIMIT = 600;
 const CHAR_COUNT_THRESHOLD = 0.8;
 const MAX_TEXTAREA_HEIGHT = 200;
-const RESPONSE_DELAY_MIN = 500;
-const RESPONSE_DELAY_MAX = 800;
 
 type ExperienceSuggestionChip = ReturnType<typeof getExperienceSuggestionChips>[number];
 
@@ -364,8 +362,6 @@ const syncTextareaValueFromState = (experienceId: string, value: string): void =
   updateExperienceSendButtonState(experienceId);
 };
 
-const createResponseDelay = (): number =>
-  RESPONSE_DELAY_MIN + Math.floor(Math.random() * (RESPONSE_DELAY_MAX - RESPONSE_DELAY_MIN + 1));
 
 const handleExperienceMessageSubmit = (
   experienceId: string,
@@ -415,30 +411,73 @@ const handleExperienceMessageSubmit = (
   setExperienceChatTyping(experienceId, true);
   updateExperienceTypingIndicator(experienceId, true);
 
-  const response = generateMockResponse(trimmed, chipId, {
-    experienceId,
-    experience,
-  });
+  // Make API call to get response from RAG service
+  const chatRequest: ChatRequest = {
+    message: trimmed,
+    experienceContext: {
+      experienceId,
+      experienceTitle: experience.title,
+    },
+    ...(chipId && { chipId }),
+  };
 
-  const timeoutId = window.setTimeout(() => {
-    addExperienceChatMessage(experienceId, 'assistant', response, {
-      experienceContext: {
-        experienceId,
-        experienceTitle: experience.title,
-      },
-    });
+  // Process the API request asynchronously
+  const processStream = async () => {
+    try {
+      const streamGenerator = streamChatResponse(chatRequest);
 
-    setExperienceChatTyping(experienceId, false);
-    updateExperienceTypingIndicator(experienceId, false);
-    toggleExperienceSendButtonLoading(experienceId, false);
-    updateExperienceSendButtonState(experienceId);
-    scrollExperienceMessagesToBottom(experienceId);
+      // Handle streaming response
+      let accumulatedResponse = '';
+      for await (const event of streamGenerator) {
+        if (event.token) {
+          accumulatedResponse += event.token;
+        }
+        if (event.done) {
+          break;
+        }
+      }
 
-    runtime.pendingTimeouts.delete(timeoutId);
-    setExperienceChatProcessing(null, false);
-  }, createResponseDelay());
+      // Add the final message
+      addExperienceChatMessage(experienceId, 'assistant', accumulatedResponse, {
+        experienceContext: {
+          experienceId,
+          experienceTitle: experience.title,
+        },
+      });
+    } catch (error) {
+      console.error('Experience chat API error:', error);
+      // Provide more specific error messages
+      let errorMessage = 'Sorry, I encountered an error processing your question. Please try again.';
 
-  runtime.pendingTimeouts.add(timeoutId);
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          errorMessage = 'Unable to connect to the server. Please make sure the server is running.';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'The request timed out. Please try again.';
+        } else if (error.message.includes('Ollama')) {
+          errorMessage = 'The AI service is not available. Please make sure Ollama is running.';
+        }
+      }
+
+      // Add error message to chat
+      addExperienceChatMessage(experienceId, 'assistant', errorMessage, {
+        experienceContext: {
+          experienceId,
+          experienceTitle: experience.title,
+        },
+      });
+    } finally {
+      setExperienceChatTyping(experienceId, false);
+      updateExperienceTypingIndicator(experienceId, false);
+      toggleExperienceSendButtonLoading(experienceId, false);
+      updateExperienceSendButtonState(experienceId);
+      scrollExperienceMessagesToBottom(experienceId);
+      setExperienceChatProcessing(null, false);
+    }
+  };
+
+  // Execute the stream processing
+  processStream();
 };
 
 const createStateListener = (
@@ -521,7 +560,7 @@ export const renderExperienceChat = (experienceId: string, experience: Experienc
       </header>
       <div class="experience-chat-body px-4 py-4">
         <div
-          class="experience-chat-messages flex flex-col gap-3 overflow-y-auto px-3 py-4 border border-default rounded-lg bg-surface-muted ${hasMessages ? '' : 'is-empty'}"
+          class="experience-chat-messages flex flex-col gap-3 overflow-y-auto px-3 py-4 border border-default rounded-lg bg-surface-muted max-h-[60vh] ${hasMessages ? '' : 'is-empty'}"
           data-experience-messages
           role="log"
           aria-live="polite"

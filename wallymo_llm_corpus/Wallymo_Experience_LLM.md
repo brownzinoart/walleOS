@@ -1,7 +1,14 @@
 # WALLY MOSTAFA – EXPERIENCE DATABASE DOCUMENT
 
 ## ONE BLOCK AWAY LLC (Founder) — Remote | Jul 2023–Present
-**Overview**: Lab for practical AI orchestration and MVPs (WeReady, ListingPal, Sagedvice).
+**Overview**: Established as an LLC to deliver AI LLM implementation services to agencies and corporations, with the goal of promoting beneficial AI applications while mitigating negative impacts such as job displacement. Functions as an overarching entity for personal LLM experimentation, product development, and future initiatives. WeReady is actively pursuing funding and serves as the LLC's core focus for sustained growth.
+
+**WeReady (https://weready.dev/)**: Startup intelligence platform that helps founders and investors diagnose company readiness for success. Analyzes code quality, business model viability, investment readiness, and design/UX across four equal-weight pillars. Uses evidence-based methodology with 65+ authoritative data sources including government databases, academic research, and VC benchmarks to produce actionable recommendations and WeReady Scores.
+
+**ListingPal (https://listingpal.info/)**: AI-powered real estate marketing platform that generates complete marketing campaigns in 90 seconds. Uses proprietary AgentSelect™ framework to orchestrate multiple LLMs for MLS/SEO-ready descriptions, social media content, interior styling suggestions, and paid advertising copy. Features multi-model orchestration, smart prompt engineering, and automated AI model updates.
+
+**Technical Infrastructure**: Built with modern web technologies including TypeScript, React frontend, Node.js/Express backend. Implements CORS configuration for cross-origin requests, environment-based configuration management, vector database storage with LanceDB, and streaming API endpoints for real-time AI responses. Features comprehensive error handling, request queuing, and performance optimization.
+
 **Responsibilities**: Multi‑model workflows; client consulting; low‑cost RAG/agents; local+cloud inference.
 **Impact**: Reusable orchestration framework; ~60% faster prototyping; hands‑on founder/architect role.
 

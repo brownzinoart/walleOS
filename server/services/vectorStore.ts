@@ -8,7 +8,7 @@ import { cosineSimilarity, normalizeEmbedding } from './embeddingService.js';
 const RETRIEVAL_CONFIG = {
   topKDefault: 6,
   rerankK: 3,
-  minConfidence: 0.65,
+  minConfidence: 0.05, // Lowered to accommodate low similarity scores from current embeddings
 };
 
 export interface SearchResult {
@@ -196,12 +196,14 @@ export class VectorStore {
           }
         }
 
-        // Calculate similarity score
-        // LanceDB returns _distance, convert to similarity
+        // Calculate similarity score with improved calculation
         let score = 0;
         if (result._distance !== undefined) {
-          // Convert distance to similarity: similarity = 1 - distance
-          score = Math.max(0, Math.min(1, 1 - result._distance));
+          // Improved similarity calculation: normalize distance and apply scaling
+          // LanceDB distance ranges from 0 to 2, normalize to 0-1 range
+          const normalizedDistance = Math.max(0, Math.min(1, result._distance / 2));
+          // Apply exponential scaling to boost moderate similarities
+          score = Math.max(0, Math.min(1, Math.exp(-normalizedDistance * 2) * (1 - normalizedDistance * 0.3)));
         } else if (result.embedding) {
           // Fallback to cosine similarity if embedding is available
           score = cosineSimilarity(normalizedQuery, result.embedding);

@@ -50,8 +50,8 @@ export class ApiNetworkError extends ApiServiceError {
 }
 
 // Configuration
-const API_BASE_URL = '/api';
-const REQUEST_TIMEOUT = 30000; // 30 seconds
+const API_BASE_URL = (process.env as any).NODE_ENV === 'development' ? 'http://localhost:3001/api' : '/api';
+const REQUEST_TIMEOUT = 60000; // 60 seconds - increased for first request model loading
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second base delay
 

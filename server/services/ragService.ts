@@ -6,7 +6,7 @@ import { getVectorStore, type SearchResult, type SearchOptions } from './vectorS
 const RAG_CONFIG = {
   topKDefault: 6,
   rerankK: 3,
-  minConfidence: 0.1, // Lowered from 0.65 for testing
+  minConfidence: 0.05, // Lowered to accommodate low similarity scores from current embeddings
   // Priority ranking from schema
   categoryPriority: {
     narrative: 1.0,
@@ -60,6 +60,50 @@ export class RAGServiceError extends Error {
       this.details = details;
     }
   }
+}
+
+/**
+ * Preprocess query to improve semantic matching
+ */
+function preprocessQuery(query: string): string {
+  const trimmed = query.trim().toLowerCase();
+
+  // Expand common abbreviations and add relevant keywords
+  const expansions: Record<string, string[]> = {
+    'ai': ['artificial intelligence', 'machine learning', 'neural networks'],
+    'ml': ['machine learning', 'artificial intelligence', 'data science'],
+    'ux': ['user experience', 'user interface', 'design', 'usability'],
+    'ui': ['user interface', 'design', 'frontend', 'interaction'],
+    'dev': ['development', 'programming', 'coding', 'software'],
+    'experience': ['background', 'history', 'career', 'work'],
+    'skills': ['abilities', 'competencies', 'expertise', 'technologies'],
+    'projects': ['portfolio', 'work', 'achievements', 'accomplishments'],
+    'leadership': ['management', 'team', 'supervision', 'direction'],
+  };
+
+  let expanded = trimmed;
+
+  // Apply expansions
+  for (const [key, values] of Object.entries(expansions)) {
+    if (trimmed.includes(key)) {
+      expanded += ' ' + values.join(' ');
+    }
+  }
+
+  // Add contextual keywords based on query content
+  if (trimmed.includes('experience') || trimmed.includes('background')) {
+    expanded += ' career work history professional';
+  }
+
+  if (trimmed.includes('technical') || trimmed.includes('technology')) {
+    expanded += ' programming development software engineering';
+  }
+
+  if (trimmed.includes('design') || trimmed.includes('creative')) {
+    expanded += ' user experience user interface visual';
+  }
+
+  return expanded.trim();
 }
 
 /**
@@ -131,8 +175,11 @@ export async function retrieveContext(ragQuery: RAGQuery): Promise<RAGResponse> 
       throw new RAGServiceError('Vector store is not initialized. Please run corpus ingestion first.');
     }
 
-    // Generate embedding for the query
-    const queryEmbedding = await generateEmbedding(ragQuery.query);
+    // Preprocess query for better semantic matching
+    const processedQuery = preprocessQuery(ragQuery.query);
+
+    // Generate embedding for the processed query
+    const queryEmbedding = await generateEmbedding(processedQuery);
 
     // Prepare search options
     const searchOptions: SearchOptions = {
@@ -179,7 +226,8 @@ export async function retrieveContext(ragQuery: RAGQuery): Promise<RAGResponse> 
     };
 
     serverLogger.info('RAG retrieval completed', {
-      query: ragQuery.query,
+      originalQuery: ragQuery.query,
+      processedQuery: processedQuery,
       resultsFound: ragResults.length,
       processingTimeMs,
       topScore: ragResults[0]?.score || 0,
@@ -266,7 +314,7 @@ export async function searchByCategory(
 export async function retrieveNarrativeContext(query: string): Promise<RAGResponse> {
   return searchByCategory(query, 'narrative', {
     topK: 3, // Fewer results for tone context
-    minConfidence: 0.5, // Lower threshold for tone matching
+    minConfidence: 0.15, // Consistent with general queries
   });
 }
 
