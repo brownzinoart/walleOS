@@ -48,8 +48,9 @@ async function testRAG(): Promise<void> {
     console.log(`   Processing time: ${narrativeResult.processingTimeMs}ms`);
     
     if (narrativeResult.results.length > 0) {
-      console.log(`   Top result: [${narrativeResult.results[0].category}] Score: ${narrativeResult.results[0].score.toFixed(3)}`);
-      console.log(`   Content: ${narrativeResult.results[0].content.substring(0, 150)}...`);
+      const top = narrativeResult.results[0];
+      console.log(`   Top result: [${top?.category ?? 'n/a'}] Score: ${top?.score?.toFixed(3) ?? '0.000'}`);
+      console.log(`   Content: ${(top?.content ?? '').substring(0, 150)}...`);
     }
     console.log();
 

@@ -25,6 +25,7 @@ import content, {
   suggestionChips,
   validateContent,
 } from '@/config/content';
+import { streamChatResponse, /* checkHealth,*/ type ChatRequest } from '@/services/api';
 import { getAppSettings } from '@/config/settings';
 import type { ChatState } from '@/types';
 import {
@@ -42,6 +43,9 @@ import {
   setChatInputValueState,
   setChatTyping,
   subscribeToChatState,
+  addAssistantPlaceholder,
+  appendToMessage,
+  startMessageAnimation,
 } from '@/utils/chatState';
 import {
   clearExperienceContext,
@@ -58,8 +62,10 @@ import {
   getCurrentRoute,
 } from '@/utils/router';
 import { renderProjectsPage, initProjectsPageInteractions } from '@/components/ProjectsPage';
+import { renderForFunPage, initForFunPageInteractions, cleanupForFunPage } from '@/components/ForFunPage';
 import { initTheme, subscribeToTheme, getTheme } from '@/utils/theme';
 import { attachThemeToggleListeners, cleanupThemeToggle } from '@/components/ThemeToggle';
+import { getSelectedSuggestionChips } from '@/utils/suggestionChipSelector';
 
 const CHAT_ROOT_SELECTOR = '[data-chat-root]';
 const WELCOME_SLOT_SELECTOR = '[data-chat-welcome]';
@@ -73,6 +79,8 @@ let pendingSuggestion: { id: string; text: string } | null = null;
 let currentActiveNavItem: string | null = 'home';
 const reducedMotion = prefersReducedMotion();
 const { clearExperienceContextOnRouteChange } = getAppSettings();
+
+// streaming: attempt directly; fallback on error
 
 const getActiveExperienceState = () => (hasActiveContext() ? getExperienceContext() : null);
 
@@ -89,7 +97,7 @@ const resolveSuggestionChips = () => {
     return experienceSuggestionChips;
   }
 
-  return suggestionChips;
+  return getSelectedSuggestionChips(suggestionChips, 4);
 };
 
 const updateExperienceContextIndicators = () => {
@@ -197,7 +205,7 @@ const renderTypingIndicator = (): string => `
       <span class="typing-dot"></span>
       <span class="typing-dot typing-dot-delay"></span>
       <span class="typing-dot typing-dot-delay-xl"></span>
-      <span class="ml-3 uppercase tracking-widest text-xs text-secondary">Typing</span>
+      <span class="ml-3 uppercase tracking-widest text-xs text-secondary">thinking...</span>
     </div>
   </article>
 `;
@@ -210,6 +218,10 @@ const getMainContent = (): string => {
   // Render resume section if resume nav item is active
   if (currentActiveNavItem === 'resume') {
     return renderResume();
+  }
+
+  if (currentActiveNavItem === 'for-fun') {
+    return renderForFunPage();
   }
 
   // Show project cards on home tab for better UX
@@ -260,7 +272,73 @@ const getMainContent = (): string => {
   `;
 };
 
-const handleUserMessage = (message: string) => {
+const COMPLETION_TIMEOUT_MIN_MS = 10000;
+const COMPLETION_TIMEOUT_MAX_MS = 18000;
+const COMPLETION_TIMEOUT_PER_CHAR_MS = 20;
+
+const computeMessageCompletionTimeout = (messageId: string): number => {
+  const state = getChatState();
+  const message = state.messages.find((m) => m.id === messageId);
+  const contentLength = message
+    ? (message.bufferedContent?.length ?? message.content.length ?? 0)
+    : 0;
+
+  const estimated = COMPLETION_TIMEOUT_MIN_MS + contentLength * COMPLETION_TIMEOUT_PER_CHAR_MS;
+
+  return Math.min(COMPLETION_TIMEOUT_MAX_MS, Math.max(COMPLETION_TIMEOUT_MIN_MS, estimated));
+};
+
+const waitForMessageCompletion = (messageId: string): Promise<void> => {
+  return new Promise((resolve) => {
+    const state = getChatState();
+    const existing = state.messages.find((m) => m.id === messageId);
+    if (existing && existing.animationState === 'complete') {
+      resolve();
+      return;
+    }
+
+    let resolved = false;
+    let timeoutId: number | null = null;
+    let unsubscribe: (() => void) | null = null;
+
+    const cleanup = () => {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+    };
+
+    const finalize = () => {
+      if (resolved) {
+        return;
+      }
+      resolved = true;
+      cleanup();
+      resolve();
+    };
+
+    const timeout = computeMessageCompletionTimeout(messageId);
+    timeoutId = window.setTimeout(() => {
+      finalize();
+    }, timeout);
+
+    unsubscribe = subscribeToChatState((next) => {
+      if (resolved) {
+        return;
+      }
+      const found = next.messages.find((m) => m.id === messageId);
+      if (found && found.animationState === 'complete') {
+        finalize();
+      }
+    });
+  });
+};
+
+const handleUserMessage = async (message: string) => {
   const trimmed = message.trim();
 
   if (!trimmed) {
@@ -302,12 +380,46 @@ const handleUserMessage = (message: string) => {
 
   setChatTyping(true);
 
-  const responseDelay = 500 + Math.random() * 500;
-  window.setTimeout(() => {
+  // Build streaming request
+  const chatRequest: ChatRequest = {
+    message: trimmed,
+    ...(selectedExperience && {
+      experienceContext: {
+        experienceId: selectedExperience.id,
+        experienceTitle: `${selectedExperience.title} @ ${selectedExperience.company}`.trim(),
+      },
+    }),
+    ...(matchedSuggestion?.id && { chipId: matchedSuggestion.id }),
+  } as ChatRequest;
+
+  const placeholder = addAssistantPlaceholder(
+    selectedExperience
+      ? {
+          experienceContext: {
+            experienceId: selectedExperience.id,
+            experienceTitle: `${selectedExperience.title} @ ${selectedExperience.company}`.trim(),
+          },
+        }
+      : undefined,
+  );
+
+  try {
+    const stream = streamChatResponse(chatRequest);
+    for await (const event of stream) {
+      if (event.token) {
+        appendToMessage(placeholder.id, event.token);
+      }
+      if (event.done) break;
+    }
+    startMessageAnimation(placeholder.id);
+    await waitForMessageCompletion(placeholder.id);
+  } catch (err) {
+    // Fallback to mock on error
     const response = generateMockResponse(trimmed, matchedSuggestion?.id, experienceContextPayload);
+    appendToMessage(placeholder.id, response);
+  } finally {
     setChatTyping(false);
-    addChatMessage('assistant', response);
-  }, responseDelay);
+  }
 };
 
 const handleSuggestionChipClick = (chipText: string) => {
@@ -438,6 +550,10 @@ const handleRouteChange = () => {
     cleanupResumeInteractions();
   }
 
+  if (previousNavItem === 'for-fun' && nextNavItem !== 'for-fun') {
+    cleanupForFunPage();
+  }
+
   const root = document.querySelector<HTMLDivElement>('#app');
   if (root) {
     // Cleanup theme toggle before re-render to prevent leaks
@@ -464,6 +580,11 @@ const handleRouteChange = () => {
           initResumeInteractions();
           refreshExperienceContextUI();
           attachExperienceContextIndicatorListeners();
+          break;
+        case 'for-fun':
+          requestAnimationFrame(() => {
+            initForFunPageInteractions();
+          });
           break;
         case 'home':
         default:
@@ -580,12 +701,13 @@ const mount = async () => {
 };
 
 subscribeToChatState((state, previousState) => {
-  rerenderChat(state);
-
-  const messagesChanged = state.messages.length !== previousState.messages.length;
+  const messagesChanged =
+    state.messages.length !== previousState.messages.length ||
+    state.messages !== previousState.messages;
   const typingChanged = state.isTyping !== previousState.isTyping;
 
   if (messagesChanged || typingChanged) {
+    rerenderChat(state);
     scrollToBottom(reducedMotion ? 'auto' : 'smooth');
   }
 });
@@ -636,6 +758,10 @@ const handleNavigationChange = (event: Event) => {
     cleanupResumeInteractions();
   }
 
+  if (previousNavItem === 'for-fun' && currentActiveNavItem !== 'for-fun') {
+    cleanupForFunPage();
+  }
+
   // Re-render the main content when navigation changes
   const root = document.querySelector<HTMLDivElement>('#app');
   if (root) {
@@ -660,6 +786,12 @@ const handleNavigationChange = (event: Event) => {
       if (navId === 'projects') {
         requestAnimationFrame(() => {
           initProjectsPageInteractions();
+        });
+      }
+
+      if (navId === 'for-fun') {
+        requestAnimationFrame(() => {
+          initForFunPageInteractions();
         });
       }
 

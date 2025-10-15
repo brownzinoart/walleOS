@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#01f0ff" stop-opacity="0.8"/>
+      <stop offset="60%" stop-color="#b400ff" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#030712" stop-opacity="0.92"/>
+    </linearGradient>
+    <radialGradient id="flare" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="35%" stop-color="#01f0ff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#030712" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="#070b16"/>
+  <rect width="1200" height="800" fill="url(#bg)" opacity="0.9"/>
+  <ellipse cx="780" cy="380" rx="640" ry="420" fill="url(#flare)"/>
+  <g fill="none" stroke="#0ef" stroke-opacity="0.35" stroke-width="3">
+    <path d="M120 -80 C 380 180, 560 200, 920 80"/>
+    <path d="M40 740 C 280 580, 640 560, 1160 720"/>
+  </g>
+  <g fill="none" stroke="#ff53d1" stroke-opacity="0.28" stroke-width="4">
+    <path d="M-40 320 C 200 440, 540 360, 1260 240"/>
+  </g>
+  <text x="8%" y="84%" font-family="'Space Grotesk', 'Segoe UI', sans-serif" font-size="112" font-weight="700" fill="#ecf8ff" opacity="0.85" letter-spacing="0.12em">NEON DRIFT</text>
+</svg>

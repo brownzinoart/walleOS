@@ -11,4 +11,6 @@ const defaultSettings: AppSettings = {
   clearExperienceContextOnRouteChange: true,
 };
 
-export const getAppSettings = (): AppSettings => defaultSettings;
+export const getAppSettings = (): AppSettings => {
+  return { ...defaultSettings };
+};

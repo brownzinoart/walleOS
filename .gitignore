@@ -18,3 +18,5 @@ test-results/
 .eslintcache
 server/**/*.js
 server/**/*.d.ts
+# Local SSH deploy keys (do not commit)
+.github-ssh/

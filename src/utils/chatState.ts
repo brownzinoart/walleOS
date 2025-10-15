@@ -1,5 +1,12 @@
 import { suggestionChips, mockResponses } from '@/config/content';
-import type { ChatMessage, ChatState, Experience } from '@/types';
+import type { ChatMessage, ChatState, Experience, MessageAnimationState } from '@/types';
+import {
+  createMessageAnimator,
+  splitPreservingWhitespace,
+  type MessageAnimator,
+  type MessageAnimatorProgressPayload,
+} from '@/utils/messageAnimator';
+import { prefersReducedMotion } from '@/utils/performance';
 
 export type ChatStateListener = (state: ChatState, previousState: ChatState) => void;
 
@@ -265,6 +272,327 @@ export const addChatMessage = (
   }));
 
   return message;
+};
+
+// Streaming helpers for home chat
+export const addAssistantPlaceholder = (meta?: ChatMessageMeta): ChatMessage => {
+  const message = {
+    ...createMessage('assistant', '', meta),
+    animationState: 'buffering' as MessageAnimationState,
+    bufferedContent: '',
+    displayContent: '',
+    animateThisMessage: !prefersReducedMotion(),
+  };
+  setState((state) => ({
+    ...state,
+    messages: [...state.messages, message],
+  }));
+  return message;
+};
+
+export const appendToMessage = (messageId: string, delta: string): void => {
+  if (!delta) return;
+  setState((state) => ({
+    ...state,
+    messages: state.messages.map((m) => {
+      if (m.id !== messageId) return m;
+      const useBuffer = m.animateThisMessage ?? !prefersReducedMotion();
+      if (useBuffer) {
+        return { ...m, bufferedContent: (m.bufferedContent ?? '') + delta };
+      }
+      return { ...m, content: m.content + delta };
+    }),
+  }));
+};
+
+export const setMessageContent = (messageId: string, content: string): void => {
+  setState((state) => ({
+    ...state,
+    messages: state.messages.map((m) => (m.id === messageId ? { ...m, content } : m)),
+  }));
+};
+
+// Animation helpers
+const animatorRegistry = new Map<string, MessageAnimator>();
+
+interface MessageDomTracker {
+  contentEl: HTMLElement;
+  pointer: number;
+}
+
+const messageDomTrackers = new Map<string, MessageDomTracker>();
+const MESSAGE_WORD_CLASS = 'message-word';
+const MESSAGE_WORD_NEW_CLASS = 'message-word--new';
+const whitespaceTokenPattern = /^\s+$/;
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const formatTokenHtml = (token: string, index: number): string => {
+  if (whitespaceTokenPattern.test(token)) {
+    return token;
+  }
+
+  return `<span class="${MESSAGE_WORD_CLASS}" data-index="${index}">${escapeHtml(token)}</span>`;
+};
+
+const getMessageContentElement = (messageId: string): HTMLElement | null => {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const messageRoot = document.querySelector<HTMLElement>(`[data-message-id="${messageId}"]`);
+  if (!messageRoot) {
+    return null;
+  }
+
+  return messageRoot.querySelector<HTMLElement>('p');
+};
+
+const ensureMessageDomTracker = (
+  messageId: string,
+  expectedStartIndex: number,
+): MessageDomTracker | null => {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const cached = messageDomTrackers.get(messageId);
+
+  if (cached && document.contains(cached.contentEl)) {
+    return cached;
+  }
+
+  const contentEl = getMessageContentElement(messageId);
+
+  if (!contentEl) {
+    messageDomTrackers.delete(messageId);
+    return null;
+  }
+
+  const tracker: MessageDomTracker = {
+    contentEl,
+    pointer: expectedStartIndex,
+  };
+
+  messageDomTrackers.set(messageId, tracker);
+
+  return tracker;
+};
+
+const rebuildMessageDomIfNeeded = (
+  messageId: string,
+  tracker: MessageDomTracker,
+  expectedStartIndex: number,
+): void => {
+  if (tracker.pointer === expectedStartIndex) {
+    return;
+  }
+
+  const state = getChatState();
+  const message = state.messages.find((m) => m.id === messageId);
+
+  if (!message) {
+    tracker.pointer = expectedStartIndex;
+    return;
+  }
+
+  const source = message.bufferedContent ?? message.content ?? '';
+
+  if (!source) {
+    tracker.contentEl.textContent = '';
+    tracker.pointer = expectedStartIndex;
+    return;
+  }
+
+  const tokens = splitPreservingWhitespace(source);
+  const html = tokens
+    .slice(0, expectedStartIndex)
+    .map((token, idx) => formatTokenHtml(token, idx))
+    .join('');
+
+  tracker.contentEl.innerHTML = html;
+  tracker.pointer = expectedStartIndex;
+};
+
+const appendTokensToDisplayCache = (
+  messageId: string,
+  payload: MessageAnimatorProgressPayload,
+): void => {
+  if (payload.newTokens.length === 0) {
+    return;
+  }
+
+  const state = getChatState();
+  const message = state.messages.find((m) => m.id === messageId);
+
+  if (!message) {
+    return;
+  }
+
+  const addition = payload.newTokens
+    .map((token, offset) => formatTokenHtml(token, payload.startIndex + offset))
+    .join('');
+
+  message.displayContent = `${message.displayContent ?? ''}${addition}`;
+};
+
+const clearMessageDomTracker = (messageId: string): void => {
+  messageDomTrackers.delete(messageId);
+};
+
+const handleMessageAnimationProgress = (
+  messageId: string,
+  payload: MessageAnimatorProgressPayload,
+): void => {
+  appendTokensToDisplayCache(messageId, payload);
+
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  const tracker = ensureMessageDomTracker(messageId, payload.startIndex);
+
+  if (!tracker) {
+    return;
+  }
+
+  rebuildMessageDomIfNeeded(messageId, tracker, payload.startIndex);
+
+  const { contentEl } = tracker;
+
+  const existingNewTokens = contentEl.querySelectorAll<HTMLElement>(`.${MESSAGE_WORD_NEW_CLASS}`);
+  existingNewTokens.forEach((node) => node.classList.remove(MESSAGE_WORD_NEW_CLASS));
+
+  if (payload.newTokens.length === 0) {
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+
+  payload.newTokens.forEach((token, offset) => {
+    const index = payload.startIndex + offset;
+
+    if (whitespaceTokenPattern.test(token)) {
+      fragment.appendChild(document.createTextNode(token));
+      return;
+    }
+
+    const span = document.createElement('span');
+    span.className = `${MESSAGE_WORD_CLASS} ${MESSAGE_WORD_NEW_CLASS}`;
+    span.dataset['index'] = String(index);
+    span.textContent = token;
+    fragment.appendChild(span);
+
+    requestAnimationFrame(() => {
+      span.classList.remove(MESSAGE_WORD_NEW_CLASS);
+    });
+  });
+
+  if (fragment.childNodes.length > 0) {
+    contentEl.appendChild(fragment);
+  }
+
+  tracker.pointer = payload.revealedTokens;
+};
+
+export const setMessageBufferedContent = (messageId: string, content: string): void => {
+  setState((state) => ({
+    ...state,
+    messages: state.messages.map((m) => (m.id === messageId ? { ...m, bufferedContent: content } : m)),
+  }));
+};
+
+const setMessageDisplayContentState = (messageId: string, displayContent: string): void => {
+  setState((state) => ({
+    ...state,
+    messages: state.messages.map((m) => (m.id === messageId ? { ...m, displayContent } : m)),
+  }));
+};
+
+export const setMessageAnimationState = (
+  messageId: string,
+  state: MessageAnimationState,
+): void => {
+  setState((s) => ({
+    ...s,
+    messages: s.messages.map((m) => (m.id === messageId ? { ...m, animationState: state } : m)),
+  }));
+};
+
+export const startMessageAnimation = (messageId: string): void => {
+  const state = getChatState();
+  const message = state.messages.find((m) => m.id === messageId);
+  if (!message) return;
+
+  const reduceMotion = prefersReducedMotion();
+  const full = message.bufferedContent ?? message.content ?? '';
+  const shouldAnimate = (message.animateThisMessage ?? !reduceMotion) && !reduceMotion;
+
+  if (!shouldAnimate) {
+    setState((s) => ({
+      ...s,
+      messages: s.messages.map((m) => (m.id === messageId
+        ? {
+            ...m,
+            content: full,
+            displayContent: full,
+            bufferedContent: full,
+            animationState: 'complete',
+          }
+        : m)),
+    }));
+    animatorRegistry.delete(messageId);
+    clearMessageDomTracker(messageId);
+    return;
+  }
+
+  setMessageAnimationState(messageId, 'animating');
+  setMessageDisplayContentState(messageId, '');
+  clearMessageDomTracker(messageId);
+
+  const animator = createMessageAnimator({
+    id: messageId,
+    content: full,
+    callbacks: {
+      onProgress: (payload) => handleMessageAnimationProgress(messageId, payload),
+      onComplete: () => {
+        setState((s) => ({
+          ...s,
+          messages: s.messages.map((m) => (m.id === messageId
+            ? {
+                ...m,
+                content: full,
+                displayContent: full,
+                bufferedContent: full,
+                animationState: 'complete',
+              }
+            : m)),
+        }));
+        animatorRegistry.delete(messageId);
+        clearMessageDomTracker(messageId);
+      },
+      onCancel: () => {
+        animatorRegistry.delete(messageId);
+        clearMessageDomTracker(messageId);
+      },
+    },
+  });
+
+  animatorRegistry.set(messageId, animator);
+  animator.start();
+};
+
+export const cancelMessageAnimation = (messageId: string): void => {
+  const animator = animatorRegistry.get(messageId);
+  animator?.cancel();
+  animatorRegistry.delete(messageId);
+  clearMessageDomTracker(messageId);
 };
 
 export const setChatTyping = (isTyping: boolean): void => {

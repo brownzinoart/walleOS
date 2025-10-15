@@ -15,6 +15,7 @@ const routerState: RouterState = {
     ['#home', { path: '#home', component: 'home', title: 'Home' }],
     ['#projects', { path: '#projects', component: 'projects', title: 'Projects' }],
     ['#resume', { path: '#resume', component: 'resume', title: 'Resume' }],
+    ['#for-fun', { path: '#for-fun', component: 'for-fun', title: 'For Fun' }],
   ]),
 };
 

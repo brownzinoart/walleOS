@@ -80,6 +80,11 @@ export const {
   metadata
 } = content;
 
+export const getAllSuggestionChips = (): SuggestionChip[] => suggestionChips;
+
+export const getSuggestionChipById = (chipId: string): SuggestionChip | undefined =>
+  suggestionChips.find((chip) => chip.id === chipId);
+
 export const getExperienceSuggestionChips = (
   experience: import('@/types').Experience,
 ): ExperienceSuggestionChip[] => {
@@ -125,6 +130,31 @@ export const validateContent = (): void => {
   Object.entries(content.mockResponses).forEach(([key, response]) => {
     if (response.includes('[') || response.toLowerCase().includes('placeholder')) {
       warnings.push(`Mock response for "${key}" contains placeholder text.`);
+    }
+  });
+
+  if (suggestionChips.length < 4) {
+    warnings.push('Suggestion chip pool has fewer than 4 entries.');
+  }
+
+  const chipIds = new Set<string>();
+  suggestionChips.forEach((chip) => {
+    if (chip.id.trim().length === 0) {
+      warnings.push('Suggestion chip detected with missing id.');
+    }
+
+    if (chip.text.trim().length === 0) {
+      warnings.push(`Suggestion chip "${chip.id}" has empty text.`);
+    }
+
+    if (chip.category.trim().length === 0) {
+      warnings.push(`Suggestion chip "${chip.id}" has empty category.`);
+    }
+
+    if (chipIds.has(chip.id)) {
+      warnings.push(`Duplicate suggestion chip id detected: "${chip.id}".`);
+    } else {
+      chipIds.add(chip.id);
     }
   });
 

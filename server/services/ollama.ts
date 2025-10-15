@@ -39,24 +39,7 @@ export const checkOllamaHealth = async (): Promise<{ healthy: boolean }> => {
   }
 };
 
-const buildUserPrompt = (request: ChatRequest): string => {
-  const segments: string[] = [];
-
-  if (request.experienceContext?.experienceId) {
-    const experienceContext = buildExperienceContextPrompt(request.experienceContext.experienceId);
-    if (experienceContext) {
-      segments.push(experienceContext);
-    }
-  }
-
-  if (request.chipId) {
-    segments.push(`Suggestion chip selected: ${request.chipId}`);
-  }
-
-  segments.push(`User message:\n${request.message.trim()}`);
-
-  return segments.join('\n\n');
-};
+// old buildUserPrompt helper removed in favor of buildUserPromptWithRAG
 
 export const streamChatResponse = async function* (
   request: ChatRequest,

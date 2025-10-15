@@ -270,7 +270,7 @@ export const handleNavActivation = (itemId: string, behavior: ScrollBehavior = '
   // Import router functions dynamically to avoid circular dependencies
   import('@/utils/router').then(({ navigateTo }) => {
     // Route to dedicated pages (including home) so URL reflects active tab
-    if (itemId === 'home' || itemId === 'projects' || itemId === 'resume') {
+    if (itemId === 'home' || itemId === 'projects' || itemId === 'resume' || itemId === 'for-fun') {
       navigateTo(itemId);
       setActiveNavItem(itemId);
       emitNavigationEvent(itemId);
@@ -413,10 +413,10 @@ export const renderSidebar = (): string => {
         </div>
       </div>
       <div class="sidebar-footer">
-        <div class="sidebar-theme-toggle-wrapper">
-          ${renderThemeToggle()}
-        </div>
-        <div class="sidebar-footer-divider" aria-hidden="true"></div>
+      <div class="sidebar-theme-toggle-wrapper">
+        ${renderThemeToggle()}
+      </div>
+      <div class="sidebar-footer-divider" aria-hidden="true"></div>
         <div class="sidebar-utilities">
           <div class="text-sm text-secondary">
             <div class="flex flex-col gap-2 pt-3">

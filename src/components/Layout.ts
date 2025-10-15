@@ -102,9 +102,13 @@ const closeSidebar = (sidebar: HTMLElement, trigger: HTMLElement) => {
 export const renderLayout = (mainContent: string): string => {
   const hasWindow = typeof window !== 'undefined';
   const isHomeRoute = hasWindow ? getCurrentRoute() === 'home' : false;
+  const isForFunRoute = hasWindow ? getCurrentRoute() === 'for-fun' : false;
   const isMobileViewport = hasWindow ? !isDesktop() : false;
   const shouldRenderMobileNav = isHomeRoute && isMobileViewport;
   const mobileNavMarkup = shouldRenderMobileNav ? renderMobileNav() : '';
+  const mainPaddingClasses = isForFunRoute
+    ? ''
+    : 'p-6 pt-20 md:p-8 md:pt-20 lg:p-12';
 
   return `
     <div class="layout-root relative min-h-screen text-primary">
@@ -119,7 +123,7 @@ export const renderLayout = (mainContent: string): string => {
           ${renderSidebar()}
         </div>
         <main
-          class="main-content-area w-full min-h-screen p-6 pt-20 md:p-8 md:pt-20 lg:p-12"
+          class="main-content-area w-full min-h-screen${mainPaddingClasses ? ` ${mainPaddingClasses}` : ''}"
           data-main-content
           role="main"
           aria-label="Main content"

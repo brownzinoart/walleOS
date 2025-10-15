@@ -1,6 +1,7 @@
 @import './design-tokens.css';
 @import './typography.css';
 @import './components.css';
+@import './components/for-fun.css';
 
 @tailwind base;
 @tailwind components;

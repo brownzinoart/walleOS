@@ -3,9 +3,20 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
-    }
+    alias: [
+      {
+        find: '@',
+        replacement: resolve(__dirname, 'src')
+      },
+      {
+        find: /^gsap\/CustomEase$/,
+        replacement: resolve(__dirname, 'node_modules/gsap/CustomEase.js')
+      },
+      {
+        find: /^gsap$/,
+        replacement: resolve(__dirname, 'node_modules/gsap/index.js')
+      }
+    ]
   },
   server: {
     host: true,

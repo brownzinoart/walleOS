@@ -76,16 +76,17 @@ export class VectorStore {
 
     try {
       // Check if table exists
-      const tableNames = await this.db.tableNames();
+      const db = this.db as any;
+      const tableNames = await db.tableNames();
       if (tableNames.includes(this.tableName)) {
-        this.table = await this.db.openTable(this.tableName);
+        this.table = await db.openTable(this.tableName);
         serverLogger.info('Opened existing table', { tableName: this.tableName });
       } else {
         // Create table with first chunk to establish schema
         throw new VectorStoreError('Table does not exist. Call createTable() first.');
       }
 
-      return this.table;
+      return this.table as Table;
     } catch (error) {
       serverLogger.error('Failed to get table', error instanceof Error ? error : new Error(String(error)), {
         tableName: this.tableName,
@@ -103,11 +104,12 @@ export class VectorStore {
     }
 
     try {
+      const db = this.db as any;
       // Prepare data for LanceDB
       const tableData = chunks.map(chunk => ({
         id: chunk.id,
         content: chunk.content,
-        embedding: normalizeEmbedding(chunk.embedding),
+        embedding: normalizeEmbedding((chunk as any).embedding as number[]),
         sourceFile: chunk.metadata.sourceFile,
         category: chunk.metadata.category,
         chunkIndex: chunk.metadata.chunkIndex,
@@ -119,19 +121,19 @@ export class VectorStore {
       }));
 
       // Drop existing table if it exists
-      const tableNames = await this.db.tableNames();
+      const tableNames = await db.tableNames();
       if (tableNames.includes(this.tableName)) {
-        await this.db.dropTable(this.tableName);
+        await db.dropTable(this.tableName);
         serverLogger.info('Dropped existing table', { tableName: this.tableName });
       }
 
       // Create new table
-      this.table = await this.db.createTable(this.tableName, tableData);
+      this.table = await db.createTable(this.tableName, tableData);
       
       serverLogger.info('Created vector table', {
         tableName: this.tableName,
         chunkCount: chunks.length,
-        embeddingDimensions: chunks[0].embedding.length,
+        embeddingDimensions: chunks[0]?.embedding.length ?? 0,
       });
     } catch (error) {
       serverLogger.error('Failed to create table', error instanceof Error ? error : new Error(String(error)), {
@@ -189,7 +191,7 @@ export class VectorStore {
         if (options.tagFilter && options.tagFilter.length > 0) {
           const resultTags = result.tags ? result.tags.split(',') : [];
           const hasMatchingTag = options.tagFilter.some(tag => 
-            resultTags.some(resultTag => resultTag.toLowerCase().includes(tag.toLowerCase()))
+            resultTags.some((resultTag: string) => resultTag.toLowerCase().includes(tag.toLowerCase()))
           );
           if (!hasMatchingTag) {
             continue;
@@ -277,7 +279,8 @@ export class VectorStore {
 
       // For categories, we'll do a simple query to get all data
       // LanceDB doesn't have a limit method, so we'll use search with a dummy vector
-      const dummyVector = new Array(768).fill(0); // 768 dimensions for nomic-embed-text
+      // Use 384 dims to match nomic-embed-text embeddings
+      const dummyVector = new Array(384).fill(0);
       const searchResults = await table.search(dummyVector).limit(1000).toArray();
 
       const categories: Record<string, number> = {};

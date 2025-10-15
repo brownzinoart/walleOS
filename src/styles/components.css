@@ -1355,6 +1355,55 @@
   }
 }
 
+/* Message Animation States */
+.chat-message[data-animation-state="buffering"] {
+  /* Buffering state kept for semantics; visual feedback comes from typing indicator. */
+}
+
+.chat-message[data-animation-state="animating"] {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.chat-message[data-message-animating="true"] .message-word {
+  display: inline-block;
+  opacity: 1;
+}
+
+.chat-message[data-message-animating="true"] .message-word--new {
+  opacity: 0;
+  transform: translateY(4px);
+  animation: wordFadeIn 260ms ease-out forwards;
+}
+
+@keyframes wordFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+ 
+/* Typing indicator processing variant */
+.typing-indicator--processing {
+  color: var(--color-text-secondary);
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-message[data-animation-state="buffering"] {
+    animation: none !important;
+  }
+  .chat-message[data-message-animating="true"] .message-word--new {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .theme-toggle-button,
   .theme-toggle-icon {

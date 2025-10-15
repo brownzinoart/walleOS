@@ -11,6 +11,8 @@ export type {
   ContentConfig,
 } from '@/config/content';
 
+export type { ForFunContent, ForFunSlide } from '@/config/forFunContent';
+
 export interface LayoutState {
   isSidebarOpen: boolean;
   activeNavItem: string | null;
@@ -25,6 +27,12 @@ export interface ChatMessage {
     experienceId: string;
     experienceTitle: string;
   };
+  animationState?: MessageAnimationState;
+  bufferedContent?: string;
+  displayContent?: string;
+  // Locks whether this message should animate, decided at placeholder creation
+  // to avoid mid-stream setting changes causing buffer/content splits.
+  animateThisMessage?: boolean;
 }
 
 export interface ChatState {
@@ -115,3 +123,5 @@ export interface Context7DocumentationResult {
   libraryId: string;
   content: string | null;
 }
+
+export type MessageAnimationState = 'idle' | 'buffering' | 'animating' | 'complete';

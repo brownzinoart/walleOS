@@ -67,8 +67,8 @@ function extractMetadata(content: string, filename: string): {
   // Extract frontmatter if present
   const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (frontmatterMatch) {
-    const frontmatter = frontmatterMatch[1];
-    cleanContent = frontmatterMatch[2];
+    const frontmatter = frontmatterMatch[1] ?? '';
+    cleanContent = frontmatterMatch[2] ?? cleanContent;
 
     // Parse simple YAML-like frontmatter
     const lines = frontmatter.split('\n');
@@ -76,11 +76,13 @@ function extractMetadata(content: string, filename: string): {
       const [key, ...valueParts] = line.split(':');
       const value = valueParts.join(':').trim();
       
-      if (key?.trim() === 'tags' && value) {
+      const keyName = (key ?? '').trim();
+      if (keyName === 'tags' && value) {
         // Parse array-like tags: [tag1, tag2, tag3]
         const tagMatch = value.match(/\[(.*?)\]/);
         if (tagMatch) {
-          tags = tagMatch[1].split(',').map(tag => tag.trim().replace(/['"]/g, ''));
+          const inner = tagMatch[1] ?? '';
+          tags = inner ? inner.split(',').map(tag => tag.trim().replace(/['"]/g, '')) : [];
         }
       }
     }
@@ -120,7 +122,7 @@ function createChunks(text: string, metadata: { category: string; tags: string[]
   let startChar = 0;
 
   for (let i = 0; i < sentences.length; i++) {
-    const sentence = sentences[i];
+    const sentence = sentences[i] ?? '';
     const sentenceTokens = estimateTokens(sentence);
     
     // If adding this sentence would exceed max tokens, finalize current chunk
@@ -151,7 +153,7 @@ function createChunks(text: string, metadata: { category: string; tags: string[]
         let overlapText = '';
         let overlapCount = 0;
         for (let j = sentences.length - 1; j >= 0 && overlapCount < overlapTokens; j--) {
-          const prevSentence = sentences[j];
+          const prevSentence = sentences[j] ?? '';
           const prevTokens = estimateTokens(prevSentence);
           if (overlapCount + prevTokens <= overlapTokens) {
             overlapText = prevSentence + ' ' + overlapText;
@@ -206,7 +208,7 @@ function createChunks(text: string, metadata: { category: string; tags: string[]
 export function processDocument(filePath: string): ProcessedDocument {
   try {
     const content = readFileSync(filePath, 'utf-8');
-    const filename = filePath.split('/').pop() || '';
+    const filename: string = (filePath.split('/').pop() ?? '');
     
     const { category, tags, cleanContent } = extractMetadata(content, filename);
     const chunks = createChunks(cleanContent, { category, tags });

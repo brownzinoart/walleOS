@@ -58,7 +58,7 @@ const loadContent = (): ContentFile => {
 
 export const buildSystemPrompt = async (): Promise<string> => {
   const content = loadContent();
-  const { branding } = content;
+  const { branding: _branding } = content;
 
   // Check if RAG service is available
   const ragHealth = await getRAGServiceHealth();
@@ -182,11 +182,25 @@ export const buildUserPromptWithRAG = async (userMessage: string, experienceId?:
         query: userMessage,
         topK: 4,
         includeMetadata: false,
+        categoryHint: experienceId ? 'resume' : 'home',
+        ...(experienceId ? { experienceId } : {}),
       });
 
       if (ragResponse.results.length > 0) {
         sections.push('## RELEVANT CONTEXT');
         sections.push(ragResponse.context);
+
+        // Inject compact sources list (top 2-3 unique sources)
+        const uniqueSources: string[] = [];
+        for (const r of ragResponse.results) {
+          if (!uniqueSources.includes(r.source)) {
+            uniqueSources.push(r.source);
+          }
+          if (uniqueSources.length >= 3) break;
+        }
+        if (uniqueSources.length > 0) {
+          sections.push(`Sources: ${uniqueSources.join('; ')}`);
+        }
         sections.push('---');
       }
     } catch (error) {

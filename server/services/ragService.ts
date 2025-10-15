@@ -7,17 +7,36 @@ const RAG_CONFIG = {
   topKDefault: 6,
   rerankK: 3,
   minConfidence: 0.05, // Lowered to accommodate low similarity scores from current embeddings
-  // Priority ranking from schema
-  categoryPriority: {
-    narrative: 1.0,
-    portfolio: 0.95,
-    experience: 0.9,
-    skills: 0.85,
-    faq: 0.8,
-    funfacts: 0.7,
-    metrics: 0.7,
-  },
 };
+
+// Category priority profiles
+const CATEGORY_PRIORITY_HOME: Record<string, number> = {
+  narrative: 1.0,
+  portfolio: 0.95,
+  skills: 0.9,
+  experience: 0.85,
+  metrics: 0.8,
+  faq: 0.75,
+  funfacts: 0.7,
+};
+
+const CATEGORY_PRIORITY_RESUME: Record<string, number> = {
+  experience: 1.0,
+  portfolio: 0.95,
+  metrics: 0.9,
+  skills: 0.85,
+  narrative: 0.8,
+  faq: 0.7,
+  funfacts: 0.6,
+};
+
+export type CategoryHint = 'home' | 'resume';
+
+export function getCategoryPriorityMap(hint?: CategoryHint): Record<string, number> {
+  if (hint === 'resume') return CATEGORY_PRIORITY_RESUME;
+  // default to home bias
+  return CATEGORY_PRIORITY_HOME;
+}
 
 export interface RAGQuery {
   query: string;
@@ -26,6 +45,8 @@ export interface RAGQuery {
   categoryFilter?: string[];
   tagFilter?: string[];
   includeMetadata?: boolean;
+  categoryHint?: CategoryHint;
+  experienceId?: string; // used for boosting
 }
 
 export interface RAGResult {
@@ -65,7 +86,7 @@ export class RAGServiceError extends Error {
 /**
  * Preprocess query to improve semantic matching
  */
-function preprocessQuery(query: string): string {
+export function preprocessQuery(query: string): string {
   const trimmed = query.trim().toLowerCase();
 
   // Expand common abbreviations and add relevant keywords
@@ -79,6 +100,18 @@ function preprocessQuery(query: string): string {
     'skills': ['abilities', 'competencies', 'expertise', 'technologies'],
     'projects': ['portfolio', 'work', 'achievements', 'accomplishments'],
     'leadership': ['management', 'team', 'supervision', 'direction'],
+    // domain/project synonyms
+    'weready': ['startup intelligence', 'readiness score', 'investment readiness', 'bailey engine', 'evidence-based'],
+    'listingpal': ['real estate marketing', 'agentselect', 'mls', 'ad copy', 'campaign generator'],
+    'dxa': ['digital audit experience', 'analytics platform', 'audit canvas', 'prescriptive insights'],
+    'splash': ['design system', 'atomic design', 'tokens', 'component library'],
+    'kinesso': ['indigo awards', 'ux systems', 'media intelligence', 'ipg'],
+    'one block away': ['weready', 'listingpal', 'mvp', 'llm orchestration'],
+    // chips
+    'portfolio-awards': ['awards', 'indigo', 'red dot', 'recognition', 'dxa', 'splash'],
+    'current-ventures': ['weready', 'listingpal', 'one block away', 'mvp', 'startup'],
+    'design-systems-leadership': ['splash', 'design system', 'governance', 'tokens', 'components'],
+    'ai-implementation': ['orchestration', 'function calling', 'rag', 'lancedb', 'embedding'],
   };
 
   let expanded = trimmed;
@@ -109,22 +142,37 @@ function preprocessQuery(query: string): string {
 /**
  * Rerank search results based on category priority and relevance
  */
-function rerankResults(results: SearchResult[], rerankK: number): SearchResult[] {
-  // Apply category priority weighting
+function rerankResults(
+  results: SearchResult[],
+  rerankK: number,
+  categoryPriorityMap: Record<string, number>,
+  tagBoostTerms: string[] = [],
+): SearchResult[] {
+  const boostSet = new Set(tagBoostTerms.map(t => t.toLowerCase()));
+
+  // Apply category priority weighting + optional tag boosts
   const weightedResults = results.map(result => {
-    const categoryWeight = RAG_CONFIG.categoryPriority[result.chunk.metadata.category as keyof typeof RAG_CONFIG.categoryPriority] || 0.5;
-    const adjustedScore = result.score * categoryWeight;
-    
-    return {
-      ...result,
-      score: adjustedScore,
-    };
+    const category = result.chunk.metadata.category;
+    const categoryWeight = categoryPriorityMap[category] ?? 0.5;
+    let adjustedScore = result.score * categoryWeight;
+
+    // Tag/content-based boost for experience context
+    if (boostSet.size > 0) {
+      const tags = (result.chunk.metadata.tags || []).map(t => t.toLowerCase());
+      const content = result.chunk.content.toLowerCase();
+      const hasBoostMatch = Array.from(boostSet).some(term =>
+        tags.some(t => t.includes(term)) || content.includes(term)
+      );
+
+      if (hasBoostMatch) {
+        adjustedScore *= 1.15; // modest boost
+      }
+    }
+
+    return { ...result, score: adjustedScore };
   });
 
-  // Sort by adjusted score
   weightedResults.sort((a, b) => b.score - a.score);
-
-  // Return top reranked results
   return weightedResults.slice(0, rerankK);
 }
 
@@ -144,7 +192,7 @@ function buildContext(results: RAGResult[]): string {
     if (!resultsByCategory[result.category]) {
       resultsByCategory[result.category] = [];
     }
-    resultsByCategory[result.category].push(result);
+    (resultsByCategory[result.category] ?? (resultsByCategory[result.category] = [])).push(result);
   }
 
   // Build context with category headers
@@ -183,17 +231,33 @@ export async function retrieveContext(ragQuery: RAGQuery): Promise<RAGResponse> 
 
     // Prepare search options
     const searchOptions: SearchOptions = {
-      topK: ragQuery.topK || RAG_CONFIG.topKDefault,
-      minConfidence: ragQuery.minConfidence || RAG_CONFIG.minConfidence,
-      categoryFilter: ragQuery.categoryFilter,
-      tagFilter: ragQuery.tagFilter,
+      topK: ragQuery.topK ?? RAG_CONFIG.topKDefault,
+      minConfidence: ragQuery.minConfidence ?? RAG_CONFIG.minConfidence,
+      ...(ragQuery.categoryFilter ? { categoryFilter: ragQuery.categoryFilter } : {}),
+      ...(ragQuery.tagFilter ? { tagFilter: ragQuery.tagFilter } : {}),
     };
 
     // Perform vector search
     const searchResults = await vectorStore.search(queryEmbedding, searchOptions);
 
-    // Rerank results
-    const rerankedResults = rerankResults(searchResults, RAG_CONFIG.rerankK);
+    // Decide category priority & tag boosts
+    const categoryPriority = getCategoryPriorityMap(ragQuery.categoryHint);
+
+    // Light mapping of experienceId -> boost terms
+    const experienceBoostTerms: Record<string, string[]> = {
+      'founder-one-block-away': ['weready', 'listingpal', 'agentselect', 'one block away', 'mvp', 'orchestration'],
+      'director-kinesso': ['splash', 'dxa', 'kinesso', 'design system', 'indigo', 'red dot'],
+      'sr-ux-designer-heartbeat': ['heartbeat', 'healthcare', 'compliance', 'ux'],
+      'sr-account-exec-fcb': ['fcb', 'linzess', 'preclearance', 'tv spot'],
+      'account-supervisor-scout': ['scout marketing', 'xyrem', 'unbranded', 'awareness'],
+      'account-exec-fcb': ['nuvigil', 'digital platform', 'rebranding'],
+      'account-coordinator-rosetta': ['prevnar', 'kol', 'dubai', 'workshop'],
+    };
+
+    const tagBoostTerms = ragQuery.experienceId ? (experienceBoostTerms[ragQuery.experienceId] || []) : [];
+
+    // Rerank results with hint + boosts
+    const rerankedResults = rerankResults(searchResults, RAG_CONFIG.rerankK, categoryPriority, tagBoostTerms);
 
     // Convert to RAG results
     const ragResults: RAGResult[] = rerankedResults.map((result, index) => ({
@@ -313,8 +377,8 @@ export async function searchByCategory(
  */
 export async function retrieveNarrativeContext(query: string): Promise<RAGResponse> {
   return searchByCategory(query, 'narrative', {
-    topK: 3, // Fewer results for tone context
-    minConfidence: 0.15, // Consistent with general queries
+    topK: 2, // tighter tone context
+    minConfidence: 0.15,
   });
 }
 

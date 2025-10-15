@@ -7,6 +7,8 @@ import { getExperienceSuggestionChips } from '@/config/content';
 import type { Experience } from '@/types';
 import {
   addExperienceChatMessage,
+  addExperienceAssistantPlaceholder,
+  appendToExperienceMessage,
   clearExperienceChat,
   getIsAnyExperienceChatProcessing,
   getExperienceChatInputValue,
@@ -23,6 +25,7 @@ import {
 import { streamChatResponse, type ChatRequest } from '@/services/api';
 import { addWillChange, debounce, removeWillChange, type DebouncedFunction } from '@/utils/performance';
 import { escapeHtml } from '@/utils/dom';
+import { startExperienceMessageAnimation, cancelExperienceMessageAnimation } from '@/utils/experienceChatState';
 
 const EXPERIENCE_CHAT_SELECTOR = '[data-experience-chat]';
 const EXPERIENCE_MESSAGES_SELECTOR = '[data-experience-messages]';
@@ -40,6 +43,9 @@ const EXPERIENCE_FOOTER_SELECTOR = '[data-experience-footer]';
 const MESSAGE_LENGTH_LIMIT = 600;
 const CHAR_COUNT_THRESHOLD = 0.8;
 const MAX_TEXTAREA_HEIGHT = 200;
+const EXPERIENCE_COMPLETION_TIMEOUT_MIN_MS = 10000;
+const EXPERIENCE_COMPLETION_TIMEOUT_MAX_MS = 18000;
+const EXPERIENCE_COMPLETION_TIMEOUT_PER_CHAR_MS = 20;
 
 type ExperienceSuggestionChip = ReturnType<typeof getExperienceSuggestionChips>[number];
 
@@ -74,6 +80,75 @@ interface ExperienceChatRuntime {
 }
 
 const runtimeRegistry = new Map<string, ExperienceChatRuntime>();
+
+const computeExperienceMessageTimeout = (experienceId: string, messageId: string): number => {
+  const messages = getExperienceChatMessages(experienceId);
+  const target = messages.find((m) => m.id === messageId);
+  const contentLength = target
+    ? (target.bufferedContent?.length ?? target.content.length ?? 0)
+    : 0;
+  const estimated =
+    EXPERIENCE_COMPLETION_TIMEOUT_MIN_MS + contentLength * EXPERIENCE_COMPLETION_TIMEOUT_PER_CHAR_MS;
+
+  return Math.min(
+    EXPERIENCE_COMPLETION_TIMEOUT_MAX_MS,
+    Math.max(EXPERIENCE_COMPLETION_TIMEOUT_MIN_MS, estimated),
+  );
+};
+
+const waitForExperienceMessageCompletion = (
+  experienceId: string,
+  messageId: string,
+): Promise<void> =>
+  new Promise((resolve) => {
+    const messages = getExperienceChatMessages(experienceId);
+    const alreadyComplete = messages.find((m) => m.id === messageId)?.animationState === 'complete';
+
+    if (alreadyComplete) {
+      resolve();
+      return;
+    }
+
+    let resolved = false;
+    let timeoutId: number | null = null;
+    let unsubscribe: (() => void) | null = null;
+
+    const cleanup = () => {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+    };
+
+    const finalize = () => {
+      if (resolved) {
+        return;
+      }
+      resolved = true;
+      cleanup();
+      resolve();
+    };
+
+    const timeout = computeExperienceMessageTimeout(experienceId, messageId);
+    timeoutId = window.setTimeout(() => {
+      finalize();
+    }, timeout);
+
+    unsubscribe = subscribeToExperienceChatState((state) => {
+      if (resolved) {
+        return;
+      }
+      const list = state.experienceChats.get(experienceId) ?? [];
+      const found = list.find((m) => m.id === messageId);
+      if (found && found.animationState === 'complete') {
+        finalize();
+      }
+    });
+  });
 
 const escapeSelectorValue = (value: string): string => {
   if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
@@ -332,6 +407,10 @@ const updateExperienceMessages = (experienceId: string): void => {
 
   messagesContainer.innerHTML = messageMarkup;
 
+  // Comment 5: Quiet live region during animation to prevent word-by-word announcements
+  const anyAnimating = messages.some((m) => (m.animationState === 'animating' || m.animationState === 'buffering'));
+  messagesContainer.setAttribute('aria-live', anyAnimating ? 'off' : 'polite');
+
   ensureExperienceSuggestionsState(experienceId, hasMessages);
 
   if (runtime.pendingAnimationFrame !== null) {
@@ -426,24 +505,24 @@ const handleExperienceMessageSubmit = (
     try {
       const streamGenerator = streamChatResponse(chatRequest);
 
-      // Handle streaming response
-      let accumulatedResponse = '';
-      for await (const event of streamGenerator) {
-        if (event.token) {
-          accumulatedResponse += event.token;
-        }
-        if (event.done) {
-          break;
-        }
-      }
-
-      // Add the final message
-      addExperienceChatMessage(experienceId, 'assistant', accumulatedResponse, {
+      // Add a placeholder message to stream into
+      const placeholder = addExperienceAssistantPlaceholder(experienceId, {
         experienceContext: {
           experienceId,
           experienceTitle: experience.title,
         },
       });
+
+      for await (const event of streamGenerator) {
+        if (event.token) {
+          appendToExperienceMessage(experienceId, placeholder.id, event.token);
+        }
+        if (event.done) {
+          break;
+        }
+      }
+      startExperienceMessageAnimation(experienceId, placeholder.id);
+      await waitForExperienceMessageCompletion(experienceId, placeholder.id);
     } catch (error) {
       console.error('Experience chat API error:', error);
       // Provide more specific error messages
@@ -832,6 +911,12 @@ export const cleanupExperienceChat = (
 
   if (runtime.pendingAnimationFrame !== null) {
     cancelAnimationFrame(runtime.pendingAnimationFrame);
+  }
+
+  // Cancel any active animations for this experience
+  const messages = getExperienceChatMessages(experienceId);
+  for (const m of messages) {
+    cancelExperienceMessageAnimation(experienceId, m.id);
   }
 
   runtime.unsubscribe?.();

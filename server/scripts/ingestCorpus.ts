@@ -174,7 +174,7 @@ async function main(): Promise<void> {
     const arg = args[i];
     
     if (arg === '--corpus-path' && i + 1 < args.length) {
-      options.corpusPath = args[i + 1];
+      options.corpusPath = args[i + 1] as string;
       i++; // Skip next argument
     } else if (arg === '--force') {
       options.force = true;

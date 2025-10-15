@@ -111,9 +111,10 @@ export async function embedChunks(chunks: DocumentChunk[]): Promise<EmbeddedChun
     const texts = chunks.map(chunk => chunk.content);
     const embeddings = await generateEmbeddings(texts);
 
+    const zero = new Array(384).fill(0);
     const embeddedChunks: EmbeddedChunk[] = chunks.map((chunk, index) => ({
       ...chunk,
-      embedding: embeddings[index],
+      embedding: embeddings[index] ?? zero,
     }));
 
     serverLogger.info('Completed chunk embedding process', {
@@ -152,9 +153,11 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   let normB = 0;
 
   for (let i = 0; i < a.length; i++) {
-    dotProduct += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
+    const va = a[i] ?? 0;
+    const vb = b[i] ?? 0;
+    dotProduct += va * vb;
+    normA += va * va;
+    normB += vb * vb;
   }
 
   normA = Math.sqrt(normA);

@@ -27,6 +27,10 @@ export const renderChatContainer = (
     appendContent = '',
   } = options;
   const hasMessages = messages.length > 0;
+  const anyAnimating = messages.some(
+    (message) => message.animationState === 'buffering' || message.animationState === 'animating',
+  );
+  const ariaLive = anyAnimating ? 'off' : 'polite';
   const messageMarkup = hasMessages
     ? messages.map((message) => renderChatMessage(message)).join('')
     : showEmptyState
@@ -38,7 +42,7 @@ export const renderChatContainer = (
     <section
       class="chat-container flex flex-col gap-4 overflow-y-auto flex-1 max-h-[80vh] px-4 md:px-0 pb-32 md:pb-8"
       data-chat-container
-      aria-live="polite"
+      aria-live="${ariaLive}"
       aria-describedby="chat-instructions"
     >
       <div id="chat-instructions" class="sr-only">
