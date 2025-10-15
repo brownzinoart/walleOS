@@ -101,10 +101,9 @@ const closeSidebar = (sidebar: HTMLElement, trigger: HTMLElement) => {
 
 export const renderLayout = (mainContent: string): string => {
   const hasWindow = typeof window !== 'undefined';
-  const isHomeRoute = hasWindow ? getCurrentRoute() === 'home' : false;
   const isForFunRoute = hasWindow ? getCurrentRoute() === 'for-fun' : false;
   const isMobileViewport = hasWindow ? !isDesktop() : false;
-  const shouldRenderMobileNav = isHomeRoute && isMobileViewport;
+  const shouldRenderMobileNav = isMobileViewport;
   const mobileNavMarkup = shouldRenderMobileNav ? renderMobileNav() : '';
   const mainPaddingClasses = isForFunRoute
     ? ''
