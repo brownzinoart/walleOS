@@ -61,7 +61,11 @@ import {
   initRouter,
   getCurrentRoute,
 } from '@/utils/router';
-import { renderProjectsPage, initProjectsPageInteractions } from '@/components/ProjectsPage';
+import {
+  renderProjectsPage,
+  initProjectsPageInteractions,
+  cleanupProjectsPage,
+} from '@/components/ProjectsPage';
 import { renderForFunPage, initForFunPageInteractions, cleanupForFunPage } from '@/components/ForFunPage';
 import { initTheme, subscribeToTheme, getTheme } from '@/utils/theme';
 import { attachThemeToggleListeners, cleanupThemeToggle } from '@/components/ThemeToggle';
@@ -552,6 +556,10 @@ const handleRouteChange = () => {
 
   if (previousNavItem === 'for-fun' && nextNavItem !== 'for-fun') {
     cleanupForFunPage();
+  }
+
+  if (previousNavItem === 'projects' && nextNavItem !== 'projects') {
+    cleanupProjectsPage();
   }
 
   const root = document.querySelector<HTMLDivElement>('#app');
