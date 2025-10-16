@@ -86,7 +86,11 @@ export const addExperienceChatMessage = (
   const base = createExperienceMessage(role, trimmed, meta);
   const message: ChatMessage = {
     ...base,
-    animationState: role === 'user' ? ('idle' as MessageAnimationState) : base.animationState,
+    ...(role === 'user'
+      ? { animationState: 'idle' as MessageAnimationState }
+      : base.animationState !== undefined
+      ? { animationState: base.animationState }
+      : {}),
   };
 
   setState((state) => {
