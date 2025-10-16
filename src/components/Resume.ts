@@ -336,7 +336,7 @@ export const renderResume = (): string => `
   <section class="resume-section" data-section-id="resume">
     <div class="resume-container max-w-7xl mx-auto">
       <div class="resume-header mb-12">
-        <h1 class="resume-title text-4xl md:text-5xl font-black text-primary mb-6">
+        <h1 class="resume-title text-4xl md:text-6xl font-black tracking-tight mb-6">
           Professional Journey
         </h1>
         <p class="resume-summary text-lg text-secondary max-w-3xl leading-relaxed">
