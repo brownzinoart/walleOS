@@ -83,7 +83,11 @@ export const addExperienceChatMessage = (
     return null;
   }
 
-  const message = createExperienceMessage(role, trimmed, meta);
+  const base = createExperienceMessage(role, trimmed, meta);
+  const message: ChatMessage = {
+    ...base,
+    animationState: role === 'user' ? ('idle' as MessageAnimationState) : base.animationState,
+  };
 
   setState((state) => {
     const existingMessages = state.experienceChats.get(experienceId) ?? [];
@@ -111,6 +115,7 @@ export const addExperienceAssistantPlaceholder = (
     bufferedContent: '',
     displayContent: '',
     animateThisMessage: !prefersReducedMotion(),
+    initialEnter: true,
   };
 
   setState((state) => {
@@ -122,6 +127,20 @@ export const addExperienceAssistantPlaceholder = (
   });
 
   return message;
+};
+
+// Consume one-shot initial-enter flags for a single experience chat.
+export const consumeExperienceInitialEnterFlags = (experienceId: string): void => {
+  setState((state) => {
+    const list = state.experienceChats.get(experienceId) ?? [];
+    if (!list.some((m) => m.initialEnter)) {
+      return state;
+    }
+    const nextList = list.map((m) => (m.initialEnter ? { ...m, initialEnter: false } : m));
+    const nextMap = new Map(state.experienceChats);
+    nextMap.set(experienceId, nextList);
+    return { ...state, experienceChats: nextMap };
+  });
 };
 
 export const appendToExperienceMessage = (

@@ -33,6 +33,9 @@ export interface ChatMessage {
   // Locks whether this message should animate, decided at placeholder creation
   // to avoid mid-stream setting changes causing buffer/content splits.
   animateThisMessage?: boolean;
+  // Transient flag to opt-in to a first-appearance slide-in.
+  // This must be removed on the next render cycle.
+  initialEnter?: boolean;
 }
 
 export interface ChatState {

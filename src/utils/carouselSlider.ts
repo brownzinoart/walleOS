@@ -362,6 +362,10 @@ export const initCarouselSlider = (target: string | HTMLElement, slides: ForFunS
     cleanupFns: [],
   };
 
+  // Track whether we've gently shifted focus to the carousel due to
+  // a keyboard arrow interaction (to avoid stealing focus on load).
+  let hasFocusedRootOnKeyboard = false;
+
   const handleScroll = (direction: CarouselDirection) => {
     const now = Date.now();
 
@@ -423,8 +427,29 @@ export const initCarouselSlider = (target: string | HTMLElement, slides: ForFunS
     isTouchActive = false;
   };
 
+  const isRootInteractable = (): boolean => {
+    const root = elements.root;
+    if (!root || root.offsetParent === null) {
+      return false;
+    }
+    const rect = root.getBoundingClientRect();
+    const inViewport = rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth;
+    const isFocused = document.activeElement === root || root.contains(document.activeElement);
+    return inViewport && isFocused;
+  };
+
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+      return;
+    }
+
+    // If the carousel root isn't interactable yet (e.g., not focused),
+    // gently guide focus on first arrow key press without scrolling.
+    if (!isRootInteractable()) {
+      if (!hasFocusedRootOnKeyboard) {
+        elements.root.focus({ preventScroll: true });
+        hasFocusedRootOnKeyboard = true;
+      }
       return;
     }
 
@@ -432,16 +457,18 @@ export const initCarouselSlider = (target: string | HTMLElement, slides: ForFunS
     handleScroll(event.key === 'ArrowDown' ? 'down' : 'up');
   };
 
-  window.addEventListener('wheel', handleWheel, { passive: false });
-  window.addEventListener('touchstart', onTouchStart, { passive: false });
-  window.addEventListener('touchmove', onTouchMove, { passive: false });
-  window.addEventListener('touchend', onTouchEnd, { passive: false });
+  // Scope scroll/touch events to the carousel root instead of window
+  elements.root.addEventListener('wheel', handleWheel, { passive: false });
+  elements.root.addEventListener('touchstart', onTouchStart, { passive: false });
+  elements.root.addEventListener('touchmove', onTouchMove, { passive: false });
+  elements.root.addEventListener('touchend', onTouchEnd, { passive: false });
+  // Keep keyboard on window for accessibility but guard by focus/visibility
   window.addEventListener('keydown', onKeyDown);
 
-  instance.cleanupFns.push(() => window.removeEventListener('wheel', handleWheel));
-  instance.cleanupFns.push(() => window.removeEventListener('touchstart', onTouchStart));
-  instance.cleanupFns.push(() => window.removeEventListener('touchmove', onTouchMove));
-  instance.cleanupFns.push(() => window.removeEventListener('touchend', onTouchEnd));
+  instance.cleanupFns.push(() => elements.root.removeEventListener('wheel', handleWheel));
+  instance.cleanupFns.push(() => elements.root.removeEventListener('touchstart', onTouchStart));
+  instance.cleanupFns.push(() => elements.root.removeEventListener('touchmove', onTouchMove));
+  instance.cleanupFns.push(() => elements.root.removeEventListener('touchend', onTouchEnd));
   instance.cleanupFns.push(() => window.removeEventListener('keydown', onKeyDown));
 
   instances.set(slider, instance);

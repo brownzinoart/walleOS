@@ -106,7 +106,7 @@ export const renderLayout = (mainContent: string): string => {
   const shouldRenderMobileNav = isMobileViewport;
   const mobileNavMarkup = shouldRenderMobileNav ? renderMobileNav() : '';
   const mainPaddingClasses = isForFunRoute
-    ? ''
+    ? 'for-fun-container'
     : 'p-6 pt-20 md:p-8 md:pt-20 lg:p-12';
 
   return `

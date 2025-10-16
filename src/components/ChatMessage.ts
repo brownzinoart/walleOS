@@ -48,7 +48,9 @@ export const renderChatMessage = (message: ChatMessage): string => {
     : 'chat-message-assistant mr-auto bg-surface-secondary text-primary border-2 border-neon-magenta rounded-lg rounded-bl-sm';
 
   const timestamp = formatTimestamp(message.timestamp);
-  const state: MessageAnimationState = message.animationState ?? 'idle';
+  // Always set an explicit animation state; default to 'complete' for
+  // non-streaming/historical messages.
+  const state: MessageAnimationState = message.animationState ?? 'complete';
   const isAnimating = state === 'buffering' || state === 'animating';
 
   const visibleHtml = isAnimating
@@ -71,6 +73,7 @@ export const renderChatMessage = (message: ChatMessage): string => {
       data-message-id="${message.id}"
       data-role="${message.role}"
       data-animation-state="${state}"
+      ${message.initialEnter ? 'data-initial-enter="true"' : ''}
       ${isAnimating ? 'data-message-animating="true"' : ''}
       aria-live="${ariaLive}"
       aria-busy="${ariaBusy}"

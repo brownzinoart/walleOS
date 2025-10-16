@@ -46,6 +46,7 @@ import {
   addAssistantPlaceholder,
   appendToMessage,
   startMessageAnimation,
+  consumeInitialEnterFlags,
 } from '@/utils/chatState';
 import {
   clearExperienceContext,
@@ -202,6 +203,7 @@ const applyInitialAnimations = () => {
 const renderTypingIndicator = (): string => `
   <article
     class="chat-message chat-message-assistant mr-auto bg-surface-secondary text-primary border-2 border-neon-magenta rounded-lg rounded-bl-sm max-w-[80%] md:max-w-[70%] p-4"
+    data-animation-state="buffering"
     data-typing-indicator
     aria-live="polite"
   >
@@ -528,6 +530,9 @@ const renderChatView = (state: ChatState) => {
     });
 
     chatContainer.outerHTML = nextMarkup;
+
+    // Remove one-shot initial-enter flags on next render
+    consumeInitialEnterFlags();
   }
 };
 

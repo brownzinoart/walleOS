@@ -18,5 +18,34 @@ test-results/
 .eslintcache
 server/**/*.js
 server/**/*.d.ts
+# Vector database and data files
+# Generated vector DB and Lance tables (large/reproducible)
+server/data/
+server/data/vectordb/
+*.lance
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Machine learning models
+*.bin
+*.pkl
+*.pt
+*.pth
+*.ckpt
+*.h5
+
+# Common large data directories
+data/
+datasets/
+models/
+checkpoints/
+
+# Large archives (exclude unless needed for distribution)
+*.tar
+*.zip
+
 # Local SSH deploy keys (do not commit)
 .github-ssh/

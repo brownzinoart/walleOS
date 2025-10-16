@@ -44,6 +44,29 @@ WallyGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neo
 - **Verify Ollama:** Use `ollama list` to confirm the model is available and `ollama serve` to start the local inference service before running the backend.
 - **Further Reading:** A detailed walkthrough will live in `docs/OLLAMA_SETUP.md` in a future update.
 
+## Vector Database Setup
+The vector database used for semantic retrieval is not checked into version control due to large binary sizes and because it is reproducible from source. The generated data is written to `server/data/vectordb/` and should be created locally via the ingestion script.
+
+- Source corpus: `wallymo_llm_corpus/`
+- Ingestion script: `server/scripts/ingestCorpus.ts`
+
+### Prerequisites
+- Ensure [Ollama](https://ollama.com/) is installed and running locally (`ollama serve`), with the required model pulled (e.g., `ollama pull llama3.1:8b-instruct`).
+- Configure environment variables: copy `.env.example` to `.env` and set values as needed (e.g., `OLLAMA_HOST`, `FRONTEND_URL`, any corpus/model settings).
+
+### Generate the Vector DB
+Run the ingestion from the project root using one of the following approaches (use whichever your setup provides):
+
+```bash
+# If an npm script exists
+npm run ingest:corpus
+
+# Or run the TypeScript script directly
+npx ts-node server/scripts/ingestCorpus.ts
+```
+
+After completion, the Lance vector database will be present under `server/data/vectordb/` and available to the backend for retrieval.
+
 ### Deployment
 - Only the frontend deploys to Vercel; the backend remains local or must be hosted separately on a service like Railway, Render, or DigitalOcean.
 - The longer-term plan is to swap the local Ollama integration for a production-ready provider (OpenAI, Anthropic, hosted LLM service) before shipping.

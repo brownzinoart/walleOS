@@ -876,11 +876,21 @@
 }
 
 .chat-message {
-  animation: messageSlideIn 220ms ease-out both;
   transition: transform 180ms ease, box-shadow 180ms ease;
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
+}
+
+/* Apply slide-in only for first render (idle/unspecified state) */
+.chat-message:not([data-animation-state]),
+.chat-message[data-animation-state="idle"] {
+  animation: messageSlideIn 220ms ease-out both;
+}
+
+/* First-appearance slide-in for placeholders or explicit opt-ins */
+.chat-message[data-initial-enter="true"] {
+  animation: messageSlideIn 220ms ease-out both;
 }
 
 .chat-message:focus-visible {
@@ -1394,6 +1404,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .chat-message {
+    animation: none !important;
+  }
   .chat-message[data-animation-state="buffering"] {
     animation: none !important;
   }

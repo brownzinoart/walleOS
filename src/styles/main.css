@@ -233,6 +233,14 @@ button.chip:active {
     @apply w-full max-w-5xl mx-auto;
   }
 
+  /* For Fun page container: creates positioning context and hides overflow */
+  .for-fun-container {
+    position: relative;
+    overflow: hidden;
+    height: 100vh;
+    height: 100svh;
+  }
+
   /* Semantic theme utilities map design tokens to reusable class names. */
   .bg-surface-primary {
     background-color: var(--color-bg-primary);

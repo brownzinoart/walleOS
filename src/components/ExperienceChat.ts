@@ -14,6 +14,7 @@ import {
   getExperienceChatInputValue,
   getExperienceChatMessages,
   getExperienceChatTyping,
+  consumeExperienceInitialEnterFlags,
   getProcessingExperienceId,
   setExperienceChatInputValue,
   setExperienceChatProcessing,
@@ -406,6 +407,9 @@ const updateExperienceMessages = (experienceId: string): void => {
     : renderEmptyState(runtime.experience);
 
   messagesContainer.innerHTML = messageMarkup;
+
+  // Ensure assistant placeholders slide in only on their first render
+  consumeExperienceInitialEnterFlags(experienceId);
 
   // Comment 5: Quiet live region during animation to prevent word-by-word announcements
   const anyAnimating = messages.some((m) => (m.animationState === 'animating' || m.animationState === 'buffering'));

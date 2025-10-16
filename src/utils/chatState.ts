@@ -264,7 +264,14 @@ export const addChatMessage = (
     return null;
   }
 
-  const message = createMessage(role, trimmed, meta);
+  const base = createMessage(role, trimmed, meta);
+  // New runtime messages opt into an initial enter animation via 'idle'
+  // unless reduced motion is preferred. Historical messages should be
+  // normalized elsewhere with 'complete'.
+  const message: ChatMessage = {
+    ...base,
+    animationState: role === 'user' ? ('idle' as MessageAnimationState) : base.animationState,
+  };
 
   setState((state) => ({
     ...state,
@@ -282,12 +289,26 @@ export const addAssistantPlaceholder = (meta?: ChatMessageMeta): ChatMessage => 
     bufferedContent: '',
     displayContent: '',
     animateThisMessage: !prefersReducedMotion(),
+    initialEnter: true,
   };
   setState((state) => ({
     ...state,
     messages: [...state.messages, message],
   }));
   return message;
+};
+
+// Consume one-shot initial-enter flags so placeholders only slide-in once.
+export const consumeInitialEnterFlags = (): void => {
+  setState((state) => {
+    if (!state.messages.some((m) => m.initialEnter)) {
+      return state;
+    }
+    return {
+      ...state,
+      messages: state.messages.map((m) => (m.initialEnter ? { ...m, initialEnter: false } : m)),
+    };
+  });
 };
 
 export const appendToMessage = (messageId: string, delta: string): void => {

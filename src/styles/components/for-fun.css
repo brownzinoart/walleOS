@@ -1,18 +1,21 @@
 .for-fun-carousel {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
 }
 
 .for-fun-carousel nav {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   padding: 3rem;
   display: flex;
   align-items: center;
@@ -40,10 +43,10 @@
 }
 
 .for-fun-carousel footer {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   padding: 3rem;
   display: flex;
   align-items: center;
@@ -95,8 +98,8 @@
 
 .for-fun-carousel .slider {
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -106,6 +109,31 @@
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+/* Mobile: restore full-screen fixed layout when sidebar is hidden */
+@media (max-width: 1023px) {
+  .for-fun-carousel {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .for-fun-carousel nav {
+    position: fixed;
+    width: 100vw;
+  }
+
+  .for-fun-carousel footer {
+    position: fixed;
+    width: 100vw;
+  }
+
+  .for-fun-carousel .slider {
+    width: 100vw;
+    height: 100vh;
+  }
 }
 
 .for-fun-carousel .slide-bg-img {

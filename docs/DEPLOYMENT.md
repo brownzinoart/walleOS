@@ -14,6 +14,38 @@ The WallyGPT frontend deploys as a static single-page application on Vercel. The
 - **Production plan:** Replace the local Ollama dependency with a production-ready provider (e.g., OpenAI, Anthropic, hosted LLM service) before going live. Host the backend on a platform suited for long-running services such as Railway, Render, or DigitalOcean.
 - **Separation:** Vercel ignores the `server/` directory, so deploying the frontend does not provision or run the backend. Provision and secure the backend independently when ready.
 
+## Vector Database in Deployment
+The Lance-based vector database is not committed to Git and must be generated within the target environment. Include the ingestion script as part of your deployment or initialization process so retrieval features work immediately after rollout.
+
+- **Source corpus:** `wallymo_llm_corpus/`
+- **Ingestion script:** `server/scripts/ingestCorpus.ts`
+
+### When to Generate
+- **Deploy-time (recommended):** Run the ingestion as a post-deploy task or init job where all dependencies (LLM service, filesystem permissions) are available. This avoids long first-request latency.
+- **Build-time:** Possible in container builds if the LLM/model and data are accessible during the image build. Be mindful of large image sizes and external service access during CI.
+- **On first request:** Lazy generation keeps deploys fast but introduces cold-start latency and potential concurrency issues. If chosen, guard with a lock to prevent multiple ingestions.
+
+### How to Run
+Execute one of the following in the deployment environment:
+
+```bash
+# If an npm script exists
+npm run ingest:corpus
+
+# Or run the TypeScript script directly
+npx ts-node server/scripts/ingestCorpus.ts
+```
+
+### Environment & Storage Considerations
+- **Ollama/LLM availability:** Ensure the LLM endpoint is reachable from the deployment target, or swap to your production provider.
+- **Paths & permissions:** The generated database writes to `server/data/vectordb/`. Provide a writable directory and persist it across releases (container volume or host path).
+- **Ephemeral filesystems:** If using serverless or ephemeral disks, mount persistent storage or generate at startup into a persistent volume.
+- **Backups & restore:** For production, snapshot or archive `server/data/vectordb/` as part of backup routines. Restoring the directory fully restores the index.
+
+### Pipeline Integration
+- Add an explicit ingestion step to your CD pipeline (e.g., init container, post-deploy job, or one-off task) that runs before traffic is shifted.
+- Monitor the job duration and surface logs so failures block rollout rather than silently degrading retrieval quality.
+
 ## Local Development
 1. **Install frontend deps:** Run `npm install` in the project root.
 2. **Install backend deps:** `cd server && npm install`.
