@@ -1,15 +1,19 @@
 #!/usr/bin/env tsx
 
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { processCorpusDirectory, getAllChunks } from '../services/documentProcessor.js';
 import { embedChunks, checkEmbeddingServiceHealth } from '../services/embeddingService.js';
 import { getVectorStore } from '../services/vectorStore.js';
 import { serverLogger } from '../middleware/logger.js';
 
-// Default corpus path relative to project root
-const DEFAULT_CORPUS_PATH = join(process.cwd(), '..', 'wallymo_llm_corpus');
-const DATA_DIR = join(process.cwd(), 'server', 'data');
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const projectRoot = join(scriptDir, '..', '..');
+const DEFAULT_CORPUS_PATH = join(projectRoot, 'wallymo_llm_corpus');
+
+const serverDir = process.cwd().endsWith('server') ? process.cwd() : join(process.cwd(), 'server');
+const DATA_DIR = join(serverDir, 'data');
 
 interface IngestionOptions {
   corpusPath?: string;

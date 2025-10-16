@@ -1,49 +1,206 @@
-import { featuredProjects } from '@/config/content';
-import type { FeaturedProject } from '@/config/content';
-import { attachProjectCardListeners, renderProjectCard } from '@/components/ProjectCard';
+import { forFunSlides, type ForFunSlide, getBentoCardSize } from '@/config/forFunContent';
 
-const FOR_FUN_PAGE_SELECTOR = '[data-for-fun-projects-page]';
+type BentoCardSize = ReturnType<typeof getBentoCardSize>;
 
-const renderHeroSection = (): string => `
-  <section class="projects-hero py-16 md:py-24">
-    <div class="max-w-4xl mx-auto text-center">
-      <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-6">
-        Projects Showcase
-      </h1>
-      <p class="text-xl md:text-2xl text-secondary max-w-3xl mx-auto leading-relaxed">
-        Take a look at some of my previous projects that I've worked on. Each project represents a unique challenge and showcases different aspects of my development skills and creative problem-solving.
-      </p>
-    </div>
+interface BentoCardPosition {
+  column: string;
+  row: string;
+}
+
+const DEFAULT_ACCENT_COLORS = [
+  'var(--color-neon-cyan)',
+  'var(--color-neon-magenta)',
+  'var(--color-neon-lime)',
+  'var(--color-neon-orange)',
+];
+
+const AUTO_POSITION: BentoCardPosition = { column: 'auto', row: 'auto' };
+
+const BENTO_CARD_POSITIONS: BentoCardPosition[] = [
+  { column: '1 / span 7', row: '1 / span 4' },
+  { column: '8 / span 5', row: '1 / span 2' },
+  { column: '8 / span 5', row: '3 / span 3' },
+  { column: '1 / span 4', row: '5 / span 3' },
+  { column: '5 / span 3', row: '5 / span 3' },
+  { column: '8 / span 5', row: '6 / span 2' },
+  { column: '1 / span 12', row: '8 / span 3' },
+];
+
+const BENTO_SIZE_CLASS_MAP: Record<BentoCardSize, string> = {
+  xl: 'bento-card-xl',
+  lg: 'bento-card-lg',
+  md: 'bento-card-md',
+  sm: 'bento-card-sm',
+  tall: 'bento-card-tall',
+  wide: 'bento-card-wide',
+};
+
+const resolveCardPosition = (index: number): BentoCardPosition => {
+  const totalPositions = BENTO_CARD_POSITIONS.length;
+
+  if (totalPositions === 0) {
+    return AUTO_POSITION;
+  }
+
+  if (index >= totalPositions) {
+    return AUTO_POSITION;
+  }
+
+  const safeIndex = ((index % totalPositions) + totalPositions) % totalPositions;
+
+  return BENTO_CARD_POSITIONS[safeIndex] ?? AUTO_POSITION;
+};
+
+const resolveCardSize = (slide: ForFunSlide, index: number): BentoCardSize =>
+  slide.size ?? getBentoCardSize(index);
+
+const resolveAccentColor = (slide: ForFunSlide, index: number): string => {
+  if (slide.accentColor) {
+    return slide.accentColor;
+  }
+
+  if (DEFAULT_ACCENT_COLORS.length === 0) {
+    return 'var(--color-neon-cyan)';
+  }
+
+  const safeIndex = ((index % DEFAULT_ACCENT_COLORS.length) + DEFAULT_ACCENT_COLORS.length) %
+    DEFAULT_ACCENT_COLORS.length;
+
+  return DEFAULT_ACCENT_COLORS[safeIndex] ?? 'var(--color-neon-cyan)';
+};
+
+const renderBentoCard = (slide: ForFunSlide, index: number): string => {
+  const position = resolveCardPosition(index);
+  const size = resolveCardSize(slide, index);
+  const accent = resolveAccentColor(slide, index);
+  const sizeClass = BENTO_SIZE_CLASS_MAP[size] ?? BENTO_SIZE_CLASS_MAP.md;
+  const styleParts = [
+    `grid-column: ${position.column}`,
+    `grid-row: ${position.row}`,
+    `--bento-card-accent: ${accent}`,
+  ];
+
+  return `
+    <article
+      class="bento-card ${sizeClass}"
+      data-bento-card
+      data-card-index="${index}"
+      role="listitem"
+      tabindex="0"
+      style="${styleParts.join('; ')}"
+    >
+      <span class="bento-card__label">${slide.category}</span>
+      <h3 class="bento-card__title">${slide.title}</h3>
+      <div
+        class="bento-card__media"
+        data-bento-card-media
+        role="img"
+        aria-label="${slide.title} background"
+        data-background-image="${slide.backgroundImage}"
+      ></div>
+    </article>
+  `;
+};
+
+const renderBentoGrid = (): string => `
+  <section class="bento-grid-container" role="list">
+    ${forFunSlides.map((slide, index) => renderBentoCard(slide, index)).join('')}
   </section>
 `;
 
+const renderForFunIntro = (): string => {
+  const featuredSlide = forFunSlides[0];
+  const heroTitle = featuredSlide?.title ?? 'Creative Playground';
+  const heroCategory = featuredSlide?.category ?? 'Experimental Concepts';
+  const totalSlides = forFunSlides.length;
+  const explorationsLabel = totalSlides
+    ? `${totalSlides} experimental ${totalSlides === 1 ? 'piece' : 'explorations'}`
+    : 'Experimental explorations';
+
+  return `
+    <header class="for-fun-hero">
+      <p class="for-fun-hero__eyebrow">${heroCategory}</p>
+      <h1 class="for-fun-hero__title">${heroTitle}</h1>
+      <p class="for-fun-hero__subtitle">
+        ${explorationsLabel} that flex the neon-brutalist design system. Tap into playful motion, bold gradients, and tactile interfaces—no carousel required.
+      </p>
+    </header>
+  `;
+};
+
 export const renderForFunPage = (): string => `
   <div
-    data-for-fun-projects-page
-    data-projects-page
-    class="projects-page min-h-screen"
+    data-for-fun-root
+    class="for-fun-page"
   >
-    ${renderHeroSection()}
-    <section class="projects-content -mt-12 md:-mt-16 pt-4 md:pt-6 pb-12" data-project-cards>
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="project-cards-grid grid grid-cols-1 md:grid-cols-2 gap-6" data-project-cards-grid>
-          ${featuredProjects.map((project: FeaturedProject, index) => renderProjectCard(project, index)).join('')}
-        </div>
-      </div>
-    </section>
+    ${renderForFunIntro()}
+    ${renderBentoGrid()}
   </div>
 `;
 
-export const initForFunPageInteractions = (): void => {
-  const forFunPage = document.querySelector<HTMLElement>(FOR_FUN_PAGE_SELECTOR);
+let cardBackgroundObserver: IntersectionObserver | null = null;
 
-  if (!forFunPage) {
+const applyCardBackground = (card: HTMLElement): void => {
+  const media = card.querySelector<HTMLElement>('[data-bento-card-media]');
+  if (!media) return;
+
+  const backgroundImage = media.dataset['backgroundImage'];
+  const isLoaded = media.dataset['bgLoaded'] === 'true';
+
+  if (!backgroundImage || isLoaded) {
     return;
   }
 
-  attachProjectCardListeners();
+  media.style.backgroundImage = `url('${backgroundImage}')`;
+  media.dataset['bgLoaded'] = 'true';
+};
+
+const hydrateCardBackgrounds = (cards: HTMLElement[]): void => {
+  cards.forEach(applyCardBackground);
+};
+
+export const initForFunPageInteractions = (): void => {
+  const root = document.querySelector<HTMLElement>('[data-for-fun-root]');
+  if (!root) {
+    return;
+  }
+
+  const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-bento-card]'));
+  if (cards.length === 0) {
+    return;
+  }
+
+  if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') {
+    hydrateCardBackgrounds(cards);
+    return;
+  }
+
+  cardBackgroundObserver = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const card = entry.target as HTMLElement;
+          applyCardBackground(card);
+          observer.unobserve(card);
+        }
+      });
+    },
+    { rootMargin: '0px 0px 150px 0px', threshold: 0.15 },
+  );
+
+  cards.forEach((card) => {
+    const media = card.querySelector<HTMLElement>('[data-bento-card-media]');
+    if (media?.dataset['bgLoaded'] === 'true') {
+      return;
+    }
+
+    cardBackgroundObserver?.observe(card);
+  });
 };
 
 export const cleanupForFunPage = (): void => {
-  // No interactive cleanup required for the For Fun projects showcase at this time.
+  if (cardBackgroundObserver) {
+    cardBackgroundObserver.disconnect();
+    cardBackgroundObserver = null;
+  }
 };

@@ -233,12 +233,14 @@ button.chip:active {
     @apply w-full max-w-5xl mx-auto;
   }
 
-  /* For Fun page container: creates positioning context and hides overflow */
+  /* For Fun page container: provides spacing and layout context for the grid */
   .for-fun-container {
     position: relative;
-    overflow: hidden;
-    height: 100vh;
-    height: 100svh;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: clamp(var(--spacing-xl), 6vw, var(--spacing-3xl)) clamp(var(--spacing-lg), 5vw, var(--spacing-3xl));
+    overflow: visible;
+    background-color: var(--color-bg-primary);
   }
 
   /* Semantic theme utilities map design tokens to reusable class names. */

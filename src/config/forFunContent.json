@@ -4,43 +4,57 @@
       "title": "Neon Drift",
       "category": "Synthwave Prototype",
       "backgroundImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "/images/for-fun/neon-drift.svg"
+      "foregroundImage": "/images/for-fun/neon-drift.svg",
+      "size": "xl",
+      "accentColor": "var(--color-neon-cyan)"
     },
     {
       "title": "Gravity Sketchbook",
       "category": "Physics Playground",
       "backgroundImage": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "/images/for-fun/gravity-sketchbook.svg"
+      "foregroundImage": "/images/for-fun/gravity-sketchbook.svg",
+      "size": "lg",
+      "accentColor": "var(--color-neon-magenta)"
     },
     {
       "title": "Solar Bloom",
       "category": "Generative Garden",
       "backgroundImage": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=960&h=960&q=80"
+      "foregroundImage": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=960&h=960&q=80",
+      "size": "tall",
+      "accentColor": "var(--color-neon-lime)"
     },
     {
       "title": "Lumen Loom",
       "category": "Light Sculpture",
       "backgroundImage": "https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=960&h=960&q=80"
+      "foregroundImage": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=960&h=960&q=80",
+      "size": "md",
+      "accentColor": "var(--color-neon-orange)"
     },
     {
       "title": "Orbit Arcade",
       "category": "Motion Study",
       "backgroundImage": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&w=960&h=960&q=80"
+      "foregroundImage": "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&w=960&h=960&q=80",
+      "size": "md",
+      "accentColor": "var(--color-neon-cyan)"
     },
     {
       "title": "Mirage Atelier",
       "category": "Spatial UI Concept",
       "backgroundImage": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=960&h=960&q=80"
+      "foregroundImage": "https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=960&h=960&q=80",
+      "size": "wide",
+      "accentColor": "var(--color-neon-magenta)"
     },
     {
       "title": "Sonic Nebula",
       "category": "Audio Reactive",
       "backgroundImage": "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=960&h=960&q=80"
+      "foregroundImage": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=960&h=960&q=80",
+      "size": "lg",
+      "accentColor": "var(--color-neon-lime)"
     }
   ]
 }

@@ -1,91 +1,48 @@
-import { forFunSlides } from '@/config/forFunContent';
-import { initCarouselSlider, destroyCarouselSlider } from '@/utils/carouselSlider';
+import { featuredProjects } from '@/config/content';
+import type { FeaturedProject } from '@/config/content';
+import { attachProjectCardListeners, renderProjectCard } from '@/components/ProjectCard';
 
-const SLIDER_SELECTOR = '.slider';
+const PROJECTS_PAGE_SELECTOR = '[data-projects-page]';
 
-const renderNav = (): string => `
-  <nav aria-label="Primary">
-    <span class="nav-logo" aria-label="walleOS logo">walleOS</span>
-    <div class="nav-items">
-      <a href="#work" class="nav-item">Work</a>
-      <a href="#studio" class="nav-item">Studio</a>
-      <a href="#news" class="nav-item">News</a>
-      <a href="#contact" class="nav-item">Contact</a>
+const renderHeroSection = (): string => `
+  <section class="projects-hero py-16 md:py-24">
+    <div class="max-w-4xl mx-auto text-center">
+      <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-6">
+        Projects Showcase
+      </h1>
+      <p class="text-xl md:text-2xl text-secondary max-w-3xl mx-auto leading-relaxed">
+        Take a look at some of my previous projects that I've worked on. Each project represents a unique challenge and showcases different aspects of my development skills and creative problem-solving.
+      </p>
     </div>
-  </nav>
+  </section>
 `;
 
-const renderFooter = (totalSlides: number): string => `
-  <footer>
-    <span class="footer-label">All Projects</span>
-    <div class="slider-counter" role="region" aria-label="Interactive carousel" aria-live="polite">
-      <div class="count">
-        <p data-active="true">1</p>
+export const renderProjectsPage = (): string => `
+  <div
+    data-projects-page
+    class="projects-page min-h-screen"
+  >
+    ${renderHeroSection()}
+    <section class="projects-content -mt-12 md:-mt-16 pt-4 md:pt-6 pb-12" data-project-cards>
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="project-cards-grid grid grid-cols-1 md:grid-cols-2 gap-6" data-project-cards-grid>
+          ${featuredProjects.map((project: FeaturedProject, index) => renderProjectCard(project, index)).join('')}
+        </div>
       </div>
-      <span aria-hidden="true">/</span>
-      <span class="total" aria-hidden="true">${totalSlides}</span>
-    </div>
-  </footer>
-`;
-
-const renderSlideStructure = (title: string, category: string, backgroundImage: string, foregroundImage: string): string => `
-  <div class="slider">
-    <div class="slide" data-active="true" data-slide-index="0">
-      <div class="slide-bg-img" style="background-image: url('${backgroundImage}');"></div>
-    </div>
-    <div class="slide-main-img">
-      <div class="slide-main-img-wrapper" data-active="true">
-        <img src="${foregroundImage}" alt="${title}" loading="lazy" />
-      </div>
-    </div>
-    <div class="slide-copy">
-      <div class="slide-title">
-        <h1 data-active="true">${title}</h1>
-      </div>
-      <div class="slide-description">
-        <p data-active="true">${category}</p>
-      </div>
-    </div>
+    </section>
   </div>
 `;
 
-export const renderProjectsPage = (): string => {
-  const initialSlide = forFunSlides[0];
-
-  if (!initialSlide) {
-    return `
-      <section class="for-fun-carousel" data-for-fun-root>
-        ${renderNav()}
-        <div class="slider empty" aria-live="polite">
-          <p>No experimental projects available right now.</p>
-        </div>
-        ${renderFooter(0)}
-      </section>
-    `;
-  }
-
-  return `
-    <section class="for-fun-carousel" data-for-fun-root>
-      ${renderNav()}
-      ${renderSlideStructure(
-        initialSlide.title,
-        initialSlide.category,
-        initialSlide.backgroundImage,
-        initialSlide.foregroundImage,
-      )}
-      ${renderFooter(forFunSlides.length)}
-    </section>
-  `;
-};
-
 export const initProjectsPageInteractions = (): void => {
-  if (typeof document === 'undefined' || !forFunSlides.length) {
+  const projectsPage = document.querySelector<HTMLElement>(PROJECTS_PAGE_SELECTOR);
+
+  if (!projectsPage) {
     return;
   }
 
-  initCarouselSlider(SLIDER_SELECTOR, forFunSlides);
+  attachProjectCardListeners();
 };
 
 export const cleanupProjectsPage = (): void => {
-  destroyCarouselSlider(SLIDER_SELECTOR);
+  // No interactive cleanup required for the Projects showcase at this time.
 };

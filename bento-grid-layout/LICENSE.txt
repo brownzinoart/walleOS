@@ -1,7 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2025 brownzinoart (https://codepen.io/brownzinoart/pen/VYeMdZo)
-Fork of an original work Dynamic Carousel Slider with Infinite Scoll (https://codepen.io/haptichash/pen/XJbrvYa)
+Copyright (c) 2025 Emil Andersson (https://codepen.io/emilandersson/pen/NPWLEpg)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,10 +1,14 @@
 import forFunContentData from './forFunContent.json';
 
+export type BentoCardSize = 'xl' | 'lg' | 'md' | 'sm' | 'tall' | 'wide';
+
 export interface ForFunSlide {
   title: string;
   category: string;
   backgroundImage: string;
   foregroundImage: string;
+  size?: BentoCardSize;
+  accentColor?: string;
 }
 
 export interface ForFunContent {
@@ -14,6 +18,23 @@ export interface ForFunContent {
 const forFunContent = forFunContentData as ForFunContent;
 
 export const { slides: forFunSlides } = forFunContent;
+
+const DEFAULT_BENTO_SIZES: BentoCardSize[] = ['xl', 'lg', 'tall', 'md', 'md', 'wide', 'lg'];
+
+export const getBentoCardSize = (index: number): BentoCardSize => {
+  const slide = forFunSlides[index];
+
+  if (slide?.size) {
+    return slide.size;
+  }
+
+  if (DEFAULT_BENTO_SIZES.length === 0) {
+    return 'md';
+  }
+
+  const fallbackIndex = ((index % DEFAULT_BENTO_SIZES.length) + DEFAULT_BENTO_SIZES.length) % DEFAULT_BENTO_SIZES.length;
+  return DEFAULT_BENTO_SIZES[fallbackIndex] ?? 'md';
+};
 
 /**
  * @deprecated Use {@link ForFunSlide} and {@link forFunSlides} instead.

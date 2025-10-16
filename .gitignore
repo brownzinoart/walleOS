@@ -43,9 +43,15 @@ datasets/
 models/
 checkpoints/
 
-# Large archives (exclude unless needed for distribution)
-*.tar
-*.zip
+# Large archives generated during local data/model workflows (zipped assets under public/ stay tracked)
+server/data/**/*.tar
+server/data/**/*.zip
+data/**/*.tar
+data/**/*.zip
+datasets/**/*.tar
+datasets/**/*.zip
+models/**/*.tar
+models/**/*.zip
 
 # Local SSH deploy keys (do not commit)
 .github-ssh/

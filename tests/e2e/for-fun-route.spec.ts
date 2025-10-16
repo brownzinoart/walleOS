@@ -1,96 +1,68 @@
 import { test, expect } from '@playwright/test';
 
+const FOR_FUN_HASH = '#for-fun';
+
 test.describe('For Fun route navigation', () => {
-  test('navigates via sidebar button and renders carousel', async ({ page }) => {
+  test('navigates via sidebar button and renders bento grid', async ({ page }) => {
     await page.goto('/');
 
     const forFunNav = page.getByRole('button', { name: 'For Fun' });
     await forFunNav.click();
 
-    await expect(page).toHaveURL(/#for-fun$/);
+    await expect(page).toHaveURL(new RegExp(`${FOR_FUN_HASH}$`));
     await expect(page).toHaveTitle(/For Fun - WalleOS$/);
 
     const forFunSection = page.locator('[data-for-fun-root]');
     await expect(forFunSection).toBeVisible();
-    await expect(page.locator('.slider')).toBeVisible();
-    await expect(page.locator('.slide')).toBeVisible();
-    await expect(page.locator('.slide-main-img')).toBeVisible();
-    await expect(page.locator('.slide-copy')).toBeVisible();
-    await expect(page.locator('nav')).toBeVisible();
-    await expect(page.locator('footer .slider-counter')).toBeVisible();
+    await expect(page.locator('.bento-grid-container')).toBeVisible();
+
+    const cards = page.locator('[data-bento-card]');
+    await expect(cards).toHaveCount(7);
+    await expect(cards.first().locator('.bento-card__title')).toContainText(/Neon Drift/i);
   });
 
   test('loads For Fun route directly via hash', async ({ page }) => {
-    await page.goto('/#for-fun');
+    await page.goto(`/${FOR_FUN_HASH}`);
 
-    const slider = page.locator('.slider');
-    await expect(slider).toBeVisible();
-    await expect(page.locator('.slider-counter .count p')).toHaveText('1');
+    const grid = page.locator('.bento-grid-container');
+    await expect(grid).toBeVisible();
+    await expect(page.locator('[data-bento-card]')).toHaveCount(7);
   });
 
-  test('navigates between slides with scroll', async ({ page }) => {
-    await page.goto('/#for-fun');
+  test('animates cards on hover', async ({ page }) => {
+    await page.goto(`/${FOR_FUN_HASH}`);
 
-    const counter = page.locator('.slider-counter .count p');
-    await expect(counter).toHaveText('1');
+    const card = page.locator('[data-bento-card]').first();
+    const initialTransform = await card.evaluate((element) => getComputedStyle(element).transform);
 
-    const initialTitle = await page.locator('.slide-title h1').first().textContent();
+    await card.hover();
+    await page.waitForTimeout(150);
 
-    await page.evaluate(() => {
-      window.dispatchEvent(
-        new WheelEvent('wheel', { deltaY: 800, bubbles: true, cancelable: true })
-      );
-    });
-
-    await expect(counter).toHaveText('2', { timeout: 2000 });
-
-    const activeTitle = await page.locator('.slide-title h1[data-active="true"]').textContent();
-    expect(activeTitle && activeTitle.trim()).not.toEqual(initialTitle?.trim());
+    const hoverTransform = await card.evaluate((element) => getComputedStyle(element).transform);
+    expect(hoverTransform).not.toEqual(initialTransform);
   });
 
-  test('wraps from last to first slide', async ({ page }) => {
-    await page.goto('/#for-fun');
+  test('collapses to a single column layout on mobile widths', async ({ page }) => {
+    await page.setViewportSize({ width: 640, height: 960 });
+    await page.goto(`/${FOR_FUN_HASH}`);
 
-    const counter = page.locator('.slider-counter .count p');
-    await expect(counter).toHaveText('1');
+    const columnTemplate = await page
+      .locator('.bento-grid-container')
+      .evaluate((element) => getComputedStyle(element).gridTemplateColumns);
 
-    for (let index = 0; index < 6; index += 1) {
-      await page.evaluate(() => {
-        window.dispatchEvent(
-          new WheelEvent('wheel', { deltaY: 800, bubbles: true, cancelable: true })
-        );
-      });
-
-      await expect(counter).toHaveText(String(index + 2), { timeout: 2000 });
-    }
-
-    await expect(counter).toHaveText('7');
-
-    await page.evaluate(() => {
-      window.dispatchEvent(
-        new WheelEvent('wheel', { deltaY: 800, bubbles: true, cancelable: true })
-      );
-    });
-
-    await expect(counter).toHaveText('1', { timeout: 2000 });
+    expect(columnTemplate.trim()).toBe('1fr');
   });
 
   test('respects reduced motion preference', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/#for-fun');
+    await page.goto(`/${FOR_FUN_HASH}`);
 
-    const counter = page.locator('.slider-counter .count p');
-    await expect(counter).toHaveText('1');
+    const transitionDuration = await page
+      .locator('[data-bento-card]')
+      .first()
+      .evaluate((element) => getComputedStyle(element).transitionDuration);
 
-    const start = Date.now();
-    await page.evaluate(() => {
-      window.dispatchEvent(
-        new WheelEvent('wheel', { deltaY: 800, bubbles: true, cancelable: true })
-      );
-    });
-
-    await expect(counter).toHaveText('2', { timeout: 500 });
-    expect(Date.now() - start).toBeLessThan(200);
+    expect(transitionDuration).toBe('0s');
 
     await page.emulateMedia({ reducedMotion: 'no-preference' });
   });

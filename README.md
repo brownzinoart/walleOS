@@ -55,15 +55,19 @@ The vector database used for semantic retrieval is not checked into version cont
 - Configure environment variables: copy `.env.example` to `.env` and set values as needed (e.g., `OLLAMA_HOST`, `FRONTEND_URL`, any corpus/model settings).
 
 ### Generate the Vector DB
-Run the ingestion from the project root using one of the following approaches (use whichever your setup provides):
+Run the ingestion from the project root. The recommended command is:
 
 ```bash
-# If an npm script exists
 npm run ingest:corpus
-
-# Or run the TypeScript script directly
-npx ts-node server/scripts/ingestCorpus.ts
 ```
+
+If you prefer to execute the script directly from the project root, use:
+
+```bash
+npx tsx server/scripts/ingestCorpus.ts --corpus-path ./wallymo_llm_corpus
+```
+
+When running the script from within `server/`, the corpus path resolves automatically and you can omit the `--corpus-path` flag.
 
 After completion, the Lance vector database will be present under `server/data/vectordb/` and available to the backend for retrieval.
 
@@ -146,6 +150,7 @@ After completion, the Lance vector database will be present under `server/data/v
 - **Animations feel sluggish** – check for stray `will-change` assignments; `removeWillChange(element)` frees the hint immediately.
 - **Sidebar not scoring active sections** – confirm each section exposes `id` or `data-section-id` that matches the navigation config.
 - **Scroll sticks on mobile** – verify `visualViewport` is available; fallback behaviour scrolls inputs into view when unavailable.
+- **Git rejects pushes due to large data artifacts** – ensure ignored paths such as `server/data/`, `server/data/vectordb/`, and `*.lance` stay out of commits as listed in `.gitignore`. If they were previously committed: (1) run `git rm -r --cached server/data/` and commit the removal; (2) rewrite history with `git filter-repo --path server/data/ --path-glob "*.lance" --invert-paths` (or the equivalent BFG command) to purge earlier blobs; (3) force-push with `git push --force-with-lease` and have collaborators rebase or clean their clones afterward.
 
 ## Deployment
 
