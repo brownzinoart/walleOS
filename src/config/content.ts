@@ -75,10 +75,11 @@ export const {
   suggestionChips,
   experienceSuggestionChips,
   mockResponses,
-  featuredProjects,
   resume,
   metadata
 } = content;
+
+export const featuredProjects: FeaturedProject[] = content.featuredProjects;
 
 export const getAllSuggestionChips = (): SuggestionChip[] => suggestionChips;
 

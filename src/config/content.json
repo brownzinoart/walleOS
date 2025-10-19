@@ -83,35 +83,35 @@
   },
   "featuredProjects": [
     {
-      "id": "project-alpha",
-      "title": "Project Alpha",
-      "description": "A bold exploration into conversational interfaces with a neon-brutalist twist.",
-      "tags": ["Design", "Development", "UX"],
-      "thumbnail": "/images/project-alpha.png",
-      "url": "https://example.com/project-alpha"
+      "id": "weready",
+      "title": "WeReady",
+      "description": "WeReady is an AI-driven startup analysis platform that evaluates how \"ready\" a venture is to launch or attract investment.",
+      "tags": ["Investment", "Analytics", "Startups"],
+      "thumbnail": "/images/projects/weready/pic2.png",
+      "url": "https://example.com/weready"
     },
     {
-      "id": "project-beta",
-      "title": "Project Beta",
-      "description": "Expressive storytelling through interactive product strategy prototypes.",
-      "tags": ["Strategy", "Prototyping"],
-      "thumbnail": "/images/project-beta.png",
-      "url": "https://example.com/project-beta"
+      "id": "listingpal",
+      "title": "ListingPal",
+      "description": "AI tool that builds a full listing campaign in ~90 seconds—descriptions, social, and ads from just an address.",
+      "tags": ["Marketing", "Real Estate", "Dashboard"],
+      "thumbnail": "/images/projects/listingpal/pic1.png",
+      "url": "https://listingpal.info"
     },
     {
-      "id": "project-gamma",
-      "title": "Project Gamma",
-      "description": "Designing resilient systems that scale across platforms and teams.",
-      "tags": ["Systems", "Research"],
-      "thumbnail": "/images/project-gamma.png",
+      "id": "echo",
+      "title": "Echo",
+      "description": "Echo is a full SaaS application that automates screenshot capture and accelerates route preparation and QA.",
+      "tags": ["Pharma", "Automation", "MLR"],
+      "thumbnail": "/images/projects/echo/pic1.png",
       "url": "https://example.com/project-gamma"
     },
     {
-      "id": "project-delta",
-      "title": "Project Delta",
-      "description": "Playful experiments merging AI copilots with personal creative rituals.",
-      "tags": ["AI", "Exploration"],
-      "thumbnail": "/images/project-delta.png",
+      "id": "briefflow",
+      "title": "BriefFlow",
+      "description": "AI tool that converts messy client inputs into structured, client-approved creative briefs in minutes to cut revision cycles and budget waste.",
+      "tags": ["Client Mgmt", "Briefs", "Collab"],
+      "thumbnail": "/images/projects/briefflow/pic1.png",
       "url": "https://example.com/project-delta"
     },
     {
