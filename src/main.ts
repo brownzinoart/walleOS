@@ -67,6 +67,11 @@ import {
   initProjectsPageInteractions,
   cleanupProjectsPage,
 } from '@/components/ProjectsPage';
+import {
+  renderProjectWeReadyPage,
+  initProjectWeReadyPage,
+  cleanupProjectWeReadyPage,
+} from '@/components/ProjectWeReadyPage';
 import { renderForFunPage, initForFunPageInteractions, cleanupForFunPage } from '@/components/ForFunPage';
 import { initTheme, subscribeToTheme, getTheme } from '@/utils/theme';
 import { attachThemeToggleListeners, cleanupThemeToggle } from '@/components/ThemeToggle';
@@ -219,6 +224,10 @@ const getMainContent = (): string => {
   // Render projects page when projects nav item is active
   if (currentActiveNavItem === 'projects') {
     return renderProjectsPage();
+  }
+
+  if (currentActiveNavItem === 'project-weready') {
+    return renderProjectWeReadyPage();
   }
 
   // Render resume section if resume nav item is active
@@ -567,6 +576,10 @@ const handleRouteChange = () => {
     cleanupProjectsPage();
   }
 
+  if (previousNavItem === 'project-weready' && nextNavItem !== 'project-weready') {
+    cleanupProjectWeReadyPage();
+  }
+
   const root = document.querySelector<HTMLDivElement>('#app');
   if (root) {
     // Cleanup theme toggle before re-render to prevent leaks
@@ -587,6 +600,11 @@ const handleRouteChange = () => {
         case 'projects':
           requestAnimationFrame(() => {
             initProjectsPageInteractions();
+          });
+          break;
+        case 'project-weready':
+          requestAnimationFrame(() => {
+            initProjectWeReadyPage();
           });
           break;
         case 'resume':

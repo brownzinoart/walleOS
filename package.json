@@ -51,5 +51,9 @@
     "vite-bundle-analyzer": "^0.7.0",
     "vitest": "^3.2.4",
     "wait-on": "^7.0.1"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0",
+    "locomotive-scroll": "^4.1.4"
   }
 }

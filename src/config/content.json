@@ -88,7 +88,8 @@
       "description": "WeReady is an AI-driven startup analysis platform that evaluates how \"ready\" a venture is to launch or attract investment.",
       "tags": ["Investment", "Analytics", "Startups"],
       "thumbnail": "/images/projects/weready/pic2.png",
-      "url": "https://example.com/weready"
+      "url": "https://example.com/weready",
+      "detailRoute": "project-weready"
     },
     {
       "id": "listingpal",

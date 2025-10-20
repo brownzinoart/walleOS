@@ -36,6 +36,7 @@ export interface FeaturedProject {
   tags: string[];
   thumbnail: string;
   url: string;
+  detailRoute?: string;
 }
 
 export interface Branding {

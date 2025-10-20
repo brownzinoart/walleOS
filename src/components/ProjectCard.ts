@@ -61,6 +61,7 @@ const getCardClasses = () =>
 export const renderProjectCard = (project: FeaturedProject, index = 0): string => {
   const thumbnail = project.thumbnail?.trim() ?? '';
   const url = project.url?.trim() ?? '';
+  const detailRoute = project.detailRoute?.trim() ?? '';
   const descriptionId = `project-card-description-${slugify(project.id)}`;
 
   return `
@@ -69,6 +70,7 @@ export const renderProjectCard = (project: FeaturedProject, index = 0): string =
       data-project-card
       data-project-id="${escapeHtml(project.id)}"
       data-project-url="${escapeHtml(url)}"
+      ${detailRoute ? `data-project-route="${escapeHtml(detailRoute)}"` : ''}
       data-animated="false"
       data-card-index="${index}"
       aria-label="Open project ${escapeHtml(project.title)}"
@@ -94,6 +96,61 @@ export const renderProjectCard = (project: FeaturedProject, index = 0): string =
         <p class="project-card-description" id="${descriptionId}">${escapeHtml(project.description)}</p>
         <div class="project-card-tags">
           ${renderProjectTags(project.tags)}
+        </div>
+      </div>
+    </article>
+  `;
+};
+
+export const renderProjectHighlightCard = (project: FeaturedProject, index = 0): string => {
+  const thumbnail = project.thumbnail?.trim() ?? '';
+  const url = project.url?.trim() ?? '';
+  const detailRoute = project.detailRoute?.trim() ?? '';
+  const descriptionId = `project-card-highlight-description-${slugify(project.id)}`;
+  const ctaLabel = detailRoute ? 'View case study' : 'View project';
+
+  return `
+    <article
+      class="${getCardClasses()} project-card--highlight"
+      data-project-card
+      data-card-variant="highlight"
+      data-project-id="${escapeHtml(project.id)}"
+      data-project-url="${escapeHtml(url)}"
+      ${detailRoute ? `data-project-route="${escapeHtml(detailRoute)}"` : ''}
+      data-animated="false"
+      data-card-index="${index}"
+      aria-label="Open project ${escapeHtml(project.title)}"
+      aria-describedby="${descriptionId}"
+      role="link"
+      tabindex="0"
+    >
+      <div class="project-card-thumbnail project-card-thumbnail--highlight" data-project-thumbnail-wrapper>
+        ${
+          thumbnail
+            ? `<img
+                src="${escapeHtml(thumbnail)}"
+                alt="${escapeHtml(project.title)} thumbnail"
+                loading="lazy"
+                decoding="async"
+                data-project-thumbnail
+              />`
+            : ''
+        }
+      </div>
+      <div class="project-card-content project-card-content--highlight">
+        <div class="project-card-highlight-header">
+          <span class="project-card-highlight-index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
+          <span class="sr-only">Spotlight project ${index + 1}</span>
+          <h3 class="project-card-title">${escapeHtml(project.title)}</h3>
+        </div>
+        <p class="project-card-description project-card-description--highlight" id="${descriptionId}">
+          ${escapeHtml(project.description)}
+        </p>
+        <div class="project-card-highlight-footer">
+          <div class="project-card-tags">
+            ${renderProjectTags(project.tags)}
+          </div>
+          <span class="project-card-highlight-cta">${escapeHtml(ctaLabel)}</span>
         </div>
       </div>
     </article>
@@ -128,7 +185,45 @@ const registerCardListeners = (card: HTMLElement): void => {
   }
 
   card.dataset['listenersAttached'] = 'true';
-  // Click and keyboard interactions are delegated in ProjectsPage.ts to power grid expansion.
+
+  const activateCard = () => {
+    const route = card.dataset['projectRoute'];
+    const url = card.dataset['projectUrl'];
+
+    if (route) {
+      import('@/utils/router').then(({ navigateTo }) => {
+        navigateTo(route);
+      });
+      return;
+    }
+
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleClick = (event: MouseEvent) => {
+    if (card.dataset['expanded'] === 'true') {
+      return;
+    }
+
+    event.preventDefault();
+    activateCard();
+  };
+
+  const handleKeydown = (event: KeyboardEvent) => {
+    if (card.dataset['expanded'] === 'true') {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      activateCard();
+    }
+  };
+
+  card.addEventListener('click', handleClick);
+  card.addEventListener('keydown', handleKeydown);
 };
 
 const setupThumbnail = (card: HTMLElement) => {
@@ -333,19 +428,23 @@ const initializeCard = (card: HTMLElement, index: number, reducedMotion: boolean
 };
 
 export const attachProjectCardListeners = (): void => {
-   const container = document.querySelector<HTMLElement>(PROJECT_CARDS_CONTAINER_SELECTOR);
+   const containers = Array.from(
+     document.querySelectorAll<HTMLElement>(PROJECT_CARDS_CONTAINER_SELECTOR)
+   );
 
-   if (!container) {
-     return;
-   }
-
-   const cards = Array.from(container.querySelectorAll<HTMLElement>(PROJECT_CARD_SELECTOR));
-
-   if (cards.length === 0) {
+   if (!containers.length) {
      return;
    }
 
    const reducedMotion = prefersReducedMotion();
+
+   const cards = containers.flatMap((container) =>
+     Array.from(container.querySelectorAll<HTMLElement>(PROJECT_CARD_SELECTOR))
+   );
+
+   if (cards.length === 0) {
+     return;
+   }
 
    cards.forEach((card, index) => {
      card.setAttribute('tabindex', card.getAttribute('tabindex') ?? '0');

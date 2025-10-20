@@ -14,6 +14,7 @@ const routerState: RouterState = {
   routes: new Map([
     ['#home', { path: '#home', component: 'home', title: 'Home' }],
     ['#projects', { path: '#projects', component: 'projects', title: 'Projects' }],
+    ['#project-weready', { path: '#project-weready', component: 'project-weready', title: 'WeReady Case Study' }],
     ['#resume', { path: '#resume', component: 'resume', title: 'Resume' }],
     ['#for-fun', { path: '#for-fun', component: 'for-fun', title: 'For Fun' }],
   ]),
