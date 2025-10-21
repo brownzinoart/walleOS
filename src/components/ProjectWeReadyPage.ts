@@ -1,28 +1,11 @@
-import gsap from 'gsap';
-import ScrollTrigger from 'gsap/ScrollTrigger';
-import LocomotiveScroll from 'locomotive-scroll';
-import 'locomotive-scroll/dist/locomotive-scroll.css';
-
-import { prefersReducedMotion } from '@/utils/performance';
 import { featuredProjects } from '@/config/content';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const WEREADY_PROJECT_ID = 'weready';
 const WEREADY_PAGE_SELECTOR = '[data-project-weready-page]';
-const WEREADY_SCROLL_CONTAINER_SELECTOR = '[data-weready-scroll-container]';
 const WEREADY_BACK_BUTTON_SELECTOR = '[data-weready-back]';
-const WEREADY_HORIZONTAL_SELECTOR = '[data-weready-horizontal]';
-const WEREADY_HORIZONTAL_TRACK_SELECTOR = '[data-weready-horizontal-track]';
 
-type LocomotiveInstance = InstanceType<typeof LocomotiveScroll>;
-
-let locomotiveInstance: LocomotiveInstance | null = null;
-let horizontalTween: gsap.core.Tween | null = null;
-let refreshHandler: (() => void) | null = null;
-let resizeHandler: (() => void) | null = null;
 let backButtonListener: ((event: MouseEvent) => void) | null = null;
-let wereadyTriggers: ScrollTrigger[] = [];
+let referrerRoute: string | null = null;
 
 const escapeHtml = (value: string): string =>
   value
@@ -68,106 +51,219 @@ export const renderProjectWeReadyPage = (): string => {
 
   return `
     <article class="project-weready-page" data-project-weready-page>
-      <div class="weready-scroll" data-weready-scroll-container data-scroll-container>
-        <header class="weready-hero" data-scroll-section>
-          <div class="weready-hero__heading">
-            <button type="button" class="weready-backlink" data-weready-back>
-              <span aria-hidden="true">&#8592;</span>
-              Back to projects
-            </button>
-            <p class="weready-hero__eyebrow">Case Study</p>
-            <h1 class="weready-hero__title">${escapeHtml(heroTitle)}</h1>
-            <p class="weready-hero__lede">${escapeHtml(heroDescription)}</p>
+      <header class="weready-hero">
+        <div class="weready-hero__heading">
+          <button type="button" class="weready-backlink" data-weready-back>
+            <span aria-hidden="true">&#8592;</span>
+            Back to projects
+          </button>
+          <p class="weready-hero__eyebrow">Case Study</p>
+          <h1 class="weready-hero__title">${escapeHtml(heroTitle)}</h1>
+          <p class="weready-hero__lede">${escapeHtml(heroDescription)}</p>
+        </div>
+        <div class="weready-hero__meta">
+          <div class="weready-hero__meta-block">
+            <p class="weready-hero__meta-label">Role</p>
+            <p class="weready-hero__meta-value">Founder, Product Lead, Systems Design</p>
           </div>
-          <div class="weready-hero__meta">
-            <div class="weready-hero__meta-block">
-              <p class="weready-hero__meta-label">Role</p>
-              <p class="weready-hero__meta-value">Founder, Product Lead, Systems Design</p>
-            </div>
-            <div class="weready-hero__meta-block">
-              <p class="weready-hero__meta-label">Focus</p>
-              <p class="weready-hero__meta-value">Investor diligence, venture scoring, go-to-market automation</p>
-            </div>
-            <div class="weready-hero__meta-block">
-              <p class="weready-hero__meta-label">Stack</p>
-              <p class="weready-hero__meta-value">Next.js, Supabase, LangChain orchestration, Vercel Edge</p>
-            </div>
+          <div class="weready-hero__meta-block">
+            <p class="weready-hero__meta-label">Focus</p>
+            <p class="weready-hero__meta-value">Investor diligence, venture scoring, go-to-market automation</p>
           </div>
-          <div class="weready-hero__footer">
-            <ul class="weready-hero__tags" aria-label="Project tags">
-              ${tagsMarkup}
-            </ul>
-            ${externalLinkMarkup}
+          <div class="weready-hero__meta-block">
+            <p class="weready-hero__meta-label">Stack</p>
+            <p class="weready-hero__meta-value">Next.js, Supabase, LangChain orchestration, Vercel Edge</p>
           </div>
-        </header>
+        </div>
+        <div class="weready-hero__footer">
+          <ul class="weready-hero__tags" aria-label="Project tags">
+            ${tagsMarkup}
+          </ul>
+          ${externalLinkMarkup}
+        </div>
+      </header>
 
-        <section
-          class="weready-horizontal"
-          data-scroll-section
-          data-weready-horizontal
-          aria-labelledby="weready-horizontal-title"
-        >
-          <div class="weready-horizontal__track" data-weready-horizontal-track>
-            <div class="weready-horizontal__intro">
-              <p class="weready-horizontal__eyebrow">Readiness Operating System</p>
-              <h2 class="weready-horizontal__title" id="weready-horizontal-title">
-                Evidence-based scoring built for founder and investor trust
-              </h2>
-              <p class="weready-horizontal__copy">
-                WeReady ingests 60+ operational signals—from repo health and shipment cadence to GTM math—to produce a weighted Launch Readiness Score. Every factor is transparent, traceable, and tuned around the questions that surface in diligence.
-              </p>
-              <ul class="weready-horizontal__list">
-                <li>4 readiness pillars: product, revenue, momentum, trust</li>
-                <li>Dynamic weights adjust for stage from idea → seed → Series A</li>
-                <li>Flagging engine surfaces urgent gaps before investor meetings</li>
-              </ul>
-            </div>
-            <figure class="weready-horizontal__panel" data-panel-index="01">
-              <img src="${escapeHtml(imageOne)}" alt="WeReady dashboard showing readiness scores" loading="lazy" decoding="async" />
-              <figcaption>Launch OS synthesizes qualitative intake, repo health, and market signals into a single executive view.</figcaption>
-            </figure>
-            <figure class="weready-horizontal__panel" data-panel-index="02">
-              <img src="${escapeHtml(imageTwo)}" alt="Workflow builder for diligence automation" loading="lazy" decoding="async" />
-              <figcaption>Operator workflows automate diligence requests, portfolio updates, and runway risk alerts.</figcaption>
-            </figure>
-            <figure class="weready-horizontal__panel" data-panel-index="03">
-              <img src="${escapeHtml(imageThree)}" alt="Mobile view of readiness milestones" loading="lazy" decoding="async" />
-              <figcaption>Mobile command center keeps founders and analysts aligned on what moves the score.</figcaption>
-            </figure>
-          </div>
-        </section>
+      <section class="weready-overview" aria-labelledby="weready-overview-title">
+        <div class="weready-overview__header">
+          <p class="weready-overview__eyebrow">Readiness Operating System</p>
+          <h2 class="weready-overview__title" id="weready-overview-title">
+            Evidence-based scoring built for founder and investor trust
+          </h2>
+        </div>
+        <div class="weready-overview__grid">
+          <article class="weready-overview__card">
+            <h3>Evidence-based scoring</h3>
+            <p>WeReady ingests 60+ operational signals—from repo health and shipment cadence to GTM math—to produce a weighted Launch Readiness Score.</p>
+          </article>
+          <article class="weready-overview__card">
+            <h3>Transparent methodology</h3>
+            <p>Every factor is transparent, traceable, and tuned around the questions that surface in diligence. 4 readiness pillars: product, revenue, momentum, trust.</p>
+          </article>
+          <article class="weready-overview__card">
+            <h3>Stage-adaptive weights</h3>
+            <p>Dynamic weights adjust for stage from idea → seed → Series A, ensuring relevant metrics for each phase of growth.</p>
+          </article>
+          <article class="weready-overview__card">
+            <h3>Gap flagging engine</h3>
+            <p>Automated flagging surfaces urgent gaps before investor meetings, with prescriptive guidance on what to fix first.</p>
+          </article>
+        </div>
+      </section>
 
-        <section class="weready-outro" data-scroll-section>
-          <div class="weready-outro__inner">
-            <div class="weready-outro__content">
-              <h2 class="weready-outro__title">What the launch OS unlocks</h2>
-              <p class="weready-outro__copy">
-                WeReady packages diligence readiness into a calm, transparent toolkit founders and investors can trust. Every score ships with context, proof, and next moves so teams can close gaps fast.
-              </p>
-            </div>
-            <div class="weready-outro__grid">
-              <article class="weready-outro__card">
-                <h3>Faster diligence loops</h3>
-                <p>Investor rooms shift from guesswork to evidence-backed discussion. Readiness reports auto-assemble with Figma, GitHub, Linear, and Notion pipes.</p>
-              </article>
-              <article class="weready-outro__card">
-                <h3>Operator-grade guidance</h3>
-                <p>Each score comes with prescriptions: what hypothesis to validate, who to hire next, and which runway assumptions to stress-test.</p>
-              </article>
-              <article class="weready-outro__card">
-                <h3>Ethical AI guardrails</h3>
-                <p>In-product agents expose the context used. Every recommendation cites the source signal so founders stay in control.</p>
-              </article>
-            </div>
-            <button type="button" class="weready-backlink weready-backlink--footer" data-weready-back>
-              <span aria-hidden="true">&#8592;</span>
-              Back to projects
-            </button>
+      <section class="weready-process" aria-labelledby="weready-process-title">
+        <div class="weready-process__inner">
+          <div class="weready-process__header">
+            <p class="weready-process__eyebrow">Problem → Solution</p>
+            <h2 class="weready-process__title" id="weready-process-title">
+              How WeReady came to be
+            </h2>
+            <p class="weready-process__lede">
+              From self-taught founder struggling with investor readiness to building the tool that turns codebases into business intelligence.
+            </p>
           </div>
-        </section>
-      </div>
+          <div class="weready-process__timeline">
+            <article class="weready-process__milestone">
+              <div class="weready-process__milestone-label">
+                <span class="weready-process__milestone-number">01</span>
+                <h3 class="weready-process__milestone-title">The problem</h3>
+              </div>
+              <div class="weready-process__milestone-content">
+                <p>AI-first founder in uncharted territory, needing a gut-check for investor readiness. Existing tools only checked AI code quality—nothing evaluated the full picture.</p>
+                <ul class="weready-process__milestone-stats">
+                  <li><strong>Gap identified:</strong> No holistic readiness platform</li>
+                  <li><strong>Context:</strong> Self-taught, learning to "speak code"</li>
+                </ul>
+              </div>
+            </article>
+            <article class="weready-process__milestone">
+              <div class="weready-process__milestone-label">
+                <span class="weready-process__milestone-number">02</span>
+                <h3 class="weready-process__milestone-title">The insight</h3>
+              </div>
+              <div class="weready-process__milestone-content">
+                <p>Codebases reveal far more than code quality—they're windows into business strategy, design systems, architectural decisions, testing philosophy, and deployment maturity.</p>
+                <ul class="weready-process__milestone-stats">
+                  <li><strong>Discovery:</strong> Code as business intelligence</li>
+                  <li><strong>Approach:</strong> Extract multi-dimensional signals</li>
+                </ul>
+              </div>
+            </article>
+            <article class="weready-process__milestone">
+              <div class="weready-process__milestone-label">
+                <span class="weready-process__milestone-number">03</span>
+                <h3 class="weready-process__milestone-title">The build</h3>
+              </div>
+              <div class="weready-process__milestone-content">
+                <p>Started prototyping an evidence-based scoring system that ingests 60+ operational signals across product, revenue, momentum, and trust pillars.</p>
+                <ul class="weready-process__milestone-stats">
+                  <li><strong>Methodology:</strong> Transparent, traceable, stage-adaptive</li>
+                  <li><strong>Status:</strong> Testing with AI-first founders & investors</li>
+                </ul>
+              </div>
+            </article>
+            <article class="weready-process__milestone">
+              <div class="weready-process__milestone-label">
+                <span class="weready-process__milestone-number">04</span>
+                <h3 class="weready-process__milestone-title">The outcome</h3>
+              </div>
+              <div class="weready-process__milestone-content">
+                <p>WeReady transforms diligence from weeks of manual review into automated, evidence-backed readiness reports that both founders and investors trust.</p>
+                <ul class="weready-process__milestone-stats">
+                  <li><strong>Impact:</strong> Faster diligence, clearer gaps, higher trust</li>
+                  <li><strong>Differentiator:</strong> Only platform scoring launch readiness holistically</li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="weready-showcase" aria-labelledby="weready-showcase-title">
+        <div class="weready-showcase__header">
+          <p class="weready-showcase__eyebrow">Visual Walkthrough</p>
+          <h2 class="weready-showcase__title" id="weready-showcase-title">
+            From dashboard to diligence
+          </h2>
+        </div>
+        <div class="weready-showcase__grid">
+          <figure class="weready-showcase__item">
+            <img
+              src="${escapeHtml(imageOne)}"
+              alt="WeReady dashboard showing readiness scores"
+              class="weready-showcase__image"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption class="weready-showcase__caption">
+              Launch OS synthesizes qualitative intake, repo health, and market signals into a single executive view.
+            </figcaption>
+          </figure>
+          <figure class="weready-showcase__item">
+            <img
+              src="${escapeHtml(imageTwo)}"
+              alt="Workflow builder for diligence automation"
+              class="weready-showcase__image"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption class="weready-showcase__caption">
+              Operator workflows automate diligence requests, portfolio updates, and runway risk alerts.
+            </figcaption>
+          </figure>
+          <figure class="weready-showcase__item">
+            <img
+              src="${escapeHtml(imageThree)}"
+              alt="Mobile view of readiness milestones"
+              class="weready-showcase__image"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption class="weready-showcase__caption">
+              Mobile command center keeps founders and analysts aligned on what moves the score.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="weready-outro">
+        <div class="weready-outro__inner">
+          <div class="weready-outro__content">
+            <h2 class="weready-outro__title">What the launch OS unlocks</h2>
+            <p class="weready-outro__copy">
+              WeReady packages diligence readiness into a calm, transparent toolkit founders and investors can trust. Every score ships with context, proof, and next moves so teams can close gaps fast.
+            </p>
+          </div>
+          <div class="weready-outro__grid">
+            <article class="weready-outro__card">
+              <h3>Faster diligence loops</h3>
+              <p>Investor rooms shift from guesswork to evidence-backed discussion. Readiness reports auto-assemble with Figma, GitHub, Linear, and Notion pipes.</p>
+            </article>
+            <article class="weready-outro__card">
+              <h3>Operator-grade guidance</h3>
+              <p>Each score comes with prescriptions: what hypothesis to validate, who to hire next, and which runway assumptions to stress-test.</p>
+            </article>
+            <article class="weready-outro__card">
+              <h3>Ethical AI guardrails</h3>
+              <p>In-product agents expose the context used. Every recommendation cites the source signal so founders stay in control.</p>
+            </article>
+          </div>
+          <button type="button" class="weready-backlink weready-backlink--footer" data-weready-back>
+            <span aria-hidden="true">&#8592;</span>
+            Back to projects
+          </button>
+        </div>
+      </section>
     </article>
   `;
+};
+
+const getBackDestination = (): string => {
+  return referrerRoute === 'home' ? 'home' : 'projects';
+};
+
+const getBackLabel = (): string => {
+  const destination = getBackDestination();
+  return destination === 'home' ? 'Back to home' : 'Back to projects';
 };
 
 const setupBackNavigation = (root: HTMLElement) => {
@@ -177,10 +273,22 @@ const setupBackNavigation = (root: HTMLElement) => {
     return;
   }
 
+  // Update button labels based on destination
+  const label = getBackLabel();
+  backButtons.forEach((button) => {
+    const textNode = Array.from(button.childNodes).find(
+      (node) => node.nodeType === Node.TEXT_NODE
+    );
+    if (textNode) {
+      textNode.textContent = label;
+    }
+  });
+
   const listener = (event: MouseEvent) => {
     event.preventDefault();
     import('@/utils/router').then(({ navigateTo }) => {
-      navigateTo('projects');
+      const destination = getBackDestination();
+      navigateTo(destination);
     });
   };
 
@@ -205,127 +313,18 @@ const teardownBackNavigation = (root: HTMLElement) => {
   backButtonListener = null;
 };
 
-const setupHorizontalScroll = (container: HTMLElement) => {
-  const horizontalSection = container.querySelector<HTMLElement>(WEREADY_HORIZONTAL_SELECTOR);
-  const track = container.querySelector<HTMLElement>(WEREADY_HORIZONTAL_TRACK_SELECTOR);
-  if (!horizontalSection || !track) {
-    return;
-  }
-
-  const panels = Array.from(track.querySelectorAll<HTMLElement>('.weready-horizontal__panel'));
-  const intro = track.querySelector<HTMLElement>('.weready-horizontal__intro');
-
-  if (!intro || panels.length === 0) {
-    return;
-  }
-
-  const previousTrigger = horizontalTween?.scrollTrigger ?? null;
-
-  horizontalTween?.kill();
-  horizontalTween = null;
-
-  if (previousTrigger) {
-    wereadyTriggers = wereadyTriggers.filter((trigger) => trigger !== previousTrigger);
-  }
-
-  horizontalTween = gsap.to(track, {
-    x: () => {
-      const introWidth = intro.offsetWidth;
-      const panelsWidth = panels.reduce((total, panel) => total + panel.offsetWidth, 0);
-      const totalContentWidth = introWidth + panelsWidth;
-      const travelDistance = totalContentWidth - window.innerWidth;
-      return travelDistance > 0 ? -travelDistance : 0;
-    },
-    ease: 'none',
-    scrollTrigger: {
-      id: 'weready-horizontal',
-      scroller: container,
-      scrub: 0.8,
-      trigger: horizontalSection,
-      pin: true,
-      start: 'top top',
-      end: () => `+=${track.scrollWidth}`,
-      anticipatePin: 0.8,
-      invalidateOnRefresh: true,
-    },
-  });
-
-  const horizontalTrigger = horizontalTween.scrollTrigger;
-
-  if (horizontalTrigger) {
-    wereadyTriggers.push(horizontalTrigger);
-  }
+export const setReferrerRoute = (route: string): void => {
+  referrerRoute = route;
 };
 
 export const initProjectWeReadyPage = (): void => {
   const root = document.querySelector<HTMLElement>(WEREADY_PAGE_SELECTOR);
-  const container = root?.querySelector<HTMLElement>(WEREADY_SCROLL_CONTAINER_SELECTOR);
 
-  if (!root || !container) {
+  if (!root) {
     return;
   }
 
   setupBackNavigation(root);
-
-  if (prefersReducedMotion()) {
-    root.classList.add('weready-motion-reduced');
-    return;
-  }
-
-  locomotiveInstance = new LocomotiveScroll({
-    el: container,
-    smooth: true,
-    lerp: 0.12,
-    multiplier: 0.9,
-    smartphone: {
-      smooth: false,
-    },
-    tablet: {
-      smooth: false,
-    },
-  });
-
-  locomotiveInstance.on('scroll', ScrollTrigger.update);
-
-  ScrollTrigger.scrollerProxy(container, {
-    scrollTop(value?: number) {
-      if (typeof value === 'number') {
-        locomotiveInstance?.scrollTo(value, { duration: 0, disableLerp: true });
-        return;
-      }
-
-      return locomotiveInstance?.scroll?.instance?.scroll?.y ?? 0;
-    },
-    getBoundingClientRect() {
-      return {
-        left: 0,
-        top: 0,
-        width: window.innerWidth,
-        height: window.innerHeight,
-      };
-    },
-    pinType: container.style.transform ? 'transform' : 'fixed',
-  });
-
-  setupHorizontalScroll(container);
-
-  refreshHandler = () => {
-    locomotiveInstance?.update();
-  };
-  ScrollTrigger.addEventListener('refresh', refreshHandler);
-
-  resizeHandler = () => {
-    requestAnimationFrame(() => {
-      setupHorizontalScroll(container);
-      ScrollTrigger.refresh();
-    });
-  };
-
-  window.addEventListener('resize', resizeHandler);
-
-  requestAnimationFrame(() => {
-    ScrollTrigger.refresh();
-  });
 };
 
 export const cleanupProjectWeReadyPage = (): void => {
@@ -335,26 +334,6 @@ export const cleanupProjectWeReadyPage = (): void => {
     teardownBackNavigation(root);
   }
 
-  if (resizeHandler) {
-    window.removeEventListener('resize', resizeHandler);
-    resizeHandler = null;
-  }
-
-  if (refreshHandler) {
-    ScrollTrigger.removeEventListener('refresh', refreshHandler);
-    refreshHandler = null;
-  }
-
-  wereadyTriggers.forEach((trigger) => trigger.kill());
-  wereadyTriggers = [];
-
-  horizontalTween?.kill();
-  horizontalTween = null;
-
-  if (locomotiveInstance) {
-    locomotiveInstance.destroy();
-    locomotiveInstance = null;
-  }
-
-  ScrollTrigger.refresh();
+  // Clear referrer route on cleanup
+  referrerRoute = null;
 };

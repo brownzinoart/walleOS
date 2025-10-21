@@ -23,6 +23,7 @@ let horizontalTween: gsap.core.Tween | null = null;
 let refreshHandler: (() => void) | null = null;
 let resizeHandler: (() => void) | null = null;
 let projectsTriggers: ScrollTrigger[] = [];
+let loadHandler: (() => void) | null = null;
 
 const getSpotlightLede = (count: number): string => {
   if (count <= 1) {
@@ -191,11 +192,13 @@ const setupHorizontalScroll = (container: HTMLElement) => {
     projectsTriggers = projectsTriggers.filter((trigger) => trigger !== previousTrigger);
   }
 
+  const trackWidth = track.offsetWidth;
+  const horizontalScrollLength = Math.max(0, trackWidth - window.innerWidth);
+  const horizontalOffset = horizontalScrollLength > 0 ? -horizontalScrollLength : 0;
+  const startOffset = Math.max(Math.min(window.innerHeight * 0.25, 320), 120);
+
   horizontalTween = gsap.to(track, {
-    x: () => {
-      const scrollDistance = Math.max(0, track.scrollWidth - window.innerWidth);
-      return scrollDistance > 0 ? -scrollDistance : 0;
-    },
+    x: horizontalOffset,
     ease: 'none',
     scrollTrigger: {
       id: 'projects-horizontal',
@@ -203,11 +206,8 @@ const setupHorizontalScroll = (container: HTMLElement) => {
       scrub: 0.8,
       trigger: horizontalSection,
       pin: true,
-      start: 'top top',
-      end: () => {
-        const scrollDistance = Math.max(0, track.scrollWidth - window.innerWidth);
-        return `+=${scrollDistance}`;
-      },
+      start: () => `top top+=${startOffset}`,
+      end: () => (horizontalScrollLength > 0 ? `+=${horizontalScrollLength}` : '+=0'),
       anticipatePin: 0.8,
       invalidateOnRefresh: true,
     },
@@ -316,7 +316,22 @@ export const initProjectsPageInteractions = (): void => {
     pinType: container.style.transform ? 'transform' : 'fixed',
   });
 
-  setupHorizontalScroll(container);
+  const runHorizontalSetup = () => {
+    setupHorizontalScroll(container);
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+    });
+  };
+
+  runHorizontalSetup();
+
+  if (document.readyState !== 'complete') {
+    loadHandler = () => {
+      runHorizontalSetup();
+      loadHandler = null;
+    };
+    window.addEventListener('load', loadHandler, { once: true });
+  }
 
   // Setup keyboard navigation for the horizontal scroll track
   const track = container.querySelector<HTMLElement>(PROJECTS_TRACK_SELECTOR);
@@ -352,6 +367,11 @@ export const cleanupProjectsPage = (): void => {
   if (refreshHandler) {
     ScrollTrigger.removeEventListener('refresh', refreshHandler);
     refreshHandler = null;
+  }
+
+  if (loadHandler) {
+    window.removeEventListener('load', loadHandler);
+    loadHandler = null;
   }
 
   projectsTriggers.forEach((trigger) => trigger.kill());

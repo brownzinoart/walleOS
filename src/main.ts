@@ -71,6 +71,7 @@ import {
   renderProjectWeReadyPage,
   initProjectWeReadyPage,
   cleanupProjectWeReadyPage,
+  setReferrerRoute,
 } from '@/components/ProjectWeReadyPage';
 import { renderForFunPage, initForFunPageInteractions, cleanupForFunPage } from '@/components/ForFunPage';
 import { initTheme, subscribeToTheme, getTheme } from '@/utils/theme';
@@ -561,8 +562,18 @@ const rerenderChat = (state: ChatState = getChatState()) => {
 
 const handleRouteChange = () => {
   const previousNavItem = currentActiveNavItem;
-  currentActiveNavItem = getCurrentRoute();
-  const nextNavItem = currentActiveNavItem;
+  const nextNavItem = getCurrentRoute();
+
+  if (previousNavItem === nextNavItem) {
+    return;
+  }
+
+  currentActiveNavItem = nextNavItem;
+
+  // Set referrer route when navigating to project-weready
+  if (nextNavItem === 'project-weready' && previousNavItem) {
+    setReferrerRoute(previousNavItem);
+  }
 
   if (previousNavItem === 'resume' && nextNavItem !== 'resume') {
     cleanupResumeInteractions();
@@ -761,11 +772,11 @@ if (typeof document !== 'undefined') {
   document.documentElement.dataset['theme'] = getTheme();
 }
 
+// Listen for route changes before mount so direct hash loads are handled
+document.addEventListener('route:change', handleRouteChange);
+
 validateContent();
 mount();
-
-// Listen for route changes
-document.addEventListener('route:change', handleRouteChange);
 
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
