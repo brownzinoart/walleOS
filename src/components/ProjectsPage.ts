@@ -60,55 +60,6 @@ const renderSpotlightCards = (projects: FeaturedProject[]): string => {
     .join('');
 };
 
-const renderHorizontalScrollSection = (projects: FeaturedProject[]): string => {
-  if (!projects.length) {
-    return '';
-  }
-
-  const projectPanels = projects
-    .map((project, index) => `
-      <article class="projects-horizontal-panel" tabindex="0" role="article" aria-labelledby="project-title-${index}">
-        <div class="project-horizontal-content">
-          <div class="project-horizontal-image">
-            <img src="${project.thumbnail}" alt="${project.title}" loading="lazy" decoding="async" />
-          </div>
-          <div class="project-horizontal-info">
-            <h3 class="project-horizontal-title" id="project-title-${index}">${project.title}</h3>
-            <p class="project-horizontal-description">${project.description}</p>
-            <div class="project-horizontal-tags" role="list" aria-label="Project technologies">
-              ${project.tags.map(tag => `<span class="project-horizontal-tag" role="listitem">${tag}</span>`).join('')}
-            </div>
-            ${project.url ? `
-              <a href="${project.url}" target="_blank" rel="noopener noreferrer" class="project-horizontal-link" aria-label="View ${project.title} project">
-                View Project
-              </a>
-            ` : ''}
-          </div>
-        </div>
-      </article>
-    `)
-    .join('');
-
-  return `
-    <section class="projects-horizontal-section" data-scroll-section data-projects-horizontal aria-labelledby="horizontal-scroll-title">
-      <div class="projects-horizontal-track" data-projects-track role="region" aria-label="Project showcase" tabindex="0">
-        <article class="projects-horizontal-panel projects-horizontal-panel--intro" role="article" aria-labelledby="horizontal-scroll-title">
-          <h2 class="projects-horizontal-title" id="horizontal-scroll-title">Explore My Projects</h2>
-          <p class="projects-horizontal-subtitle">
-            Scroll through flagship builds that connect strategy, storytelling, and high-polish motion across investment, real estate, and creative tooling.
-          </p>
-          <div class="projects-horizontal-intro-meta" role="list" aria-label="Project capabilities">
-            <span class="projects-horizontal-intro-pill" role="listitem">Strategy + Execution</span>
-            <span class="projects-horizontal-intro-pill" role="listitem">Motion-first storytelling</span>
-            <span class="projects-horizontal-intro-pill" role="listitem">Layered interaction design</span>
-          </div>
-        </article>
-        ${projectPanels}
-      </div>
-    </section>
-  `;
-};
-
 const renderSecondaryCards = (projects: FeaturedProject[], offset: number): string => {
   if (!projects.length) {
     return '';
@@ -164,7 +115,6 @@ export const renderProjectsPage = (): string => {
             }
           </div>
         </section>
-        ${renderHorizontalScrollSection(featuredProjects)}
         <section class="projects-content -mt-12 md:-mt-16 pt-4 md:pt-6 pb-12" data-project-cards>
           <div class="max-w-7xl mx-auto px-6">
             ${renderSecondaryCards(remainingProjects, spotlightProjects.length)}
@@ -276,6 +226,12 @@ export const initProjectsPageInteractions = (): void => {
 
   attachProjectCardListeners();
 
+  const hasHorizontalScroll = !!container.querySelector(PROJECTS_HORIZONTAL_SELECTOR);
+
+  if (!hasHorizontalScroll) {
+    return;
+  }
+
   if (prefersReducedMotion()) {
     projectsPage.classList.add('projects-motion-reduced');
     return;
@@ -384,6 +340,15 @@ export const cleanupProjectsPage = (): void => {
     locomotiveInstance.destroy();
     locomotiveInstance = null;
   }
+
+  // Reset body overflow and transform to prevent horizontal scroll bleed
+  document.body.style.overflow = '';
+  document.body.style.transform = '';
+  document.documentElement.style.overflow = '';
+
+  // Remove locomotive-scroll classes and styles
+  document.documentElement.classList.remove('has-scroll-smooth');
+  document.body.style.height = '';
 
   ScrollTrigger.refresh();
 };

@@ -73,6 +73,24 @@ import {
   cleanupProjectWeReadyPage,
   setReferrerRoute,
 } from '@/components/ProjectWeReadyPage';
+import {
+  renderProjectListingPalPage,
+  initProjectListingPalPage,
+  cleanupProjectListingPalPage,
+  setReferrerRoute as setListingPalReferrerRoute,
+} from '@/components/ProjectListingPalPage';
+import {
+  renderProjectEchoPage,
+  initProjectEchoPage,
+  cleanupProjectEchoPage,
+  setReferrerRoute as setEchoReferrerRoute,
+} from '@/components/ProjectEchoPage';
+import {
+  renderProjectBriefFlowPage,
+  initProjectBriefFlowPage,
+  cleanupProjectBriefFlowPage,
+  setReferrerRoute as setBriefFlowReferrerRoute,
+} from '@/components/ProjectBriefFlowPage';
 import { renderForFunPage, initForFunPageInteractions, cleanupForFunPage } from '@/components/ForFunPage';
 import { initTheme, subscribeToTheme, getTheme } from '@/utils/theme';
 import { attachThemeToggleListeners, cleanupThemeToggle } from '@/components/ThemeToggle';
@@ -229,6 +247,18 @@ const getMainContent = (): string => {
 
   if (currentActiveNavItem === 'project-weready') {
     return renderProjectWeReadyPage();
+  }
+
+  if (currentActiveNavItem === 'project-listingpal') {
+    return renderProjectListingPalPage();
+  }
+
+  if (currentActiveNavItem === 'project-echo') {
+    return renderProjectEchoPage();
+  }
+
+  if (currentActiveNavItem === 'project-briefflow') {
+    return renderProjectBriefFlowPage();
   }
 
   // Render resume section if resume nav item is active
@@ -575,6 +605,19 @@ const handleRouteChange = () => {
     setReferrerRoute(previousNavItem);
   }
 
+  // Set referrer route when navigating to project-listingpal
+  if (nextNavItem === 'project-listingpal' && previousNavItem) {
+    setListingPalReferrerRoute(previousNavItem);
+  }
+
+  if (nextNavItem === 'project-echo' && previousNavItem) {
+    setEchoReferrerRoute(previousNavItem);
+  }
+
+  if (nextNavItem === 'project-briefflow' && previousNavItem) {
+    setBriefFlowReferrerRoute(previousNavItem);
+  }
+
   if (previousNavItem === 'resume' && nextNavItem !== 'resume') {
     cleanupResumeInteractions();
   }
@@ -589,6 +632,18 @@ const handleRouteChange = () => {
 
   if (previousNavItem === 'project-weready' && nextNavItem !== 'project-weready') {
     cleanupProjectWeReadyPage();
+  }
+
+  if (previousNavItem === 'project-listingpal' && nextNavItem !== 'project-listingpal') {
+    cleanupProjectListingPalPage();
+  }
+
+  if (previousNavItem === 'project-echo' && nextNavItem !== 'project-echo') {
+    cleanupProjectEchoPage();
+  }
+
+  if (previousNavItem === 'project-briefflow' && nextNavItem !== 'project-briefflow') {
+    cleanupProjectBriefFlowPage();
   }
 
   const root = document.querySelector<HTMLDivElement>('#app');
@@ -616,6 +671,21 @@ const handleRouteChange = () => {
         case 'project-weready':
           requestAnimationFrame(() => {
             initProjectWeReadyPage();
+          });
+          break;
+        case 'project-listingpal':
+          requestAnimationFrame(() => {
+            initProjectListingPalPage();
+          });
+          break;
+        case 'project-echo':
+          requestAnimationFrame(() => {
+            initProjectEchoPage();
+          });
+          break;
+        case 'project-briefflow':
+          requestAnimationFrame(() => {
+            initProjectBriefFlowPage();
           });
           break;
         case 'resume':

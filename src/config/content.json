@@ -85,8 +85,8 @@
     {
       "id": "weready",
       "title": "WeReady",
-      "description": "WeReady is an AI-driven startup analysis platform that evaluates how \"ready\" a venture is to launch or attract investment.",
-      "tags": ["Investment", "Analytics", "Startups"],
+      "description": "I built WeReady using AI agent orchestration (Claude Code + Codex CLI + Traycer.ai) to create a startup intelligence platform that processes 60+ data signals for evidence-based readiness scoring.",
+      "tags": ["AI Orchestration", "Multi-Agent Systems", "Startup Intelligence"],
       "thumbnail": "/images/projects/weready/pic2.png",
       "url": "https://weready.dev/",
       "detailRoute": "project-weready"
@@ -97,7 +97,8 @@
       "description": "AI tool that builds a full listing campaign in ~90 seconds—descriptions, social, and ads from just an address.",
       "tags": ["Marketing", "Real Estate", "Dashboard"],
       "thumbnail": "/images/projects/listingpal/pic1.png",
-      "url": "https://listingpal.info"
+      "url": "https://listingpal.info",
+      "detailRoute": "project-listingpal"
     },
     {
       "id": "echo",
@@ -105,7 +106,8 @@
       "description": "Echo is a full SaaS application that automates screenshot capture and accelerates route preparation and QA.",
       "tags": ["Pharma", "Automation", "MLR"],
       "thumbnail": "/images/projects/echo/pic1.png",
-      "url": "https://example.com/project-gamma"
+      "url": "https://example.com/project-gamma",
+      "detailRoute": "project-echo"
     },
     {
       "id": "briefflow",
@@ -113,7 +115,8 @@
       "description": "AI tool that converts messy client inputs into structured, client-approved creative briefs in minutes to cut revision cycles and budget waste.",
       "tags": ["Client Mgmt", "Briefs", "Collab"],
       "thumbnail": "/images/projects/briefflow/pic1.png",
-      "url": "https://example.com/project-delta"
+      "url": "https://briefflow.app",
+      "detailRoute": "project-briefflow"
     },
     {
       "id": "project-epsilon",
