@@ -1,5 +1,6 @@
 import { addWillChange, removeWillChange, rafThrottle, observeIntersection, prefersReducedMotion } from '@/utils/performance';
 import type { FeaturedProject } from '@/config/content';
+import type { RouteComponentId } from '@/utils/router';
 
 export const PROJECT_CARDS_CONTAINER_SELECTOR = '[data-project-cards]';
 export const PROJECT_CARD_SELECTOR = '[data-project-card]';
@@ -187,7 +188,7 @@ const registerCardListeners = (card: HTMLElement): void => {
   card.dataset['listenersAttached'] = 'true';
 
   const activateCard = () => {
-    const route = card.dataset['projectRoute'];
+    const route = card.dataset['projectRoute'] as RouteComponentId | undefined;
     const url = card.dataset['projectUrl'];
 
     if (route) {

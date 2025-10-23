@@ -1,5 +1,6 @@
 import '@/styles/main.css';
 import { renderLayout, initLayout } from '@/components/Layout';
+import { setActiveNavItem } from '@/components/Sidebar';
 import { renderWelcomeCard } from '@/components/WelcomeCard';
 import {
   renderChatInput,
@@ -17,7 +18,7 @@ import {
   disableSuggestionChip,
 } from '@/components/SuggestionChips';
 import { renderProjectCards, attachProjectCardListeners } from '@/components/ProjectCard';
-import { renderResume, initResumeInteractions, clearExperienceSelection, cleanupResumeInteractions } from '@/components/Resume';
+import { clearExperienceSelection } from '@/components/Resume';
 import content, {
   experienceSuggestionChips,
   featuredProjects,
@@ -58,43 +59,21 @@ import {
   attachExperienceContextIndicatorListeners,
   renderExperienceContextIndicator,
 } from '@/components/ExperienceContextIndicator';
-import {
-  initRouter,
-  getCurrentRoute,
-} from '@/utils/router';
-import {
-  renderProjectsPage,
-  initProjectsPageInteractions,
-  cleanupProjectsPage,
-} from '@/components/ProjectsPage';
-import {
-  renderProjectWeReadyPage,
-  initProjectWeReadyPage,
-  cleanupProjectWeReadyPage,
-  setReferrerRoute,
-} from '@/components/ProjectWeReadyPage';
-import {
-  renderProjectListingPalPage,
-  initProjectListingPalPage,
-  cleanupProjectListingPalPage,
-  setReferrerRoute as setListingPalReferrerRoute,
-} from '@/components/ProjectListingPalPage';
-import {
-  renderProjectEchoPage,
-  initProjectEchoPage,
-  cleanupProjectEchoPage,
-  setReferrerRoute as setEchoReferrerRoute,
-} from '@/components/ProjectEchoPage';
-import {
-  renderProjectBriefFlowPage,
-  initProjectBriefFlowPage,
-  cleanupProjectBriefFlowPage,
-  setReferrerRoute as setBriefFlowReferrerRoute,
-} from '@/components/ProjectBriefFlowPage';
-import { renderForFunPage, initForFunPageInteractions, cleanupForFunPage } from '@/components/ForFunPage';
+import { initRouter, getCurrentRoute } from '@/utils/router';
+import type { RouteComponentId } from '@/utils/router';
 import { initTheme, subscribeToTheme, getTheme } from '@/utils/theme';
-import { attachThemeToggleListeners, cleanupThemeToggle } from '@/components/ThemeToggle';
 import { getSelectedSuggestionChips } from '@/utils/suggestionChipSelector';
+import { loadRouteModule, hasLazyRoute } from '@/routes/registry';
+import type { RouteModule } from '@/routes/types';
+import {
+  MAIN_CONTENT_BASE_CLASSES,
+  MAIN_CONTENT_DEFAULT_PADDING,
+  MAIN_CONTENT_FOR_FUN_PADDING,
+  getMainContentPaddingClass,
+} from '@/components/layoutConfig';
+import { setCaseStudyReferrerRoute } from '@/components/ProjectCaseStudyPage';
+import { setReferrerRoute as setClockItReferrerRoute } from '@/components/ProjectClockItPage';
+import type { CaseStudyId } from '@/config/caseStudies';
 
 const CHAT_ROOT_SELECTOR = '[data-chat-root]';
 const WELCOME_SLOT_SELECTOR = '[data-chat-welcome]';
@@ -103,11 +82,70 @@ const CHAT_INPUT_SELECTOR = '[data-chat-input]';
 const CHAT_CONTEXT_INDICATOR_SELECTOR = '[data-chat-context-indicator]';
 const RESUME_CONTEXT_INDICATOR_SELECTOR = '[data-resume-context-indicator]';
 const RESUME_CONTEXT_SUGGESTIONS_SELECTOR = '[data-resume-context-suggestions]';
+const MAIN_CONTENT_SELECTOR = '[data-main-content]';
+const CASE_STUDY_ROUTE_MAP: Partial<Record<RouteComponentId, CaseStudyId>> = {
+  'project-weready': 'weready',
+  'project-listingpal': 'listingpal',
+  'project-echo': 'echo',
+  'project-briefflow': 'briefflow',
+};
 
 let pendingSuggestion: { id: string; text: string } | null = null;
-let currentActiveNavItem: string | null = 'home';
+let currentActiveNavItem: RouteComponentId =
+  typeof window !== 'undefined' ? getCurrentRoute() : 'home';
+let activeRouteModule: RouteModule | null = null;
+let mainContentRoot: HTMLElement | null = null;
+let navigationSequence = 0;
+let initialHomeAnimationsApplied = false;
 const reducedMotion = prefersReducedMotion();
 const { clearExperienceContextOnRouteChange } = getAppSettings();
+
+const ensureMainContentRoot = (): HTMLElement | null => {
+  if (!mainContentRoot) {
+    mainContentRoot = document.querySelector<HTMLElement>(MAIN_CONTENT_SELECTOR);
+  }
+
+  return mainContentRoot;
+};
+
+const applyMainContentPadding = (route: RouteComponentId) => {
+  const root = ensureMainContentRoot();
+  if (!root) {
+    return;
+  }
+
+  const baseClasses = MAIN_CONTENT_BASE_CLASSES.split(' ').filter(Boolean);
+  baseClasses.forEach((cls) => root.classList.add(cls));
+
+  const removableClasses = [
+    MAIN_CONTENT_DEFAULT_PADDING,
+    MAIN_CONTENT_FOR_FUN_PADDING,
+  ];
+
+  removableClasses.forEach((group) => {
+    group.split(' ').forEach((cls) => {
+      if (cls) {
+        root.classList.remove(cls);
+      }
+    });
+  });
+
+  const paddingClass = getMainContentPaddingClass(route);
+  paddingClass.split(' ').forEach((cls) => {
+    if (cls) {
+      root.classList.add(cls);
+    }
+  });
+};
+
+const setMainContentMarkup = (markup: string) => {
+  const root = ensureMainContentRoot();
+  if (!root) {
+    return;
+  }
+
+  root.innerHTML = markup;
+};
 
 // streaming: attempt directly; fallback on error
 
@@ -239,42 +277,8 @@ const renderTypingIndicator = (): string => `
     </div>
   </article>
 `;
-const getMainContent = (): string => {
-  // Render projects page when projects nav item is active
-  if (currentActiveNavItem === 'projects') {
-    return renderProjectsPage();
-  }
-
-  if (currentActiveNavItem === 'project-weready') {
-    return renderProjectWeReadyPage();
-  }
-
-  if (currentActiveNavItem === 'project-listingpal') {
-    return renderProjectListingPalPage();
-  }
-
-  if (currentActiveNavItem === 'project-echo') {
-    return renderProjectEchoPage();
-  }
-
-  if (currentActiveNavItem === 'project-briefflow') {
-    return renderProjectBriefFlowPage();
-  }
-
-  // Render resume section if resume nav item is active
-  if (currentActiveNavItem === 'resume') {
-    return renderResume();
-  }
-
-  if (currentActiveNavItem === 'for-fun') {
-    return renderForFunPage();
-  }
-
-  // Show project cards on home tab for better UX
-  const showProjectCards = currentActiveNavItem === 'home';
-  const projectCardsMarkup = showProjectCards && featuredProjects.length > 0 ? renderProjectCards(featuredProjects) : '';
-
-  // Default chat interface (home, projects, and all other nav items)
+const renderHomeView = (): string => {
+  const projectCardsMarkup = featuredProjects.length > 0 ? renderProjectCards(featuredProjects) : '';
   const state = getChatState();
   const hasMessages = state.messages.length > 0;
   const contextState = getActiveExperienceState();
@@ -316,6 +320,98 @@ const getMainContent = (): string => {
     </section>
     ${projectCardsMarkup}
   `;
+};
+
+const initHomeRoute = () => {
+  attachChatInputListeners(handleUserMessage);
+  observeChatInput();
+  attachSuggestionChipListeners(handleSuggestionChipClick);
+  attachProjectCardListeners();
+};
+
+const cleanupHomeRoute = () => {
+  pendingSuggestion = null;
+};
+
+const HOME_ROUTE_MODULE: RouteModule = {
+  render: () => renderHomeView(),
+  init: () => {
+    initHomeRoute();
+    if (!initialHomeAnimationsApplied) {
+      applyInitialAnimations();
+      initialHomeAnimationsApplied = true;
+    }
+  },
+  cleanup: () => {
+    cleanupHomeRoute();
+  },
+};
+
+const getRouteModule = async (route: RouteComponentId): Promise<RouteModule> => {
+  if (route === 'home') {
+    return HOME_ROUTE_MODULE;
+  }
+
+  if (!hasLazyRoute(route)) {
+    return HOME_ROUTE_MODULE;
+  }
+
+  try {
+    const module = await loadRouteModule(route);
+    if (module) {
+      return module;
+    }
+  } catch (error) {
+    logger.error('Failed to load route module', error as Error, {
+      component: 'main',
+      action: 'loadRouteModule',
+      metadata: { route },
+    });
+  }
+
+  return HOME_ROUTE_MODULE;
+};
+
+const renderRouteContent = async (
+  route: RouteComponentId,
+  previousRoute: RouteComponentId | null,
+) => {
+  navigationSequence += 1;
+  const sequenceId = navigationSequence;
+
+  if (activeRouteModule?.cleanup) {
+    try {
+      activeRouteModule.cleanup();
+    } catch (error) {
+      logger.error('Route cleanup failed', error as Error, {
+        component: 'main',
+        action: 'cleanupRoute',
+        metadata: { route: previousRoute },
+      });
+    }
+  }
+
+  applyMainContentPadding(route);
+
+  const module = await getRouteModule(route);
+
+  if (sequenceId !== navigationSequence) {
+    return;
+  }
+
+  activeRouteModule = module;
+
+  measurePerformance(`route-render:${route}`, () => {
+    setMainContentMarkup(module.render());
+  });
+
+  module.init?.();
+  refreshExperienceContextUI();
+  logger.info('Route render complete', {
+    component: 'main',
+    action: 'renderRoute',
+    metadata: { route, from: previousRoute },
+  });
 };
 
 const COMPLETION_TIMEOUT_MIN_MS = 10000;
@@ -591,130 +687,35 @@ const rerenderChat = (state: ChatState = getChatState()) => {
 };
 
 const handleRouteChange = () => {
-  const previousNavItem = currentActiveNavItem;
-  const nextNavItem = getCurrentRoute();
+  const previousRoute = currentActiveNavItem;
+  const nextRoute = getCurrentRoute();
 
-  if (previousNavItem === nextNavItem) {
+  if (previousRoute === nextRoute) {
     return;
   }
 
-  currentActiveNavItem = nextNavItem;
+  currentActiveNavItem = nextRoute;
+  setActiveNavItem(nextRoute, { silent: true });
 
-  // Set referrer route when navigating to project-weready
-  if (nextNavItem === 'project-weready' && previousNavItem) {
-    setReferrerRoute(previousNavItem);
+  const caseStudyId = CASE_STUDY_ROUTE_MAP[nextRoute];
+  if (caseStudyId && previousRoute) {
+    setCaseStudyReferrerRoute(caseStudyId, previousRoute);
   }
 
-  // Set referrer route when navigating to project-listingpal
-  if (nextNavItem === 'project-listingpal' && previousNavItem) {
-    setListingPalReferrerRoute(previousNavItem);
-  }
-
-  if (nextNavItem === 'project-echo' && previousNavItem) {
-    setEchoReferrerRoute(previousNavItem);
-  }
-
-  if (nextNavItem === 'project-briefflow' && previousNavItem) {
-    setBriefFlowReferrerRoute(previousNavItem);
-  }
-
-  if (previousNavItem === 'resume' && nextNavItem !== 'resume') {
-    cleanupResumeInteractions();
-  }
-
-  if (previousNavItem === 'for-fun' && nextNavItem !== 'for-fun') {
-    cleanupForFunPage();
-  }
-
-  if (previousNavItem === 'projects' && nextNavItem !== 'projects') {
-    cleanupProjectsPage();
-  }
-
-  if (previousNavItem === 'project-weready' && nextNavItem !== 'project-weready') {
-    cleanupProjectWeReadyPage();
-  }
-
-  if (previousNavItem === 'project-listingpal' && nextNavItem !== 'project-listingpal') {
-    cleanupProjectListingPalPage();
-  }
-
-  if (previousNavItem === 'project-echo' && nextNavItem !== 'project-echo') {
-    cleanupProjectEchoPage();
-  }
-
-  if (previousNavItem === 'project-briefflow' && nextNavItem !== 'project-briefflow') {
-    cleanupProjectBriefFlowPage();
-  }
-
-  const root = document.querySelector<HTMLDivElement>('#app');
-  if (root) {
-    // Cleanup theme toggle before re-render to prevent leaks
-    cleanupThemeToggle();
-
-    root.innerHTML = renderLayout(getMainContent());
-    initLayout();
-    refreshExperienceContextUI();
-    
-    // Reattach theme toggle listeners after route change
-    attachThemeToggleListeners();
-
-    // Defer route-specific interactions until DOM updates paint
-    requestAnimationFrame(() => {
-      const currentRoute = currentActiveNavItem;
-
-      switch (currentRoute) {
-        case 'projects':
-          requestAnimationFrame(() => {
-            initProjectsPageInteractions();
-          });
-          break;
-        case 'project-weready':
-          requestAnimationFrame(() => {
-            initProjectWeReadyPage();
-          });
-          break;
-        case 'project-listingpal':
-          requestAnimationFrame(() => {
-            initProjectListingPalPage();
-          });
-          break;
-        case 'project-echo':
-          requestAnimationFrame(() => {
-            initProjectEchoPage();
-          });
-          break;
-        case 'project-briefflow':
-          requestAnimationFrame(() => {
-            initProjectBriefFlowPage();
-          });
-          break;
-        case 'resume':
-          initResumeInteractions();
-          refreshExperienceContextUI();
-          attachExperienceContextIndicatorListeners();
-          break;
-        case 'for-fun':
-          requestAnimationFrame(() => {
-            initForFunPageInteractions();
-          });
-          break;
-        case 'home':
-        default:
-          attachProjectCardListeners();
-          break;
-      }
-    });
+  if (nextRoute === 'project-clockit') {
+    setClockItReferrerRoute(previousRoute ?? null);
   }
 
   if (
     clearExperienceContextOnRouteChange &&
-    previousNavItem === 'resume' &&
-    currentActiveNavItem !== 'resume'
+    previousRoute === 'resume' &&
+    nextRoute !== 'resume'
   ) {
     clearExperienceContext();
     clearExperienceSelection();
-    refreshExperienceContextUI();
   }
+
+  void renderRouteContent(nextRoute, previousRoute);
 };
 
 const mount = async () => {
@@ -733,8 +734,11 @@ const mount = async () => {
     logger.info('Attempting to recover from render error');
     const root = document.querySelector<HTMLDivElement>('#app');
     if (root) {
-      root.innerHTML = renderLayout(getMainContent());
+      root.innerHTML = renderLayout('');
       initLayout();
+      mainContentRoot = root.querySelector<HTMLElement>(MAIN_CONTENT_SELECTOR);
+      applyMainContentPadding(currentActiveNavItem);
+      void renderRouteContent(currentActiveNavItem, null);
     }
   });
 
@@ -758,27 +762,16 @@ const mount = async () => {
 
       // Use enhanced performance monitoring
       await measurePerformanceWithMonitoring('app-render', () => {
-        root.innerHTML = renderLayout(getMainContent());
+        root.innerHTML = renderLayout('');
         initLayout();
       });
 
-      attachChatInputListeners(handleUserMessage);
-      observeChatInput();
-      attachSuggestionChipListeners(handleSuggestionChipClick);
-      attachProjectCardListeners();
-      applyInitialAnimations();
-      refreshExperienceContextUI();
-      attachExperienceContextIndicatorListeners();
+      mainContentRoot = root.querySelector<HTMLElement>(MAIN_CONTENT_SELECTOR);
+      setActiveNavItem(currentActiveNavItem, { silent: true });
+      applyMainContentPadding(currentActiveNavItem);
+      await renderRouteContent(currentActiveNavItem, null);
 
-      // Initialize router first
       initRouter();
-
-      // Initialize resume interactions if resume is active
-      if (currentActiveNavItem === 'resume') {
-        initResumeInteractions();
-        refreshExperienceContextUI();
-        attachExperienceContextIndicatorListeners();
-      }
     }, {
       component: 'main',
       action: 'mount'
@@ -854,72 +847,17 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// Handle navigation changes
-const handleNavigationChange = (event: Event) => {
+document.addEventListener('sidebar:navigate', (event) => {
   const customEvent = event as CustomEvent<{ id: string }>;
-  const navId = customEvent.detail?.id;
+  const navId = customEvent.detail?.id as RouteComponentId | undefined;
 
   if (!navId) {
     return;
   }
 
-  const previousNavItem = currentActiveNavItem;
-  currentActiveNavItem = navId;
-
-  if (previousNavItem === 'resume' && currentActiveNavItem !== 'resume') {
-    cleanupResumeInteractions();
+  if (navId === 'home' || navId === 'projects' || navId === 'resume' || navId === 'for-fun') {
+    setActiveNavItem(navId, { silent: true });
   }
-
-  if (previousNavItem === 'for-fun' && currentActiveNavItem !== 'for-fun') {
-    cleanupForFunPage();
-  }
-
-  // Re-render the main content when navigation changes
-  const root = document.querySelector<HTMLDivElement>('#app');
-  if (root) {
-    // Cleanup theme toggle before re-render to prevent leaks
-    cleanupThemeToggle();
-
-    root.innerHTML = renderLayout(getMainContent());
-    initLayout();
-    refreshExperienceContextUI();
-    
-    // Reattach theme toggle listeners
-    attachThemeToggleListeners();
-
-    // Defer interactions until after layout render completes
-    requestAnimationFrame(() => {
-      if (navId === 'resume') {
-        initResumeInteractions();
-        refreshExperienceContextUI();
-        attachExperienceContextIndicatorListeners();
-      }
-
-      if (navId === 'projects') {
-        requestAnimationFrame(() => {
-          initProjectsPageInteractions();
-        });
-      }
-
-      if (navId === 'for-fun') {
-        requestAnimationFrame(() => {
-          initForFunPageInteractions();
-        });
-      }
-
-      if (navId === 'home') {
-        attachProjectCardListeners();
-      }
-    });
-  }
-
-  if (previousNavItem === 'resume' && navId !== 'resume') {
-    clearExperienceContext();
-    clearExperienceSelection();
-    refreshExperienceContextUI();
-  }
-};
-
-document.addEventListener('sidebar:navigate', handleNavigationChange);
+});
 
 console.info('WallyGPT content configuration loaded:', content);

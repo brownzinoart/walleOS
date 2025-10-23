@@ -20,6 +20,12 @@ Object.defineProperty(window, 'matchMedia', {
   value: matchMediaMock,
 });
 
+Object.defineProperty(window, 'scrollTo', {
+  writable: true,
+  configurable: true,
+  value: vi.fn(),
+});
+
 vi.mock('@/utils/router', () => ({
   navigateTo: navigateToMock,
   getCurrentRoute: getCurrentRouteMock,
@@ -52,9 +58,9 @@ describe('Project WeReady page', () => {
   });
 
   it('renders all main sections when mounting the project-weready route', async () => {
-    const { renderProjectWeReadyPage } = await import('@/components/ProjectWeReadyPage');
+    const { renderProjectCaseStudyPage } = await import('@/components/ProjectCaseStudyPage');
 
-    document.body.innerHTML = renderProjectWeReadyPage();
+    document.body.innerHTML = renderProjectCaseStudyPage('weready');
 
     // Assert presence of main sections
     const heroSection = document.querySelector('.weready-hero');
@@ -69,16 +75,20 @@ describe('Project WeReady page', () => {
   });
 
   it('navigates to projects when back button is clicked from projects route', async () => {
-    const { renderProjectWeReadyPage, initProjectWeReadyPage, setReferrerRoute } =
-      await import('@/components/ProjectWeReadyPage');
+    const {
+      renderProjectCaseStudyPage,
+      initProjectCaseStudyPage,
+      setCaseStudyReferrerRoute,
+    } = await import('@/components/ProjectCaseStudyPage');
 
-    // Set referrer as 'projects'
-    setReferrerRoute('projects');
+    setCaseStudyReferrerRoute('weready', 'projects');
 
-    document.body.innerHTML = renderProjectWeReadyPage();
-    initProjectWeReadyPage();
+    document.body.innerHTML = renderProjectCaseStudyPage('weready');
+    initProjectCaseStudyPage('weready');
 
-    const backButton = document.querySelector<HTMLButtonElement>('[data-weready-back]');
+    const backButton = document.querySelector<HTMLButtonElement>(
+      '[data-case-study-back="weready"]',
+    );
     expect(backButton).not.toBeNull();
 
     backButton?.click();
@@ -89,16 +99,20 @@ describe('Project WeReady page', () => {
   });
 
   it('navigates to home when back button is clicked from home route', async () => {
-    const { renderProjectWeReadyPage, initProjectWeReadyPage, setReferrerRoute } =
-      await import('@/components/ProjectWeReadyPage');
+    const {
+      renderProjectCaseStudyPage,
+      initProjectCaseStudyPage,
+      setCaseStudyReferrerRoute,
+    } = await import('@/components/ProjectCaseStudyPage');
 
-    // Set referrer as 'home'
-    setReferrerRoute('home');
+    setCaseStudyReferrerRoute('weready', 'home');
 
-    document.body.innerHTML = renderProjectWeReadyPage();
-    initProjectWeReadyPage();
+    document.body.innerHTML = renderProjectCaseStudyPage('weready');
+    initProjectCaseStudyPage('weready');
 
-    const backButton = document.querySelector<HTMLButtonElement>('[data-weready-back]');
+    const backButton = document.querySelector<HTMLButtonElement>(
+      '[data-case-study-back="weready"]',
+    );
     expect(backButton).not.toBeNull();
 
     backButton?.click();
@@ -109,37 +123,43 @@ describe('Project WeReady page', () => {
   });
 
   it('updates back button label based on referrer route', async () => {
-    const { renderProjectWeReadyPage, initProjectWeReadyPage, setReferrerRoute } =
-      await import('@/components/ProjectWeReadyPage');
+    const {
+      renderProjectCaseStudyPage,
+      initProjectCaseStudyPage,
+      cleanupProjectCaseStudyPage,
+      setCaseStudyReferrerRoute,
+    } = await import('@/components/ProjectCaseStudyPage');
 
-    // Test with 'home' referrer
-    setReferrerRoute('home');
-    document.body.innerHTML = renderProjectWeReadyPage();
-    initProjectWeReadyPage();
+    setCaseStudyReferrerRoute('weready', 'home');
+    document.body.innerHTML = renderProjectCaseStudyPage('weready');
+    initProjectCaseStudyPage('weready');
 
-    let backButton = document.querySelector<HTMLButtonElement>('[data-weready-back]');
+    let backButton = document.querySelector<HTMLButtonElement>(
+      '[data-case-study-back="weready"]',
+    );
     expect(backButton?.textContent).toContain('Back to home');
 
-    // Reset and test with 'projects' referrer
-    const { cleanupProjectWeReadyPage } = await import('@/components/ProjectWeReadyPage');
-    cleanupProjectWeReadyPage();
+    cleanupProjectCaseStudyPage('weready');
 
-    setReferrerRoute('projects');
-    document.body.innerHTML = renderProjectWeReadyPage();
-    initProjectWeReadyPage();
+    setCaseStudyReferrerRoute('weready', 'projects');
+    document.body.innerHTML = renderProjectCaseStudyPage('weready');
+    initProjectCaseStudyPage('weready');
 
-    backButton = document.querySelector<HTMLButtonElement>('[data-weready-back]');
+    backButton = document.querySelector<HTMLButtonElement>('[data-case-study-back="weready"]');
     expect(backButton?.textContent).toContain('Back to projects');
   });
 
   it('defaults to projects when no referrer is set', async () => {
-    const { renderProjectWeReadyPage, initProjectWeReadyPage } =
-      await import('@/components/ProjectWeReadyPage');
+    const { renderProjectCaseStudyPage, initProjectCaseStudyPage } = await import(
+      '@/components/ProjectCaseStudyPage'
+    );
 
-    document.body.innerHTML = renderProjectWeReadyPage();
-    initProjectWeReadyPage();
+    document.body.innerHTML = renderProjectCaseStudyPage('weready');
+    initProjectCaseStudyPage('weready');
 
-    const backButton = document.querySelector<HTMLButtonElement>('[data-weready-back]');
+    const backButton = document.querySelector<HTMLButtonElement>(
+      '[data-case-study-back="weready"]',
+    );
     backButton?.click();
 
     await new Promise((resolve) => setTimeout(resolve, 0));

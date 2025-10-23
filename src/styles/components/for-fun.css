@@ -16,7 +16,7 @@
   font-size: var(--font-size-sm);
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(var(--color-text-secondary-rgb), 0.85);
+  color: var(--color-neon-cyan);
 }
 
 .for-fun-hero__title {

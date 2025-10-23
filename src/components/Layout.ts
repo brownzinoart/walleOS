@@ -1,4 +1,8 @@
 import { getCurrentRoute } from '@/utils/router';
+import {
+  MAIN_CONTENT_BASE_CLASSES,
+  getMainContentPaddingClass,
+} from './layoutConfig';
 import { renderSidebar, initSidebarInteractions, setActiveNavItem } from './Sidebar';
 import { attachThemeToggleListeners } from './ThemeToggle';
 import { renderMobileNav, attachMobileNavListeners } from './MobileNav';
@@ -101,13 +105,10 @@ const closeSidebar = (sidebar: HTMLElement, trigger: HTMLElement) => {
 
 export const renderLayout = (mainContent: string): string => {
   const hasWindow = typeof window !== 'undefined';
-  const isForFunRoute = hasWindow ? getCurrentRoute() === 'for-fun' : false;
   const isMobileViewport = hasWindow ? !isDesktop() : false;
   const shouldRenderMobileNav = isMobileViewport;
   const mobileNavMarkup = shouldRenderMobileNav ? renderMobileNav() : '';
-  const mainPaddingClasses = isForFunRoute
-    ? 'for-fun-container'
-    : 'p-6 pt-20 md:p-8 md:pt-20 lg:p-12';
+  const paddingClasses = getMainContentPaddingClass(getCurrentRoute());
 
   return `
     <div class="layout-root relative min-h-screen text-primary">
@@ -122,7 +123,7 @@ export const renderLayout = (mainContent: string): string => {
           ${renderSidebar()}
         </div>
         <main
-          class="main-content-area w-full min-h-screen${mainPaddingClasses ? ` ${mainPaddingClasses}` : ''}"
+          class="${MAIN_CONTENT_BASE_CLASSES} ${paddingClasses}"
           data-main-content
           role="main"
           aria-label="Main content"

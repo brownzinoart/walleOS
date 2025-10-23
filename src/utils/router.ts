@@ -1,16 +1,30 @@
+export type RouteComponentId =
+  | 'home'
+  | 'projects'
+  | 'project-weready'
+  | 'project-listingpal'
+  | 'project-echo'
+  | 'project-briefflow'
+  | 'project-clockit'
+  | 'project-hq'
+  | 'resume'
+  | 'for-fun';
+
 export type Route = {
   path: string;
-  component: string;
+  component: RouteComponentId;
   title: string;
 };
 
 export type RouterState = {
-  currentRoute: string;
+  currentRoute: RouteComponentId;
   routes: Map<string, Route>;
 };
 
+const DEFAULT_ROUTE: RouteComponentId = 'home';
+
 const routerState: RouterState = {
-  currentRoute: 'home',
+  currentRoute: DEFAULT_ROUTE,
   routes: new Map([
     ['#home', { path: '#home', component: 'home', title: 'Home' }],
     ['#projects', { path: '#projects', component: 'projects', title: 'Projects' }],
@@ -18,21 +32,23 @@ const routerState: RouterState = {
     ['#project-listingpal', { path: '#project-listingpal', component: 'project-listingpal', title: 'ListingPal Case Study' }],
     ['#project-echo', { path: '#project-echo', component: 'project-echo', title: 'Echo Case Study' }],
     ['#project-briefflow', { path: '#project-briefflow', component: 'project-briefflow', title: 'BriefFlow Case Study' }],
+    ['#project-clockit', { path: '#project-clockit', component: 'project-clockit', title: 'ClockIt Case Study' }],
+    ['#project-hq', { path: '#project-hq', component: 'project-hq', title: 'HQ Case Study' }],
     ['#resume', { path: '#resume', component: 'resume', title: 'Resume' }],
     ['#for-fun', { path: '#for-fun', component: 'for-fun', title: 'For Fun' }],
   ]),
 };
 
-export const getCurrentRoute = (): string => {
+export const getCurrentRoute = (): RouteComponentId => {
   const hash = window.location.hash || '#home';
-  return routerState.routes.get(hash)?.component || 'home';
+  return routerState.routes.get(hash)?.component || DEFAULT_ROUTE;
 };
 
-export const getRouteTitle = (route: string): string => {
+export const getRouteTitle = (route: RouteComponentId): string => {
   return routerState.routes.get(`#${route}`)?.title || 'Home';
 };
 
-export const navigateTo = (route: string): void => {
+export const navigateTo = (route: RouteComponentId): void => {
   const routeData = routerState.routes.get(`#${route}`);
   if (routeData) {
     window.location.hash = route;
@@ -40,7 +56,7 @@ export const navigateTo = (route: string): void => {
   }
 };
 
-export const isRouteActive = (route: string): boolean => {
+export const isRouteActive = (route: RouteComponentId): boolean => {
   return getCurrentRoute() === route;
 };
 
