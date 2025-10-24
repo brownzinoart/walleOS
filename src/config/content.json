@@ -123,7 +123,7 @@
       "title": "ClockIt",
       "description": "Trader Joe's clocking in compliance app ensuring employees acknowledge clocking in and adhere to schedules via notifications and digital logging",
       "tags": ["Compliance", "Retail", "Time Management"],
-      "thumbnail": "/images/projects/clockit/pic1.png",
+      "thumbnail": "/images/projects/clockit/clockit_main.png",
       "url": "",
       "detailRoute": "project-clockit"
     },
@@ -132,7 +132,7 @@
       "title": "HQ",
       "description": "A webapp designed for myself and my business partner to communicate on the go and provide each other with up-to-the-minute updates organized by projects and initiatives",
       "tags": ["Communication", "Sales Ops", "Executive Dashboard"],
-      "thumbnail": "/images/projects/hq/pic1.png",
+      "thumbnail": "/images/projects/HQ/hq.png",
       "url": "",
       "detailRoute": "project-hq"
     }
@@ -231,6 +231,36 @@
         "skills": ["Production Management", "FDA Compliance", "Vendor Management", "Budget Management"],
         "experienceLevel": "Mid",
         "technologies": ["Project Management Software", "Production Tools", "Compliance Systems"]
+      },
+      {
+        "id": "barker-dzp",
+        "title": "Sr. Account Executive",
+        "company": "Barker DZP",
+        "period": "Dec 2013 - May 2014",
+        "description": "Expanded into consumer marketing while leading integrated campaigns for Barker DZP's healthcare and lifestyle clients, introducing structured mentorship for junior account staff.",
+        "achievements": [
+          "Developed integrated marketing strategies across print, digital, and social channels for clients such as Tough Mudder and PDI Healthcare",
+          "Mentored junior account staff through weekly development sessions to accelerate growth and delivery standards",
+          "Applied pharma advertising rigor to B2C campaigns, improving performance for new business pitches and packaged goods brands"
+        ],
+        "skills": ["Integrated Marketing", "Mentorship", "Consumer Marketing", "Campaign Strategy", "Leadership"],
+        "experienceLevel": "Senior",
+        "technologies": ["Marketing Automation Platforms", "Social Analytics Tools", "Project Management Tools"]
+      },
+      {
+        "id": "cdm-ny",
+        "title": "Sr. Account Executive",
+        "company": "Cline, Davis & Mann",
+        "period": "Aug 2013 - Nov 2013",
+        "description": "Advanced Pfizer's Zoloft digital marketing program through data-driven loyalty initiatives while balancing innovative digital tactics with proven in-office strategies.",
+        "achievements": [
+          "Led Pfizer Zoloft's digital marketing initiatives, combining loyalty programs with coordinated in-office experiences",
+          "Implemented custom targeting and A/B testing frameworks that improved campaign performance across channels",
+          "Partnered with Phreesia to integrate waiting room materials that connected physical and digital patient touchpoints"
+        ],
+        "skills": ["Digital Marketing", "Data-Driven Strategy", "Healthcare Marketing", "A/B Testing", "Stakeholder Communication"],
+        "experienceLevel": "Senior",
+        "technologies": ["Marketing Analytics", "Testing Platforms", "Healthcare Compliance Tools"]
       },
       {
         "id": "account-exec-fcb",

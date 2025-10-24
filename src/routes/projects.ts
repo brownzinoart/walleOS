@@ -5,7 +5,7 @@ const projectsRoute: RouteModule = {
   render: () => renderProjectsPage(),
   init: () => {
     requestAnimationFrame(() => {
-      initProjectsPageInteractions();
+      void initProjectsPageInteractions();
     });
   },
   cleanup: () => {

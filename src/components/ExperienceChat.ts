@@ -23,7 +23,7 @@ import {
   type ExperienceChatState,
   type ExperienceChatStateListener,
 } from '@/utils/experienceChatState';
-import { streamChatResponse, type ChatRequest } from '@/services/api';
+import { streamChatResponse, type ChatRequest, ApiAbortError, type ChatStreamEvent } from '@/services/api';
 import { addWillChange, debounce, removeWillChange, type DebouncedFunction } from '@/utils/performance';
 import { escapeHtml } from '@/utils/dom';
 import { startExperienceMessageAnimation, cancelExperienceMessageAnimation } from '@/utils/experienceChatState';
@@ -78,9 +78,17 @@ interface ExperienceChatRuntime {
   pendingChipId?: string;
   chipLookup: Map<string, ExperienceSuggestionChip>;
   processingErrorTimeoutId?: number;
+  activeRequest?: {
+    controller: AbortController;
+    stream: AsyncGenerator<ChatStreamEvent>;
+  };
 }
 
 const runtimeRegistry = new Map<string, ExperienceChatRuntime>();
+
+const clearActiveRequest = (runtime: ExperienceChatRuntime): void => {
+  delete runtime.activeRequest;
+};
 
 const computeExperienceMessageTimeout = (experienceId: string, messageId: string): number => {
   const messages = getExperienceChatMessages(experienceId);
@@ -471,6 +479,14 @@ const handleExperienceMessageSubmit = (
 
   const { experience, textarea, textareaResizer } = runtime;
 
+  const activeRequest = runtime.activeRequest;
+
+  if (activeRequest) {
+    activeRequest.controller.abort();
+    clearActiveRequest(runtime);
+  }
+
+  runtime.isSending = true;
   setExperienceChatProcessing(experienceId, true);
   toggleExperienceSendButtonLoading(experienceId, true);
 
@@ -506,11 +522,20 @@ const handleExperienceMessageSubmit = (
 
   // Process the API request asynchronously
   const processStream = async () => {
+    const abortController = new AbortController();
+    let placeholder: ReturnType<typeof addExperienceAssistantPlaceholder> | undefined;
     try {
-      const streamGenerator = streamChatResponse(chatRequest);
+      const streamGenerator = streamChatResponse(chatRequest, {
+        signal: abortController.signal,
+      });
+
+      runtime.activeRequest = {
+        controller: abortController,
+        stream: streamGenerator,
+      };
 
       // Add a placeholder message to stream into
-      const placeholder = addExperienceAssistantPlaceholder(experienceId, {
+      placeholder = addExperienceAssistantPlaceholder(experienceId, {
         experienceContext: {
           experienceId,
           experienceTitle: experience.title,
@@ -528,28 +553,36 @@ const handleExperienceMessageSubmit = (
       startExperienceMessageAnimation(experienceId, placeholder.id);
       await waitForExperienceMessageCompletion(experienceId, placeholder.id);
     } catch (error) {
-      console.error('Experience chat API error:', error);
-      // Provide more specific error messages
-      let errorMessage = 'Sorry, I encountered an error processing your question. Please try again.';
+      if (!(error instanceof ApiAbortError)) {
+        console.error('Experience chat API error:', error);
+        // Provide more specific error messages
+        let errorMessage = 'Sorry, I encountered an error processing your question. Please try again.';
 
-      if (error instanceof Error) {
-        if (error.message.includes('fetch')) {
-          errorMessage = 'Unable to connect to the server. Please make sure the server is running.';
-        } else if (error.message.includes('timeout')) {
-          errorMessage = 'The request timed out. Please try again.';
-        } else if (error.message.includes('Ollama')) {
-          errorMessage = 'The AI service is not available. Please make sure Ollama is running.';
+        if (error instanceof Error) {
+          if (error.message.includes('fetch')) {
+            errorMessage = 'Unable to connect to the server. Please make sure the server is running.';
+          } else if (error.message.includes('timeout')) {
+            errorMessage = 'The request timed out. Please try again.';
+          } else if (error.message.includes('Ollama')) {
+            errorMessage = 'The AI service is not available. Please make sure Ollama is running.';
+          }
         }
-      }
 
-      // Add error message to chat
-      addExperienceChatMessage(experienceId, 'assistant', errorMessage, {
-        experienceContext: {
-          experienceId,
-          experienceTitle: experience.title,
-        },
-      });
+        addExperienceChatMessage(experienceId, 'assistant', errorMessage, {
+          experienceContext: {
+            experienceId,
+            experienceTitle: experience.title,
+          },
+        });
+      }
     } finally {
+      if (runtime.activeRequest && runtime.activeRequest.controller === abortController) {
+        clearActiveRequest(runtime);
+      }
+      if (!abortController.signal.aborted) {
+        abortController.abort();
+      }
+      runtime.isSending = false;
       setExperienceChatTyping(experienceId, false);
       updateExperienceTypingIndicator(experienceId, false);
       toggleExperienceSendButtonLoading(experienceId, false);
@@ -905,6 +938,16 @@ export const cleanupExperienceChat = (
     window.clearTimeout(runtime.processingErrorTimeoutId);
     delete runtime.processingErrorTimeoutId;
   }
+
+  const activeRequest = runtime.activeRequest;
+
+  if (activeRequest) {
+    activeRequest.controller.abort();
+    void activeRequest.stream.return?.(undefined);
+    clearActiveRequest(runtime);
+  }
+
+  runtime.isSending = false;
 
   const processingError = runtime.container.querySelector<HTMLElement>('[data-processing-error]');
   processingError?.remove();

@@ -11,7 +11,7 @@ const willChangeCache = new WeakMap<HTMLElement, string | null>();
 
 export const debounce = <T extends (...args: any[]) => any>(
   fn: T,
-  wait = 100
+  wait = 100,
 ): DebouncedFunction<T> => {
   let timeoutId: number | undefined;
   let lastArgs: Parameters<T> | null = null;
@@ -57,7 +57,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 
 export const throttle = <T extends (...args: any[]) => any>(
   fn: T,
-  limit = 100
+  limit = 100,
 ): ThrottledFunction<T> => {
   let lastInvocation = 0;
   let trailingTimeout: number | undefined;
@@ -104,7 +104,9 @@ export const throttle = <T extends (...args: any[]) => any>(
   return throttled;
 };
 
-export const rafThrottle = <T extends (...args: any[]) => any>(fn: T): ThrottledFunction<T> => {
+export const rafThrottle = <T extends (...args: any[]) => any>(
+  fn: T,
+): ThrottledFunction<T> => {
   let frameId: number | null = null;
   let pendingArgs: Parameters<T> | null = null;
 
@@ -136,7 +138,10 @@ export const rafThrottle = <T extends (...args: any[]) => any>(fn: T): Throttled
   return throttled;
 };
 
-export const addWillChange = (element: HTMLElement, properties: string[]): void => {
+export const addWillChange = (
+  element: HTMLElement,
+  properties: string[],
+): void => {
   if (!element) {
     return;
   }
@@ -145,7 +150,7 @@ export const addWillChange = (element: HTMLElement, properties: string[]): void 
     willChangeCache.set(element, element.style.willChange || null);
   }
 
-  element.style.willChange = properties.join(', ');
+  element.style.willChange = properties.join(", ");
 };
 
 export const removeWillChange = (element: HTMLElement): void => {
@@ -156,20 +161,20 @@ export const removeWillChange = (element: HTMLElement): void => {
   const original = willChangeCache.get(element);
 
   if (original !== undefined) {
-    element.style.willChange = original ?? 'auto';
+    element.style.willChange = original ?? "auto";
     willChangeCache.delete(element);
     return;
   }
 
-  element.style.willChange = 'auto';
+  element.style.willChange = "auto";
 };
 
 export const observeIntersection = (
   elements: Element[],
   callback: IntersectionObserverCallback,
-  options?: IntersectionObserverInit
+  options?: IntersectionObserverInit,
 ): (() => void) => {
-  if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+  if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
     return () => undefined;
   }
 
@@ -187,26 +192,32 @@ export const observeIntersection = (
 let prefersReducedMotionCached: boolean | null = null;
 
 const evaluateReducedMotion = (): boolean => {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+  if (
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function"
+  ) {
     return false;
   }
 
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 };
 
 export const prefersReducedMotion = (): boolean => {
   if (prefersReducedMotionCached === null) {
     prefersReducedMotionCached = evaluateReducedMotion();
 
-    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function"
+    ) {
+      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
       const listener = (event: MediaQueryListEvent) => {
         prefersReducedMotionCached = event.matches;
       };
 
-      if (typeof mediaQuery.addEventListener === 'function') {
-        mediaQuery.addEventListener('change', listener);
-      } else if (typeof mediaQuery.addListener === 'function') {
+      if (typeof mediaQuery.addEventListener === "function") {
+        mediaQuery.addEventListener("change", listener);
+      } else if (typeof mediaQuery.addListener === "function") {
         mediaQuery.addListener(listener);
       }
     }
@@ -217,19 +228,26 @@ export const prefersReducedMotion = (): boolean => {
 
 let isMobileViewportCached: boolean | null = null;
 let mobileViewportMediaQuery: MediaQueryList | null = null;
-let mobileViewportListener: ((event: MediaQueryListEvent) => void) | null = null;
+let mobileViewportListener: ((event: MediaQueryListEvent) => void) | null =
+  null;
 const mobileViewportSubscribers = new Set<(isMobile: boolean) => void>();
 
 const evaluateMobileViewport = (): boolean => {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+  if (
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function"
+  ) {
     return false;
   }
 
-  return window.matchMedia('(max-width: 768px)').matches;
+  return window.matchMedia("(max-width: 768px)").matches;
 };
 
 const ensureMobileViewportListener = () => {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+  if (
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function"
+  ) {
     return;
   }
 
@@ -237,13 +255,13 @@ const ensureMobileViewportListener = () => {
     return;
   }
 
-  mobileViewportMediaQuery = window.matchMedia('(max-width: 768px)');
+  mobileViewportMediaQuery = window.matchMedia("(max-width: 768px)");
 
   mobileViewportListener = (event: MediaQueryListEvent) => {
     const matches =
-      typeof event.matches === 'boolean'
+      typeof event.matches === "boolean"
         ? event.matches
-        : mobileViewportMediaQuery?.matches ?? evaluateMobileViewport();
+        : (mobileViewportMediaQuery?.matches ?? evaluateMobileViewport());
 
     isMobileViewportCached = matches;
     mobileViewportSubscribers.forEach((subscriber) => {
@@ -251,9 +269,9 @@ const ensureMobileViewportListener = () => {
     });
   };
 
-  if (typeof mobileViewportMediaQuery.addEventListener === 'function') {
-    mobileViewportMediaQuery.addEventListener('change', mobileViewportListener);
-  } else if (typeof mobileViewportMediaQuery.addListener === 'function') {
+  if (typeof mobileViewportMediaQuery.addEventListener === "function") {
+    mobileViewportMediaQuery.addEventListener("change", mobileViewportListener);
+  } else if (typeof mobileViewportMediaQuery.addListener === "function") {
     mobileViewportMediaQuery.addListener(mobileViewportListener);
   }
 
@@ -272,9 +290,12 @@ export const isMobileViewport = (): boolean => {
 
 export const cleanupMobileViewportListener = (): void => {
   if (mobileViewportMediaQuery && mobileViewportListener) {
-    if (typeof mobileViewportMediaQuery.removeEventListener === 'function') {
-      mobileViewportMediaQuery.removeEventListener('change', mobileViewportListener);
-    } else if (typeof mobileViewportMediaQuery.removeListener === 'function') {
+    if (typeof mobileViewportMediaQuery.removeEventListener === "function") {
+      mobileViewportMediaQuery.removeEventListener(
+        "change",
+        mobileViewportListener,
+      );
+    } else if (typeof mobileViewportMediaQuery.removeListener === "function") {
       mobileViewportMediaQuery.removeListener(mobileViewportListener);
     }
   }
@@ -288,7 +309,7 @@ export const cleanupMobileViewportListener = (): void => {
 export const subscribeToMobileViewportChange = (
   callback: (isMobile: boolean) => void,
 ): (() => void) => {
-  if (typeof callback !== 'function') {
+  if (typeof callback !== "function") {
     return () => undefined;
   }
 
@@ -303,7 +324,10 @@ export const subscribeToMobileViewportChange = (
 };
 
 export const measurePerformance = <T>(label: string, callback: () => T): T => {
-  if (typeof performance === 'undefined' || typeof performance.mark !== 'function') {
+  if (
+    typeof performance === "undefined" ||
+    typeof performance.mark !== "function"
+  ) {
     return callback();
   }
 
@@ -319,18 +343,22 @@ export const measurePerformance = <T>(label: string, callback: () => T): T => {
   const duration = entries[entries.length - 1]?.duration;
 
   const isDev = (() => {
-    if (typeof process !== 'undefined' && process.env && process.env['NODE_ENV']) {
-      return process.env['NODE_ENV'] !== 'production';
+    if (
+      typeof process !== "undefined" &&
+      process.env &&
+      process.env["NODE_ENV"]
+    ) {
+      return process.env["NODE_ENV"] !== "production";
     }
 
-    if (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.MODE) {
-      return (import.meta as any).env.MODE !== 'production';
+    if (typeof import.meta !== "undefined" && (import.meta as any)?.env?.MODE) {
+      return (import.meta as any).env.MODE !== "production";
     }
 
     return true;
   })();
 
-  if (isDev && typeof duration === 'number') {
+  if (isDev && typeof duration === "number") {
     // eslint-disable-next-line no-console
     console.info(`[perf] ${label}: ${duration.toFixed(2)}ms`);
   }
@@ -364,7 +392,11 @@ class PerformanceMonitor {
     return PerformanceMonitor.instance;
   }
 
-  recordMetric(label: string, duration: number, customData?: Record<string, unknown>): void {
+  recordMetric(
+    label: string,
+    duration: number,
+    customData?: Record<string, unknown>,
+  ): void {
     const metric: PerformanceMetrics = {
       label,
       duration,
@@ -381,7 +413,7 @@ class PerformanceMonitor {
     }
 
     // Notify observers
-    this.observers.forEach(observer => observer(metric));
+    this.observers.forEach((observer) => observer(metric));
   }
 
   subscribe(observer: (metrics: PerformanceMetrics) => void): () => void {
@@ -399,7 +431,7 @@ class PerformanceMonitor {
   }
 
   getAverageTime(label: string): number | null {
-    const labelMetrics = this.metrics.filter(m => m.label === label);
+    const labelMetrics = this.metrics.filter((m) => m.label === label);
     if (labelMetrics.length === 0) return null;
 
     const sum = labelMetrics.reduce((acc, m) => acc + m.duration, 0);
@@ -407,7 +439,7 @@ class PerformanceMonitor {
   }
 
   private getMemoryUsage(): number | undefined {
-    if (typeof performance !== 'undefined' && (performance as any).memory) {
+    if (typeof performance !== "undefined" && (performance as any).memory) {
       return (performance as any).memory.usedJSHeapSize;
     }
     return undefined;
@@ -420,9 +452,12 @@ export const performanceMonitor = PerformanceMonitor.getInstance();
 export const measurePerformanceWithMonitoring = <T>(
   label: string,
   callback: () => T,
-  customData?: Record<string, unknown>
+  customData?: Record<string, unknown>,
 ): T => {
-  if (typeof performance === 'undefined' || typeof performance.mark !== 'function') {
+  if (
+    typeof performance === "undefined" ||
+    typeof performance.mark !== "function"
+  ) {
     return callback();
   }
 
@@ -437,7 +472,7 @@ export const measurePerformanceWithMonitoring = <T>(
   const entries = performance.getEntriesByName(label);
   const duration = entries[entries.length - 1]?.duration;
 
-  if (typeof duration === 'number') {
+  if (typeof duration === "number") {
     performanceMonitor.recordMetric(label, duration, customData);
   }
 
@@ -453,16 +488,16 @@ type DocumentWithViewTransitions = Document & {
 };
 
 export const supportsViewTransitions = (): boolean => {
-  if (typeof document === 'undefined') {
+  if (typeof document === "undefined") {
     return false;
   }
 
   const doc = document as DocumentWithViewTransitions;
-  return typeof doc.startViewTransition === 'function';
+  return typeof doc.startViewTransition === "function";
 };
 
 export const withViewTransition = (callback: () => void): void => {
-  if (typeof callback !== 'function') {
+  if (typeof callback !== "function") {
     return;
   }
 
@@ -479,4 +514,75 @@ export const withViewTransition = (callback: () => void): void => {
   } catch {
     callback();
   }
+};
+
+// Mobile performance optimizations
+export const isMobileDevice = (): boolean => {
+  if (typeof window === "undefined") return false;
+
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent,
+    ) || window.innerWidth <= 768
+  );
+};
+
+export const getMobileOptimizedAnimationConfig = () => {
+  const isMobile = isMobileDevice();
+  const prefersReduced = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  if (prefersReduced) {
+    return {
+      duration: 0,
+      easing: "linear",
+      properties: [] as string[],
+    };
+  }
+
+  if (isMobile) {
+    return {
+      duration: 150,
+      easing: "ease-out",
+      properties: ["transform"], // Skip expensive properties on mobile
+    };
+  }
+
+  return {
+    duration: 250,
+    easing: "cubic-bezier(0.68, -0.55, 0.27, 1.55)",
+    properties: ["transform", "box-shadow", "border-color"],
+  };
+};
+
+export const ensureTouchTargets = (element: HTMLElement): void => {
+  const minTouchTarget = 44; // iOS HIG recommendation
+
+  const computedStyle = window.getComputedStyle(element);
+  const width = parseInt(computedStyle.width, 10);
+  const height = parseInt(computedStyle.height, 10);
+
+  if (width < minTouchTarget) {
+    element.style.minWidth = `${minTouchTarget}px`;
+  }
+
+  if (height < minTouchTarget) {
+    element.style.minHeight = `${minTouchTarget}px`;
+  }
+};
+
+export const optimizeForMobile = (element: HTMLElement): void => {
+  if (!isMobileDevice()) return;
+
+  // Add CSS containment for better performance
+  element.style.contain = "layout style paint";
+
+  // Ensure proper touch targets
+  ensureTouchTargets(element);
+
+  // Reduce complex animations
+  const config = getMobileOptimizedAnimationConfig();
+  element.style.setProperty("--animation-duration", `${config.duration}ms`);
+  element.style.setProperty("--animation-easing", config.easing);
 };

@@ -1,19 +1,34 @@
-import { branding, navigation, contact, featuredProjects } from '@/config/content';
-import { renderThemeToggle } from './ThemeToggle';
-import type { NavigationItem, SocialLink } from '@/types';
-import { prefersReducedMotion, observeIntersection, addWillChange, removeWillChange } from '@/utils/performance';
-import type { RouteComponentId } from '@/utils/router';
+import {
+  branding,
+  navigation,
+  contact,
+  featuredProjects,
+} from "@/config/content";
+import { renderThemeToggle } from "./ThemeToggle";
+import type { NavigationItem, SocialLink } from "@/types";
+import {
+  prefersReducedMotion,
+  observeIntersection,
+  addWillChange,
+  removeWillChange,
+} from "@/utils/performance";
+import type { RouteComponentId } from "@/utils/router";
+import { createEventManager } from "@/utils/eventManager";
 
-const NEON_COLORS = ['var(--color-neon-cyan)', 'var(--color-neon-magenta)', 'var(--color-neon-lime)', 'var(--color-neon-orange)'];
-const FALLBACK_NEON_COLOR = 'var(--color-neon-cyan)';
+const NEON_COLORS = [
+  "var(--color-neon-cyan)",
+  "var(--color-neon-magenta)",
+  "var(--color-neon-lime)",
+  "var(--color-neon-orange)",
+];
+const FALLBACK_NEON_COLOR = "var(--color-neon-cyan)";
 
-const SIDEBAR_SELECTOR = '[data-sidebar]';
-const NAV_ITEM_SELECTOR = '[data-sidebar-nav-item]';
-const SOCIAL_LINK_SELECTOR = '[data-sidebar-social-link]';
-const BRANDING_SELECTOR = '[data-sidebar-branding]';
-const ANNOUNCER_SELECTOR = '[data-sidebar-announcer]';
-const SKIP_LINK_SELECTOR = '[data-sidebar-skip]';
-
+const SIDEBAR_SELECTOR = "[data-sidebar]";
+const NAV_ITEM_SELECTOR = "[data-sidebar-nav-item]";
+const SOCIAL_LINK_SELECTOR = "[data-sidebar-social-link]";
+const BRANDING_SELECTOR = "[data-sidebar-branding]";
+const ANNOUNCER_SELECTOR = "[data-sidebar-announcer]";
+const SKIP_LINK_SELECTOR = "[data-sidebar-skip]";
 
 interface SidebarState {
   activeNavId: string | null;
@@ -26,27 +41,34 @@ type ProjectNavItem = {
   label: string;
 };
 
-const PROJECT_TOGGLE_SELECTOR = '[data-sidebar-project-toggle]';
-const PROJECT_LINK_SELECTOR = '[data-sidebar-project-link]';
-const PROJECT_LIST_SELECTOR = '[data-sidebar-project-list]';
+const PROJECT_TOGGLE_SELECTOR = "[data-sidebar-project-toggle]";
+const PROJECT_LINK_SELECTOR = "[data-sidebar-project-link]";
+const PROJECT_LIST_SELECTOR = "[data-sidebar-project-list]";
 
 const getInitialHashRoute = (): string | null => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
 
-  const rawHash = window.location.hash ?? '';
-  const normalized = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
+  const rawHash = window.location.hash ?? "";
+  const normalized = rawHash.startsWith("#") ? rawHash.slice(1) : rawHash;
   return normalized.length > 0 ? normalized : null;
 };
 
 const projectNavItems: ProjectNavItem[] = (() => {
-  const overviewItem: ProjectNavItem = { id: 'projects', label: 'Overview' };
+  const overviewItem: ProjectNavItem = { id: "projects", label: "Overview" };
 
-  const seen = new Set<RouteComponentId>(['projects']);
+  const seen = new Set<RouteComponentId>(["projects"]);
   const detailedItems = featuredProjects
-    .filter((project) => typeof project.detailRoute === 'string' && project.detailRoute.length > 0)
-    .map((project) => ({ id: project.detailRoute as RouteComponentId, label: project.title }))
+    .filter(
+      (project) =>
+        typeof project.detailRoute === "string" &&
+        project.detailRoute.length > 0,
+    )
+    .map((project) => ({
+      id: project.detailRoute as RouteComponentId,
+      label: project.title,
+    }))
     .filter((project) => {
       if (seen.has(project.id)) {
         return false;
@@ -60,10 +82,13 @@ const projectNavItems: ProjectNavItem[] = (() => {
 })();
 
 const initialRoute = getInitialHashRoute();
-const initialProjectRoute = initialRoute && projectNavItems.some((item) => item.id === initialRoute)
-  ? initialRoute
-  : null;
-const initialNavId = initialProjectRoute ? 'projects' : navigation[0]?.id ?? null;
+const initialProjectRoute =
+  initialRoute && projectNavItems.some((item) => item.id === initialRoute)
+    ? initialRoute
+    : null;
+const initialNavId = initialProjectRoute
+  ? "projects"
+  : (navigation[0]?.id ?? null);
 
 const sidebarState: SidebarState = {
   activeNavId: initialNavId,
@@ -81,15 +106,16 @@ let brandingRef: HTMLElement | null = null;
 let skipLinkRef: HTMLAnchorElement | null = null;
 let brandingColorInterval: number | null = null;
 let sectionObserverCleanup: (() => void) | null = null;
+const eventManager = createEventManager();
 let projectToggleRef: HTMLButtonElement | null = null;
 let projectListRef: HTMLElement | null = null;
 
 const emitActiveChange = (navId: string, label: string, silent?: boolean) => {
   if (!silent) {
     document.dispatchEvent(
-      new CustomEvent('sidebar:active-change', {
+      new CustomEvent("sidebar:active-change", {
         detail: { id: navId, label },
-      })
+      }),
     );
   }
 
@@ -100,9 +126,9 @@ const emitActiveChange = (navId: string, label: string, silent?: boolean) => {
 
 const emitNavigationEvent = (navId: string) => {
   document.dispatchEvent(
-    new CustomEvent('sidebar:navigate', {
+    new CustomEvent("sidebar:navigate", {
       detail: { id: navId },
-    })
+    }),
   );
 };
 
@@ -113,7 +139,9 @@ const findSectionTarget = (navId: string): HTMLElement | null => {
     return cached;
   }
 
-  const section = document.querySelector<HTMLElement>(`[data-section-id="${navId}"]`) ?? document.getElementById(navId);
+  const section =
+    document.querySelector<HTMLElement>(`[data-section-id="${navId}"]`) ??
+    document.getElementById(navId);
 
   if (section) {
     sectionRefs.set(navId, section);
@@ -124,36 +152,46 @@ const findSectionTarget = (navId: string): HTMLElement | null => {
 
 const cacheSidebarElements = () => {
   sidebarRoot = document.querySelector<HTMLElement>(SIDEBAR_SELECTOR);
-  announcerRef = sidebarRoot?.querySelector<HTMLElement>(ANNOUNCER_SELECTOR) ?? null;
-  brandingRef = sidebarRoot?.querySelector<HTMLElement>(BRANDING_SELECTOR) ?? null;
-  skipLinkRef = sidebarRoot?.querySelector<HTMLAnchorElement>(SKIP_LINK_SELECTOR) ?? null;
+  announcerRef =
+    sidebarRoot?.querySelector<HTMLElement>(ANNOUNCER_SELECTOR) ?? null;
+  brandingRef =
+    sidebarRoot?.querySelector<HTMLElement>(BRANDING_SELECTOR) ?? null;
+  skipLinkRef =
+    sidebarRoot?.querySelector<HTMLAnchorElement>(SKIP_LINK_SELECTOR) ?? null;
 
   navItemRefs.clear();
   projectNavRefs.clear();
 
-  sidebarRoot?.querySelectorAll<HTMLButtonElement>(NAV_ITEM_SELECTOR).forEach((item) => {
-    const navId = item.dataset['navId'];
+  sidebarRoot
+    ?.querySelectorAll<HTMLButtonElement>(NAV_ITEM_SELECTOR)
+    .forEach((item) => {
+      const navId = item.dataset["navId"];
 
-    if (navId) {
-      navItemRefs.set(navId, item);
-    }
-  });
+      if (navId) {
+        navItemRefs.set(navId, item);
+      }
+    });
 
-  sidebarRoot?.querySelectorAll<HTMLButtonElement>(PROJECT_LINK_SELECTOR).forEach((item) => {
-    const navId = item.dataset['projectId'];
+  sidebarRoot
+    ?.querySelectorAll<HTMLButtonElement>(PROJECT_LINK_SELECTOR)
+    .forEach((item) => {
+      const navId = item.dataset["projectId"];
 
-    if (navId) {
-      projectNavRefs.set(navId, item);
-    }
-  });
+      if (navId) {
+        projectNavRefs.set(navId, item);
+      }
+    });
 
-  projectToggleRef = sidebarRoot?.querySelector<HTMLButtonElement>(PROJECT_TOGGLE_SELECTOR) ?? null;
-  projectListRef = sidebarRoot?.querySelector<HTMLElement>(PROJECT_LIST_SELECTOR) ?? null;
+  projectToggleRef =
+    sidebarRoot?.querySelector<HTMLButtonElement>(PROJECT_TOGGLE_SELECTOR) ??
+    null;
+  projectListRef =
+    sidebarRoot?.querySelector<HTMLElement>(PROJECT_LIST_SELECTOR) ?? null;
 };
 
 const resetBrandingCycle = () => {
   if (brandingColorInterval) {
-    window.clearInterval(brandingColorInterval);
+    eventManager.clearInterval(brandingColorInterval);
     brandingColorInterval = null;
   }
 };
@@ -166,21 +204,22 @@ const setupBrandingInteractions = () => {
   let colorIndex = 0;
 
   const cycleColors = () => {
-    const nextColor = NEON_COLORS[colorIndex % NEON_COLORS.length] ?? FALLBACK_NEON_COLOR;
-    brandingRef?.style.setProperty('--branding-accent', nextColor);
+    const nextColor =
+      NEON_COLORS[colorIndex % NEON_COLORS.length] ?? FALLBACK_NEON_COLOR;
+    brandingRef?.style.setProperty("--branding-accent", nextColor);
     colorIndex += 1;
   };
 
-  brandingRef.addEventListener('pointerenter', () => {
+  eventManager.addEventListener(brandingRef, "pointerenter", () => {
     if (brandingRef) {
-      addWillChange(brandingRef, ['transform', 'text-shadow']);
+      addWillChange(brandingRef, ["transform", "text-shadow"]);
     }
     cycleColors();
     resetBrandingCycle();
-    brandingColorInterval = window.setInterval(cycleColors, 1200);
+    brandingColorInterval = eventManager.setInterval(cycleColors, 1200);
   });
 
-  brandingRef.addEventListener('pointermove', (event) => {
+  eventManager.addEventListener(brandingRef, "pointermove", (event) => {
     if (!brandingRef) {
       return;
     }
@@ -191,21 +230,27 @@ const setupBrandingInteractions = () => {
       return;
     }
 
-    const offsetX = event.clientX - rect.left;
-    const offsetY = event.clientY - rect.top;
+    const offsetX = (event as PointerEvent).clientX - rect.left;
+    const offsetY = (event as PointerEvent).clientY - rect.top;
 
-    brandingRef.style.setProperty('--branding-glow-x', `${((offsetX / rect.width) - 0.5) * 40}px`);
-    brandingRef.style.setProperty('--branding-glow-y', `${((offsetY / rect.height) - 0.5) * 40}px`);
+    brandingRef.style.setProperty(
+      "--branding-glow-x",
+      `${(offsetX / rect.width - 0.5) * 40}px`,
+    );
+    brandingRef.style.setProperty(
+      "--branding-glow-y",
+      `${(offsetY / rect.height - 0.5) * 40}px`,
+    );
   });
 
-  brandingRef.addEventListener('pointerleave', () => {
+  eventManager.addEventListener(brandingRef, "pointerleave", () => {
     resetBrandingCycle();
     brandingRef?.style.setProperty(
-      '--branding-accent',
-      'var(--color-branding-base, var(--color-neon-cyan))'
+      "--branding-accent",
+      "var(--color-branding-base, var(--color-neon-cyan))",
     );
-    brandingRef?.style.setProperty('--branding-glow-x', '0px');
-    brandingRef?.style.setProperty('--branding-glow-y', '0px');
+    brandingRef?.style.setProperty("--branding-glow-x", "0px");
+    brandingRef?.style.setProperty("--branding-glow-y", "0px");
     if (brandingRef) {
       removeWillChange(brandingRef);
     }
@@ -213,7 +258,8 @@ const setupBrandingInteractions = () => {
 };
 
 const setupSocialLinkInteractions = () => {
-  const socialLinks = sidebarRoot?.querySelectorAll<HTMLAnchorElement>(SOCIAL_LINK_SELECTOR);
+  const socialLinks =
+    sidebarRoot?.querySelectorAll<HTMLAnchorElement>(SOCIAL_LINK_SELECTOR);
 
   if (!socialLinks || socialLinks.length === 0) {
     return;
@@ -222,21 +268,21 @@ const setupSocialLinkInteractions = () => {
   let hoverSequence = 0;
 
   socialLinks.forEach((link) => {
-    link.addEventListener('pointerenter', () => {
+    link.addEventListener("pointerenter", () => {
       hoverSequence += 1;
-      link.style.setProperty('--hover-sequence', String(hoverSequence));
-      addWillChange(link, ['transform']);
+      link.style.setProperty("--hover-sequence", String(hoverSequence));
+      addWillChange(link, ["transform"]);
     });
 
-    link.addEventListener('pointerleave', () => {
+    link.addEventListener("pointerleave", () => {
       removeWillChange(link);
     });
 
-    link.addEventListener('focus', () => {
-      addWillChange(link, ['transform']);
+    link.addEventListener("focus", () => {
+      addWillChange(link, ["transform"]);
     });
 
-    link.addEventListener('blur', () => {
+    link.addEventListener("blur", () => {
       removeWillChange(link);
     });
   });
@@ -244,24 +290,24 @@ const setupSocialLinkInteractions = () => {
 
 const getProjectNavLabel = (projectId: string | null): string => {
   if (!projectId) {
-    return 'Projects';
+    return "Projects";
   }
 
   const matched = projectNavItems.find((item) => item.id === projectId);
-  return matched?.label ?? 'Projects';
+  return matched?.label ?? "Projects";
 };
 
 const setProjectsExpanded = (shouldExpand: boolean) => {
   sidebarState.isProjectsExpanded = shouldExpand;
 
   if (projectToggleRef) {
-    projectToggleRef.setAttribute('aria-expanded', String(shouldExpand));
-    projectToggleRef.classList.toggle('is-expanded', shouldExpand);
+    projectToggleRef.setAttribute("aria-expanded", String(shouldExpand));
+    projectToggleRef.classList.toggle("is-expanded", shouldExpand);
   }
 
   if (projectListRef) {
-    projectListRef.toggleAttribute('hidden', !shouldExpand);
-    projectListRef.setAttribute('aria-hidden', String(!shouldExpand));
+    projectListRef.toggleAttribute("hidden", !shouldExpand);
+    projectListRef.setAttribute("aria-hidden", String(!shouldExpand));
   }
 };
 
@@ -270,8 +316,8 @@ const setActiveProjectNavItem = (projectId: string | null) => {
 
   projectNavRefs.forEach((button, id) => {
     const isActive = projectId === id;
-    button.classList.toggle('is-active', isActive);
-    button.setAttribute('aria-current', isActive ? 'page' : 'false');
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-current", isActive ? "page" : "false");
   });
 };
 
@@ -279,14 +325,31 @@ const toggleProjectsExpanded = () => {
   setProjectsExpanded(!sidebarState.isProjectsExpanded);
 };
 
-const handleProjectNavActivation = (projectId: RouteComponentId) => {
+const handleProjectsToggleActivation = () => {
+  if (!sidebarState.isProjectsExpanded) {
+    handleProjectNavActivation("projects", { scrollToTop: true });
+    return;
+  }
+
+  toggleProjectsExpanded();
+};
+
+const handleProjectNavActivation = (
+  projectId: RouteComponentId,
+  options: ProjectNavActivationOptions = {},
+) => {
   setProjectsExpanded(true);
   setActiveProjectNavItem(projectId);
 
   // Import router functions dynamically to avoid circular dependencies
-  import('@/utils/router')
+  import("@/utils/router")
     .then(({ navigateTo }) => {
       navigateTo(projectId);
+      if (options.scrollToTop) {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        });
+      }
       setActiveNavItem(projectId);
       emitNavigationEvent(projectId);
     })
@@ -332,15 +395,17 @@ const setupSectionObserver = () => {
         return;
       }
       const targetSection = topEntry.target as HTMLElement;
-      const matchedNav = Array.from(sectionRefs.entries()).find(([, section]) => section === targetSection);
+      const matchedNav = Array.from(sectionRefs.entries()).find(
+        ([, section]) => section === targetSection,
+      );
 
       if (matchedNav && matchedNav[0] !== sidebarState.activeNavId) {
         const navId = matchedNav[0];
         const navItem = navItemRefs.get(navId);
-        const label = navItem?.dataset['navLabel'] ?? navId;
+        const label = navItem?.dataset["navLabel"] ?? navId;
         // Prevent projects tab from being activated during homepage scrolling
         // Only allow projects tab activation if currently not on home, or if explicitly navigating to projects
-        if (navId === 'projects' && sidebarState.activeNavId === 'home') {
+        if (navId === "projects" && sidebarState.activeNavId === "home") {
           return;
         }
 
@@ -348,7 +413,7 @@ const setupSectionObserver = () => {
         emitActiveChange(navId, label, true);
       }
     },
-    { rootMargin: '-40% 0px -40% 0px', threshold: [0.1, 0.25, 0.5, 0.75] }
+    { rootMargin: "-40% 0px -40% 0px", threshold: [0.1, 0.25, 0.5, 0.75] },
   );
 };
 
@@ -356,17 +421,24 @@ interface SetActiveOptions {
   silent?: boolean;
 }
 
+interface ProjectNavActivationOptions {
+  scrollToTop?: boolean;
+}
+
 const isProjectRouteId = (routeId: string): routeId is RouteComponentId => {
   return projectNavItems.some((item) => item.id === routeId);
 };
 
-export const setActiveNavItem = (itemId: string | null, options: SetActiveOptions = {}) => {
+export const setActiveNavItem = (
+  itemId: string | null,
+  options: SetActiveOptions = {},
+) => {
   if (!itemId) {
     return;
   }
 
   const projectRoute = isProjectRouteId(itemId);
-  const navId = projectRoute ? 'projects' : itemId;
+  const navId = projectRoute ? "projects" : itemId;
 
   if (!navItemRefs.has(navId)) {
     return;
@@ -381,9 +453,9 @@ export const setActiveNavItem = (itemId: string | null, options: SetActiveOption
   if (sidebarState.activeNavId !== navId) {
     navItemRefs.forEach((item, id) => {
       const isActive = id === navId;
-      item.classList.toggle('is-active', isActive);
-      item.setAttribute('aria-current', isActive ? 'page' : 'false');
-      item.setAttribute('aria-pressed', String(isActive));
+      item.classList.toggle("is-active", isActive);
+      item.setAttribute("aria-current", isActive ? "page" : "false");
+      item.setAttribute("aria-pressed", String(isActive));
     });
 
     sidebarState.activeNavId = navId;
@@ -396,15 +468,25 @@ export const setActiveNavItem = (itemId: string | null, options: SetActiveOption
     setActiveProjectNavItem(null);
   }
 
-  const label = projectRoute ? getProjectNavLabel(itemId) : nextItem.dataset['navLabel'] ?? navId;
+  const label = projectRoute
+    ? getProjectNavLabel(itemId)
+    : (nextItem.dataset["navLabel"] ?? navId);
   emitActiveChange(navId, label, options.silent);
 };
 
-export const handleNavActivation = (itemId: string, behavior: ScrollBehavior = 'smooth') => {
+export const handleNavActivation = (
+  itemId: string,
+  behavior: ScrollBehavior = "smooth",
+) => {
   // Import router functions dynamically to avoid circular dependencies
-  import('@/utils/router').then(({ navigateTo }) => {
+  import("@/utils/router").then(({ navigateTo }) => {
     // Route to dedicated pages (including home) so URL reflects active tab
-    if (itemId === 'home' || itemId === 'projects' || itemId === 'resume' || itemId === 'for-fun') {
+    if (
+      itemId === "home" ||
+      itemId === "projects" ||
+      itemId === "resume" ||
+      itemId === "for-fun"
+    ) {
       navigateTo(itemId);
       setActiveNavItem(itemId);
       emitNavigationEvent(itemId);
@@ -413,10 +495,12 @@ export const handleNavActivation = (itemId: string, behavior: ScrollBehavior = '
 
     // For home and other sections, use traditional scroll behavior
     const target = findSectionTarget(itemId);
-    const motionSafe: ScrollBehavior = prefersReducedMotion() ? 'auto' : behavior;
+    const motionSafe: ScrollBehavior = prefersReducedMotion()
+      ? "auto"
+      : behavior;
 
     if (target) {
-      target.scrollIntoView({ behavior: motionSafe, block: 'start' });
+      target.scrollIntoView({ behavior: motionSafe, block: "start" });
     }
 
     setActiveNavItem(itemId);
@@ -426,17 +510,17 @@ export const handleNavActivation = (itemId: string, behavior: ScrollBehavior = '
 
 const setupNavItemInteractions = () => {
   navItemRefs.forEach((item, id) => {
-    if (id === 'projects' && projectNavItems.length > 0) {
+    if (id === "projects" && projectNavItems.length > 0) {
       return;
     }
 
-    item.addEventListener('click', (event) => {
+    item.addEventListener("click", (event) => {
       event.preventDefault();
       handleNavActivation(id);
     });
 
-    item.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
+    item.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         handleNavActivation(id);
       }
@@ -449,23 +533,24 @@ const setupProjectNavInteractions = () => {
     return;
   }
 
-  const shouldExpand = sidebarState.isProjectsExpanded || Boolean(sidebarState.activeProjectId);
+  const shouldExpand =
+    sidebarState.isProjectsExpanded || Boolean(sidebarState.activeProjectId);
   setProjectsExpanded(shouldExpand);
 
   if (projectToggleRef) {
-    projectToggleRef.addEventListener('click', (event) => {
+    projectToggleRef.addEventListener("click", (event) => {
       event.preventDefault();
-      toggleProjectsExpanded();
+      handleProjectsToggleActivation();
     });
 
-    projectToggleRef.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
+    projectToggleRef.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        toggleProjectsExpanded();
-      } else if (event.key === 'ArrowRight') {
+        handleProjectsToggleActivation();
+      } else if (event.key === "ArrowRight") {
         event.preventDefault();
         setProjectsExpanded(true);
-      } else if (event.key === 'ArrowLeft') {
+      } else if (event.key === "ArrowLeft") {
         event.preventDefault();
         setProjectsExpanded(false);
       }
@@ -473,13 +558,13 @@ const setupProjectNavInteractions = () => {
   }
 
   projectNavRefs.forEach((button, id) => {
-    button.addEventListener('click', (event) => {
+    button.addEventListener("click", (event) => {
       event.preventDefault();
       handleProjectNavActivation(id as RouteComponentId);
     });
 
-    button.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
+    button.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         handleProjectNavActivation(id as RouteComponentId);
       }
@@ -492,12 +577,12 @@ const setupSkipLink = () => {
     return;
   }
 
-  skipLinkRef.addEventListener('focus', () => {
-    skipLinkRef?.classList.add('is-visible');
+  skipLinkRef.addEventListener("focus", () => {
+    skipLinkRef?.classList.add("is-visible");
   });
 
-  skipLinkRef.addEventListener('blur', () => {
-    skipLinkRef?.classList.remove('is-visible');
+  skipLinkRef.addEventListener("blur", () => {
+    skipLinkRef?.classList.remove("is-visible");
   });
 };
 
@@ -523,7 +608,8 @@ export const initSidebarInteractions = (): void => {
 };
 
 const renderProjectsNav = (item: NavigationItem, isActive: boolean): string => {
-  const expanded = sidebarState.isProjectsExpanded || Boolean(sidebarState.activeProjectId);
+  const expanded =
+    sidebarState.isProjectsExpanded || Boolean(sidebarState.activeProjectId);
   const navLabel = escapeHtml(item.label);
   const subItems = projectNavItems
     .map((project) => {
@@ -531,29 +617,29 @@ const renderProjectsNav = (item: NavigationItem, isActive: boolean): string => {
       return `
         <button
           type="button"
-          class="sidebar-projects-subnav-item${isProjectActive ? ' is-active' : ''}"
+          class="sidebar-projects-subnav-item${isProjectActive ? " is-active" : ""}"
           data-sidebar-project-link
           data-project-id="${escapeHtml(project.id)}"
-          aria-current="${isProjectActive ? 'page' : 'false'}"
+          aria-current="${isProjectActive ? "page" : "false"}"
         >
           <span class="sidebar-projects-subnav-bullet" aria-hidden="true"></span>
           <span class="sidebar-projects-subnav-label">${escapeHtml(project.label)}</span>
         </button>
       `;
     })
-    .join('');
+    .join("");
 
   return `
     <div class="sidebar-projects-group" data-sidebar-projects>
       <button
         type="button"
-        class="sidebar-nav-item sidebar-projects-toggle${isActive ? ' is-active' : ''}${expanded ? ' is-expanded' : ''} focus:outline-none"
+        class="sidebar-nav-item sidebar-projects-toggle${isActive ? " is-active" : ""}${expanded ? " is-expanded" : ""} focus:outline-none"
         data-sidebar-nav-item
         data-sidebar-project-toggle
         data-nav-id="${item.id}"
         data-nav-label="${navLabel}"
         aria-pressed="${isActive}"
-        aria-current="${isActive ? 'page' : 'false'}"
+        aria-current="${isActive ? "page" : "false"}"
         aria-expanded="${expanded}"
         aria-controls="sidebar-projects-list"
       >
@@ -566,13 +652,13 @@ const renderProjectsNav = (item: NavigationItem, isActive: boolean): string => {
         </span>
       </button>
       <div
-        class="sidebar-projects-subnav${expanded ? ' is-expanded' : ''}"
+        class="sidebar-projects-subnav${expanded ? " is-expanded" : ""}"
         id="sidebar-projects-list"
         data-sidebar-project-list
         role="group"
         aria-label="Project shortcuts"
-        aria-hidden="${expanded ? 'false' : 'true'}"
-        ${expanded ? '' : 'hidden'}
+        aria-hidden="${expanded ? "false" : "true"}"
+        ${expanded ? "" : "hidden"}
       >
         ${subItems}
       </div>
@@ -583,12 +669,12 @@ const renderProjectsNav = (item: NavigationItem, isActive: boolean): string => {
 const renderNavItem = (item: NavigationItem, isActive: boolean): string => `
   <button
     type="button"
-    class="sidebar-nav-item${isActive ? ' is-active' : ''} focus:outline-none"
+    class="sidebar-nav-item${isActive ? " is-active" : ""} focus:outline-none"
     data-sidebar-nav-item
     data-nav-id="${item.id}"
     data-nav-label="${escapeHtml(item.label)}"
     aria-pressed="${isActive}"
-    aria-current="${isActive ? 'page' : 'false'}"
+    aria-current="${isActive ? "page" : "false"}"
   >
     <span class="sidebar-nav-item-icon" aria-hidden="true">${item.icon}</span>
     <span class="sidebar-nav-item-label text-sm font-medium tracking-wide">${item.label}</span>
@@ -610,19 +696,19 @@ const renderSocialLink = (link: SocialLink): string => `
 `;
 
 export const renderSidebar = (): string => {
-  const emailLink = contact.email ? `mailto:${contact.email}` : '#';
-  const activeNavId = sidebarState.activeNavId ?? navigation[0]?.id ?? '';
+  const emailLink = contact.email ? `mailto:${contact.email}` : "#";
+  const activeNavId = sidebarState.activeNavId ?? navigation[0]?.id ?? "";
   const navMarkup = navigation
     .map((item) => {
       const isActive = item.id === activeNavId;
 
-      if (item.id === 'projects' && projectNavItems.length > 0) {
+      if (item.id === "projects" && projectNavItems.length > 0) {
         return renderProjectsNav(item, isActive);
       }
 
       return renderNavItem(item, isActive);
     })
-    .join('');
+    .join("");
 
   return `
     <aside
@@ -678,7 +764,7 @@ export const renderSidebar = (): string => {
                 ${contact.email}
               </a>
               <div class="sidebar-socials" aria-label="Social links">
-                ${contact.socials.map(renderSocialLink).join('')}
+                ${contact.socials.map(renderSocialLink).join("")}
               </div>
             </div>
             <span class="sr-only" aria-live="polite" data-sidebar-announcer></span>
@@ -691,8 +777,18 @@ export const renderSidebar = (): string => {
 
 const escapeHtml = (value: string): string =>
   value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+// Cleanup function for Sidebar component
+export const cleanupSidebar = () => {
+  resetBrandingCycle();
+  eventManager.cleanup();
+  if (sectionObserverCleanup) {
+    sectionObserverCleanup();
+    sectionObserverCleanup = null;
+  }
+};

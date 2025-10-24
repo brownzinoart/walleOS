@@ -1,4 +1,4 @@
-import { connect, Table } from '@lancedb/lancedb';
+import { connect, Table, type Connection } from '@lancedb/lancedb';
 import { join } from 'node:path';
 import { serverLogger } from '../middleware/logger.js';
 import type { EmbeddedChunk } from './embeddingService.js';
@@ -17,11 +17,49 @@ export interface SearchResult {
   rank: number;
 }
 
+type LanceSearchRow = {
+  id: string;
+  content: string;
+  embedding?: number[];
+  _distance?: number;
+  sourceFile: string;
+  category: string;
+  chunkIndex: number;
+  totalChunks: number;
+  startChar: number;
+  endChar: number;
+  tags?: string;
+  priority: number;
+  experienceIds?: string;
+};
+
 export interface SearchOptions {
   topK?: number;
   minConfidence?: number;
   categoryFilter?: string[];
   tagFilter?: string[];
+  experienceIdFilter?: string;
+}
+
+export function matchesExperienceIdFilter(
+  rowExperienceIds: string | string[] | undefined,
+  experienceIdFilter?: string,
+): boolean {
+  if (!experienceIdFilter) {
+    return true;
+  }
+
+  const parsedExperienceIds = Array.isArray(rowExperienceIds)
+    ? rowExperienceIds.map(id => id.trim()).filter(Boolean)
+    : rowExperienceIds
+      ? rowExperienceIds.split(',').map(id => id.trim()).filter(Boolean)
+      : [];
+
+  if (parsedExperienceIds.length === 0) {
+    return true;
+  }
+
+  return parsedExperienceIds.includes(experienceIdFilter);
 }
 
 export class VectorStoreError extends Error {
@@ -37,7 +75,7 @@ export class VectorStoreError extends Error {
 }
 
 export class VectorStore {
-  private db: any;
+  private db: Connection | null = null;
   private table: Table | null = null;
   private readonly dbPath: string;
   private readonly tableName = 'wallymo_chunks';
@@ -74,9 +112,14 @@ export class VectorStore {
       return this.table;
     }
 
+    const db = this.db;
+
+    if (!db) {
+      throw new VectorStoreError('Vector database is not initialized');
+    }
+
     try {
       // Check if table exists
-      const db = this.db as any;
       const tableNames = await db.tableNames();
       if (tableNames.includes(this.tableName)) {
         this.table = await db.openTable(this.tableName);
@@ -86,7 +129,7 @@ export class VectorStore {
         throw new VectorStoreError('Table does not exist. Call createTable() first.');
       }
 
-      return this.table as Table;
+      return this.table;
     } catch (error) {
       serverLogger.error('Failed to get table', error instanceof Error ? error : new Error(String(error)), {
         tableName: this.tableName,
@@ -103,13 +146,18 @@ export class VectorStore {
       throw new VectorStoreError('Cannot create table with empty chunks array');
     }
 
+    const db = this.db;
+
+    if (!db) {
+      throw new VectorStoreError('Vector database is not initialized');
+    }
+
     try {
-      const db = this.db as any;
       // Prepare data for LanceDB
       const tableData = chunks.map(chunk => ({
         id: chunk.id,
         content: chunk.content,
-        embedding: normalizeEmbedding((chunk as any).embedding as number[]),
+        embedding: normalizeEmbedding(chunk.embedding),
         sourceFile: chunk.metadata.sourceFile,
         category: chunk.metadata.category,
         chunkIndex: chunk.metadata.chunkIndex,
@@ -118,6 +166,7 @@ export class VectorStore {
         endChar: chunk.metadata.endChar,
         tags: chunk.metadata.tags.join(','), // Store as comma-separated string
         priority: chunk.metadata.priority,
+        experienceIds: chunk.metadata.experienceIds?.join(',') || '', // Store as comma-separated string
       }));
 
       // Drop existing table if it exists
@@ -159,10 +208,10 @@ export class VectorStore {
       const normalizedQuery = normalizeEmbedding(queryEmbedding);
 
       // Perform vector search
-      const results = await table
+      const results = (await table
         .search(normalizedQuery)
         .limit(topK * 2) // Get more results for filtering
-        .toArray();
+        .toArray()) as LanceSearchRow[];
 
       // Convert results and apply filters
       const searchResults: SearchResult[] = [];
@@ -179,7 +228,10 @@ export class VectorStore {
 
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
-        
+        const parsedExperienceIds = result.experienceIds
+          ? result.experienceIds.split(',').map(id => id.trim()).filter(Boolean)
+          : [];
+
         // Apply category filter
         if (options.categoryFilter && options.categoryFilter.length > 0) {
           if (!options.categoryFilter.includes(result.category)) {
@@ -190,12 +242,17 @@ export class VectorStore {
         // Apply tag filter
         if (options.tagFilter && options.tagFilter.length > 0) {
           const resultTags = result.tags ? result.tags.split(',') : [];
-          const hasMatchingTag = options.tagFilter.some(tag => 
+          const hasMatchingTag = options.tagFilter.some(tag =>
             resultTags.some((resultTag: string) => resultTag.toLowerCase().includes(tag.toLowerCase()))
           );
           if (!hasMatchingTag) {
             continue;
           }
+        }
+
+        // Apply experienceId filter
+        if (!matchesExperienceIdFilter(parsedExperienceIds, options.experienceIdFilter)) {
+          continue;
         }
 
         // Calculate similarity score with improved calculation
@@ -230,6 +287,7 @@ export class VectorStore {
             endChar: result.endChar,
             tags: result.tags ? result.tags.split(',') : [],
             priority: result.priority,
+            experienceIds: parsedExperienceIds.length > 0 ? parsedExperienceIds : undefined,
           },
         };
 
@@ -277,16 +335,30 @@ export class VectorStore {
       // Use countRows() for total count
       const totalChunks = await table.countRows();
 
-      // For categories, we'll do a simple query to get all data
-      // LanceDB doesn't have a limit method, so we'll use search with a dummy vector
-      // Use 384 dims to match nomic-embed-text embeddings
-      const dummyVector = new Array(384).fill(0);
-      const searchResults = await table.search(dummyVector).limit(1000).toArray();
+      let rows: Array<{ category?: string }> = [];
+
+      if (typeof table.query === 'function') {
+        const queryResults = await table
+          .query()
+          .select(['category'])
+          .toArray();
+        rows = queryResults as Array<{ category?: string }>;
+      }
+
+      if (rows.length === 0) {
+        const tableWithToArray = table as Table & {
+          toArray?: () => Promise<Array<Record<string, unknown>>>;
+        };
+
+        if (typeof tableWithToArray.toArray === 'function') {
+          rows = (await tableWithToArray.toArray()) as Array<{ category?: string }>;
+        }
+      }
 
       const categories: Record<string, number> = {};
 
-      for (const result of searchResults) {
-        const category = result.category || 'unknown';
+      for (const row of rows) {
+        const category = (row?.category as string | undefined) || 'unknown';
         categories[category] = (categories[category] || 0) + 1;
       }
 
@@ -307,15 +379,22 @@ export class VectorStore {
    */
   async isReady(): Promise<boolean> {
     try {
-      if (!this.db) {
+      let db = this.db;
+      if (!db) {
         await this.initialize();
+        db = this.db;
       }
-      const tableNames = await this.db.tableNames();
+
+      if (!db) {
+        return false;
+      }
+
+      const tableNames = await db.tableNames();
       const ready = tableNames.includes(this.tableName);
 
       serverLogger.info('Vector store ready check', {
         dbPath: this.dbPath,
-        dbConnected: !!this.db,
+        dbConnected: !!db,
         tableExists: ready,
         availableTables: tableNames,
       });

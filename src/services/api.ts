@@ -49,8 +49,23 @@ export class ApiNetworkError extends ApiServiceError {
   override code = 'API_NETWORK_ERROR';
 }
 
+export class ApiAbortError extends ApiServiceError {
+  override code = 'API_ABORT_ERROR';
+}
+
 // Configuration
-const API_BASE_URL = (process.env as any).NODE_ENV === 'development' ? 'http://localhost:3001/api' : '/api';
+type ImportMetaWithEnv = {
+  env?: {
+    MODE?: string;
+  };
+};
+
+const nodeEnv = typeof process !== 'undefined' ? process.env?.['NODE_ENV'] : undefined;
+const viteMode = typeof import.meta !== 'undefined'
+  ? (import.meta as unknown as ImportMetaWithEnv).env?.MODE
+  : undefined;
+const runtimeMode = nodeEnv ?? viteMode;
+const API_BASE_URL = runtimeMode === 'development' ? 'http://localhost:3001/api' : '/api';
 const REQUEST_TIMEOUT = 60000; // 60 seconds - increased for first request model loading
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second base delay
@@ -65,6 +80,7 @@ interface RetryOptions {
 interface RequestOptions extends RetryOptions {
   timeout?: number;
   headers?: Record<string, string>;
+  signal?: AbortSignal;
 }
 
 // Default retry logic
@@ -237,20 +253,36 @@ export async function* streamChatResponse(
   const {
     timeout = REQUEST_TIMEOUT,
     headers = {},
+    signal,
   } = options;
-    // Create AbortController for timeout and cancellation
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+  // Create AbortController for timeout and cancellation
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  let externalAbort = false;
+  let externalAbortListener: (() => void) | undefined;
 
-    const response = await fetch(`${API_BASE_URL}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...headers,
-      },
-      body: JSON.stringify(request),
-      signal: controller.signal,
-    });
+  if (signal) {
+    if (signal.aborted) {
+      externalAbort = true;
+      controller.abort();
+    } else {
+      externalAbortListener = () => {
+        externalAbort = true;
+        controller.abort();
+      };
+      signal.addEventListener('abort', externalAbortListener, { once: true });
+    }
+  }
+
+  const response = await fetch(`${API_BASE_URL}/chat`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+    body: JSON.stringify(request),
+    signal: controller.signal,
+  });
 
   try {
     if (!response.ok) {
@@ -311,10 +343,17 @@ export async function* streamChatResponse(
       }
     } finally {
       reader.releaseLock();
+      if (externalAbortListener && signal) {
+        signal.removeEventListener('abort', externalAbortListener);
+      }
+      controller.abort();
     }
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
+        if (externalAbort) {
+          throw new ApiAbortError('Request aborted by caller.');
+        }
         throw new ApiTimeoutError(`Stream timeout after ${timeout}ms`);
       }
       // Re-throw existing ApiServiceErrors, otherwise wrap
@@ -377,66 +416,99 @@ export const sanitizeErrorMessage = (error: ApiServiceError): string => {
     : error.message;
 };
 
+type RequestQueueItem = {
+  id: string;
+  request: ChatRequest;
+  resolve: (value: AsyncGenerator<ChatStreamEvent>) => void;
+  reject: (error: ApiServiceError) => void;
+  priority: number;
+  options?: RequestOptions;
+};
+
 // Request queuing system for scalability
 class RequestQueue {
-  private queue: Array<{
-    id: string;
-    request: ChatRequest;
-    resolve: (value: AsyncGenerator<ChatStreamEvent>) => void;
-    reject: (error: ApiServiceError) => void;
-    priority: number;
-  }> = [];
+  private queue: RequestQueueItem[] = [];
   private maxConcurrent = 3;
   private processing = false;
+  private activeCount = 0;
 
-  async enqueue(request: ChatRequest, priority = 0): Promise<AsyncGenerator<ChatStreamEvent>> {
+  async enqueue(
+    request: ChatRequest,
+    priority = 0,
+    options?: RequestOptions,
+  ): Promise<AsyncGenerator<ChatStreamEvent>> {
     return new Promise((resolve, reject) => {
       const id = `req_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
       // Add to queue
-      this.queue.push({
+      const queueItem: RequestQueueItem = {
         id,
         request,
         resolve,
         reject,
         priority,
-      });
+        ...(options !== undefined ? { options } : {}),
+      };
+
+      this.queue.push(queueItem);
 
       // Sort by priority (higher number = higher priority)
       this.queue.sort((a, b) => b.priority - a.priority);
 
-      this.processQueue();
+      this.tryProcess();
     });
   }
 
-  private async processQueue(): Promise<void> {
-    if (this.processing || this.queue.length === 0) {
+  private startItem(item: RequestQueueItem): void {
+    let stream: AsyncGenerator<ChatStreamEvent>;
+
+    try {
+      stream = streamChatResponse(item.request, item.options ?? {});
+    } catch (error) {
+      item.reject(error instanceof ApiServiceError ? error : new ApiServiceError('Queue processing failed'));
+      return;
+    }
+
+    this.activeCount += 1;
+    const cleanup = () => {
+      this.activeCount = Math.max(0, this.activeCount - 1);
+      this.tryProcess();
+    };
+
+    const wrapped = (async function* () {
+      try {
+        for await (const event of stream) {
+          yield event;
+        }
+      } finally {
+        cleanup();
+      }
+    })();
+
+    item.resolve(wrapped);
+  }
+
+  private async tryProcess(): Promise<void> {
+    if (this.processing) {
       return;
     }
 
     this.processing = true;
 
-    while (this.queue.length > 0) {
-      const batch = this.queue.splice(0, this.maxConcurrent);
-
-      const promises = batch.map(async (item) => {
-        try {
-          const stream = streamChatResponse(item.request);
-          item.resolve(stream);
-        } catch (error) {
-          item.reject(error instanceof ApiServiceError ? error : new ApiServiceError('Queue processing failed'));
+    try {
+      while (this.activeCount < this.maxConcurrent && this.queue.length > 0) {
+        const next = this.queue.shift();
+        if (!next) {
+          break;
         }
-      });
-
-      await Promise.allSettled(promises);
-
-      // Small delay between batches to prevent overwhelming the server
-      if (this.queue.length > 0) {
-        await sleep(100);
+        this.startItem(next);
+        if (this.activeCount >= this.maxConcurrent) {
+          break;
+        }
       }
+    } finally {
+      this.processing = false;
     }
-
-    this.processing = false;
   }
 }
 
@@ -446,9 +518,10 @@ const requestQueue = new RequestQueue();
 // Queued chat API with priority support
 export const queuedChatRequest = (
   request: ChatRequest,
-  priority = 0
+  priority = 0,
+  options?: RequestOptions,
 ): Promise<AsyncGenerator<ChatStreamEvent>> => {
-  return requestQueue.enqueue(request, priority);
+  return requestQueue.enqueue(request, priority, options);
 };
 
 // Direct chat API (bypasses queue for immediate processing)

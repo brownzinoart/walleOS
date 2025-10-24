@@ -1,7 +1,9 @@
 import { readFileSync, readdirSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { join, extname, basename } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
 import { serverLogger } from '../middleware/logger.js';
+import matter from 'gray-matter';
+import { CATEGORY_PRIORITY_BASE } from '../config/ragSchema.js';
 
 export interface DocumentChunk {
   id: string;
@@ -15,6 +17,7 @@ export interface DocumentChunk {
     endChar: number;
     tags: string[];
     priority: number;
+    experienceIds?: string[];
   };
 }
 
@@ -34,22 +37,92 @@ const CHUNK_CONFIG = {
   overlap: 50,
 };
 
-// Category priority mapping from schema
-const CATEGORY_PRIORITY: Record<string, number> = {
-  narrative: 1.0,
-  portfolio: 0.95,
-  experience: 0.9,
-  skills: 0.85,
-  faq: 0.8,
-  funfacts: 0.7,
-  metrics: 0.7,
-};
-
 /**
  * Rough token estimation (1 token ≈ 4 characters for English text)
  */
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
+}
+
+interface SentenceSegment {
+  content: string;
+  start: number;
+  end: number;
+  tokens: number;
+}
+
+const sentencePattern = /[^.!?]+(?:[.!?]+|\n+|$)/g;
+
+function segmentText(text: string): SentenceSegment[] {
+  const segments: SentenceSegment[] = [];
+
+  for (const match of text.matchAll(sentencePattern)) {
+    const raw = match[0] ?? '';
+    if (!raw.trim()) {
+      continue;
+    }
+
+    const absoluteStart = match.index ?? 0;
+    const absoluteEnd = absoluteStart + raw.length;
+
+    const leadingWhitespace = raw.match(/^\s+/)?.[0]?.length ?? 0;
+    const trailingWhitespace = raw.match(/\s+$/)?.[0]?.length ?? 0;
+
+    const start = absoluteStart + leadingWhitespace;
+    const end = absoluteEnd - trailingWhitespace;
+
+    if (end <= start) {
+      continue;
+    }
+
+    const content = text.slice(start, end);
+    segments.push({
+      content,
+      start,
+      end,
+      tokens: estimateTokens(content),
+    });
+  }
+
+  if (segments.length === 0) {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return [];
+    }
+    const start = text.indexOf(trimmed);
+    const end = start + trimmed.length;
+    return [{ content: trimmed, start, end, tokens: estimateTokens(trimmed) }];
+  }
+
+  return segments;
+}
+
+function inferCategoryFromFilename(filename: string): string {
+  const lowerFilename = filename.toLowerCase();
+
+  if (lowerFilename.includes('voice') || lowerFilename.includes('narrative')) {
+    return 'narrative';
+  }
+  if (lowerFilename.includes('portfolio')) {
+    return 'portfolio';
+  }
+  if (lowerFilename.includes('experience')) {
+    return 'experience';
+  }
+  if (lowerFilename.includes('skills') || lowerFilename.includes('tools')) {
+    return 'skills';
+  }
+  if (lowerFilename.includes('faq')) {
+    return 'faq';
+  }
+  if (lowerFilename.includes('fun') || lowerFilename.includes('facts')) {
+    return 'funfacts';
+  }
+  if (lowerFilename.includes('metrics') || lowerFilename.includes('awards')) {
+    return 'metrics';
+  }
+
+  return 'general';
 }
 
 /**
@@ -58,143 +131,140 @@ function estimateTokens(text: string): number {
 function extractMetadata(content: string, filename: string): {
   category: string;
   tags: string[];
+  experienceIds: string[];
   cleanContent: string;
 } {
-  let cleanContent = content;
-  let category = 'general';
-  let tags: string[] = [];
+  const { data, content: body } = matter(content);
+  const frontmatter = data as Record<string, unknown>;
 
-  // Extract frontmatter if present
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-  if (frontmatterMatch) {
-    const frontmatter = frontmatterMatch[1] ?? '';
-    cleanContent = frontmatterMatch[2] ?? cleanContent;
+  const frontmatterCategory = typeof frontmatter.category === 'string' ? frontmatter.category.trim() : '';
+  const tags = Array.isArray(frontmatter.tags)
+    ? frontmatter.tags.map(tag => String(tag).trim()).filter(Boolean)
+    : [];
+  const experienceIds = Array.isArray(frontmatter.experienceIds)
+    ? frontmatter.experienceIds.map(id => String(id).trim()).filter(Boolean)
+    : [];
 
-    // Parse simple YAML-like frontmatter
-    const lines = frontmatter.split('\n');
-    for (const line of lines) {
-      const [key, ...valueParts] = line.split(':');
-      const value = valueParts.join(':').trim();
-      
-      const keyName = (key ?? '').trim();
-      if (keyName === 'tags' && value) {
-        // Parse array-like tags: [tag1, tag2, tag3]
-        const tagMatch = value.match(/\[(.*?)\]/);
-        if (tagMatch) {
-          const inner = tagMatch[1] ?? '';
-          tags = inner ? inner.split(',').map(tag => tag.trim().replace(/['"]/g, '')) : [];
-        }
-      }
-    }
-  }
+  const category = frontmatterCategory || inferCategoryFromFilename(filename);
+  const cleanContent = body;
 
-  // Infer category from filename
-  const lowerFilename = filename.toLowerCase();
-  if (lowerFilename.includes('voice') || lowerFilename.includes('narrative')) {
-    category = 'narrative';
-  } else if (lowerFilename.includes('portfolio')) {
-    category = 'portfolio';
-  } else if (lowerFilename.includes('experience')) {
-    category = 'experience';
-  } else if (lowerFilename.includes('skills') || lowerFilename.includes('tools')) {
-    category = 'skills';
-  } else if (lowerFilename.includes('faq')) {
-    category = 'faq';
-  } else if (lowerFilename.includes('fun') || lowerFilename.includes('facts')) {
-    category = 'funfacts';
-  } else if (lowerFilename.includes('metrics') || lowerFilename.includes('awards')) {
-    category = 'metrics';
-  }
-
-  return { category, tags, cleanContent };
+  return { category, tags, experienceIds, cleanContent };
 }
+
 
 /**
  * Split text into chunks with overlap
  */
-function createChunks(text: string, metadata: { category: string; tags: string[] }): DocumentChunk[] {
-  const chunks: DocumentChunk[] = [];
-  const sentences = text.split(/(?<=[.!?])\s+/);
-  
-  let currentChunk = '';
-  let currentTokens = 0;
-  let chunkIndex = 0;
-  let startChar = 0;
-
-  for (let i = 0; i < sentences.length; i++) {
-    const sentence = sentences[i] ?? '';
-    const sentenceTokens = estimateTokens(sentence);
-    
-    // If adding this sentence would exceed max tokens, finalize current chunk
-    if (currentTokens + sentenceTokens > CHUNK_CONFIG.maxTokens && currentChunk.length > 0) {
-      // Only create chunk if it meets minimum token requirement
-      if (currentTokens >= CHUNK_CONFIG.minTokens) {
-        chunks.push({
-          id: uuidv4(),
-          content: currentChunk.trim(),
-          metadata: {
-            sourceFile: '',
-            category: metadata.category,
-            chunkIndex,
-            totalChunks: 0, // Will be updated later
-            startChar,
-            endChar: startChar + currentChunk.length,
-            tags: metadata.tags,
-            priority: CATEGORY_PRIORITY[metadata.category] || 0.5,
-          },
-        });
-        chunkIndex++;
-      }
-
-      // Start new chunk with overlap
-      const overlapTokens = Math.min(CHUNK_CONFIG.overlap, currentTokens);
-      if (overlapTokens > 0) {
-        // Find sentences that fit within overlap token limit
-        let overlapText = '';
-        let overlapCount = 0;
-        for (let j = sentences.length - 1; j >= 0 && overlapCount < overlapTokens; j--) {
-          const prevSentence = sentences[j] ?? '';
-          const prevTokens = estimateTokens(prevSentence);
-          if (overlapCount + prevTokens <= overlapTokens) {
-            overlapText = prevSentence + ' ' + overlapText;
-            overlapCount += prevTokens;
-          } else {
-            break;
-          }
-        }
-        currentChunk = overlapText;
-        currentTokens = overlapCount;
-      } else {
-        currentChunk = '';
-        currentTokens = 0;
-      }
-      
-      startChar = startChar + currentChunk.length;
-    }
-
-    currentChunk += (currentChunk ? ' ' : '') + sentence;
-    currentTokens += sentenceTokens;
+function createChunks(text: string, metadata: { category: string; tags: string[]; experienceIds: string[] }): DocumentChunk[] {
+  const segments = segmentText(text);
+  if (segments.length === 0) {
+    return [];
   }
 
-  // Add final chunk if it has content
-  if (currentChunk.trim() && currentTokens >= CHUNK_CONFIG.minTokens) {
+  const chunks: DocumentChunk[] = [];
+  let currentSegments: SentenceSegment[] = [];
+  let currentTokens = 0;
+  let chunkIndex = 0;
+
+  const flushCurrentChunk = (force = false): SentenceSegment[] => {
+    if (currentSegments.length === 0) {
+      return [];
+    }
+
+    const tokenCount = currentSegments.reduce((sum, seg) => sum + seg.tokens, 0);
+    if (!force && tokenCount < CHUNK_CONFIG.minTokens) {
+      return [];
+    }
+
+    const chunkStart = currentSegments[0].start;
+    const chunkEnd = currentSegments[currentSegments.length - 1].end;
+    const chunkContent = text.slice(chunkStart, chunkEnd).trim();
+
+    if (!chunkContent) {
+      return [];
+    }
+
+    const flushedSegments = currentSegments.slice();
+
     chunks.push({
       id: uuidv4(),
-      content: currentChunk.trim(),
+      content: chunkContent,
       metadata: {
         sourceFile: '',
         category: metadata.category,
         chunkIndex,
-        totalChunks: 0,
-        startChar,
-        endChar: startChar + currentChunk.length,
+        totalChunks: 0, // updated later
+        startChar: chunkStart,
+        endChar: chunkEnd,
         tags: metadata.tags,
-        priority: CATEGORY_PRIORITY[metadata.category] || 0.5,
+        priority: CATEGORY_PRIORITY_BASE[metadata.category] || 0.5,
+        experienceIds: metadata.experienceIds.length > 0 ? metadata.experienceIds : undefined,
       },
     });
+
+    chunkIndex++;
+    currentSegments = [];
+    currentTokens = 0;
+
+    return flushedSegments;
+  };
+
+  for (const segment of segments) {
+    if (
+      currentSegments.length > 0 &&
+      currentTokens + segment.tokens > CHUNK_CONFIG.maxTokens &&
+      currentTokens >= CHUNK_CONFIG.minTokens
+    ) {
+      const flushed = flushCurrentChunk();
+
+      if (CHUNK_CONFIG.overlap > 0 && flushed.length > 0) {
+        let overlapTokens = 0;
+        const overlapped: SentenceSegment[] = [];
+
+        for (let i = flushed.length - 1; i >= 0; i--) {
+          const candidate = flushed[i];
+          if (overlapTokens + candidate.tokens > CHUNK_CONFIG.overlap) {
+            break;
+          }
+          overlapped.unshift(candidate);
+          overlapTokens += candidate.tokens;
+        }
+
+        currentSegments = overlapped.slice();
+        currentTokens = overlapTokens;
+      }
+    }
+
+    currentSegments.push(segment);
+    currentTokens += segment.tokens;
   }
 
-  // Update total chunks count
+  if (currentSegments.length > 0) {
+    // Force flush the final chunk even if it is under the minimum token threshold
+    flushCurrentChunk(true);
+  }
+
+  if (chunks.length === 0) {
+    const fallbackContent = text.trim();
+    if (fallbackContent) {
+      chunks.push({
+        id: uuidv4(),
+        content: fallbackContent,
+        metadata: {
+          sourceFile: '',
+          category: metadata.category,
+          chunkIndex: 0,
+          totalChunks: 1,
+          startChar: text.indexOf(fallbackContent),
+          endChar: text.indexOf(fallbackContent) + fallbackContent.length,
+          tags: metadata.tags,
+          priority: CATEGORY_PRIORITY_BASE[metadata.category] || 0.5,
+          experienceIds: metadata.experienceIds.length > 0 ? metadata.experienceIds : undefined,
+        },
+      });
+    }
+  }
+
   chunks.forEach(chunk => {
     chunk.metadata.totalChunks = chunks.length;
   });
@@ -208,11 +278,11 @@ function createChunks(text: string, metadata: { category: string; tags: string[]
 export function processDocument(filePath: string): ProcessedDocument {
   try {
     const content = readFileSync(filePath, 'utf-8');
-    const filename: string = (filePath.split('/').pop() ?? '');
-    
-    const { category, tags, cleanContent } = extractMetadata(content, filename);
-    const chunks = createChunks(cleanContent, { category, tags });
-    
+    const filename = basename(filePath);
+
+    const { category, tags, experienceIds, cleanContent } = extractMetadata(content, filename);
+    const chunks = createChunks(cleanContent, { category, tags, experienceIds });
+
     // Update chunk metadata with source file
     chunks.forEach(chunk => {
       chunk.metadata.sourceFile = filename;
@@ -237,37 +307,58 @@ export function processDocument(filePath: string): ProcessedDocument {
 }
 
 /**
- * Process all markdown files in the corpus directory
+ * Process all markdown files in the corpus directory (non-recursive)
+ * @deprecated Use processCorpusDirectoryRecursive() instead for full coverage.
+ * This function is maintained for backward compatibility but may miss files in subdirectories.
  */
 export function processCorpusDirectory(corpusPath: string): ProcessedDocument[] {
+  serverLogger.warn('processCorpusDirectory is deprecated. Use processCorpusDirectoryRecursive() for full coverage.', {
+    corpusPath,
+  });
+  return processCorpusDirectoryRecursive(corpusPath, false);
+}
+
+/**
+ * Process all markdown files in the corpus directory recursively
+ */
+export function processCorpusDirectoryRecursive(corpusPath: string, recursive = true): ProcessedDocument[] {
+  const documents: ProcessedDocument[] = [];
+
   try {
-    const files = readdirSync(corpusPath);
-    const markdownFiles = files.filter(file => extname(file).toLowerCase() === '.md');
-    
-    const documents: ProcessedDocument[] = [];
-    
-    for (const file of markdownFiles) {
-      const filePath = join(corpusPath, file);
-      try {
-        const document = processDocument(filePath);
-        documents.push(document);
-        serverLogger.info('Processed document', {
-          filename: file,
-          category: document.category,
-          chunks: document.chunks.length,
-          tokens: document.totalTokens,
-        });
-      } catch (error) {
-        serverLogger.warn('Failed to process document', {
-          filename: file,
-          error: error instanceof Error ? error.message : String(error),
-        });
+    const entries = readdirSync(corpusPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = join(corpusPath, entry.name);
+
+      if (entry.isDirectory() && recursive) {
+        // Recursively process subdirectories
+        const subDocs = processCorpusDirectoryRecursive(fullPath, recursive);
+        documents.push(...subDocs);
+      } else if (entry.isFile() && extname(entry.name).toLowerCase() === '.md') {
+        // Process markdown file
+        try {
+          const document = processDocument(fullPath);
+          documents.push(document);
+          serverLogger.info('Processed document', {
+            filename: entry.name,
+            directory: corpusPath,
+            category: document.category,
+            chunks: document.chunks.length,
+            tokens: document.totalTokens,
+          });
+        } catch (error) {
+          serverLogger.warn('Failed to process document', {
+            filename: entry.name,
+            directory: corpusPath,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
       }
     }
 
     return documents;
   } catch (error) {
-    serverLogger.error('Failed to process corpus directory', error instanceof Error ? error : new Error(String(error)), {
+    serverLogger.error('Failed to process directory', error instanceof Error ? error : new Error(String(error)), {
       corpusPath,
     });
     throw error;

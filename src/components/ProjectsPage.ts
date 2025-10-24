@@ -1,14 +1,7 @@
-import gsap from 'gsap';
-import ScrollTrigger from 'gsap/ScrollTrigger';
-import LocomotiveScroll from 'locomotive-scroll';
-import 'locomotive-scroll/dist/locomotive-scroll.css';
-
 import { featuredProjects } from '@/config/content';
 import type { FeaturedProject } from '@/config/content';
 import { attachProjectCardListeners, renderProjectCard, renderProjectHighlightCard } from '@/components/ProjectCard';
 import { prefersReducedMotion } from '@/utils/performance';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const PROJECTS_PAGE_SELECTOR = '[data-projects-page]';
 const PROJECTS_SCROLL_CONTAINER_SELECTOR = '[data-projects-scroll-container]';
@@ -16,13 +9,62 @@ const PROJECTS_HORIZONTAL_SELECTOR = '[data-projects-horizontal]';
 const PROJECTS_TRACK_SELECTOR = '[data-projects-track]';
 const SPOTLIGHT_COUNT = 4;
 
-type LocomotiveInstance = InstanceType<typeof LocomotiveScroll>;
+type ScrollTriggerHandle = { kill: () => void } & Record<string, unknown>;
+
+type Tween = Record<string, unknown> & {
+  kill: () => void;
+};
+
+type GsapCore = {
+  registerPlugin: (...plugins: unknown[]) => void;
+  to: (target: unknown, vars: Record<string, unknown>) => Tween;
+};
+
+type ScrollTriggerPlugin = {
+  scrollerProxy: (element: HTMLElement, vars: Record<string, unknown>) => void;
+  refresh: () => void;
+  update: () => void;
+  addEventListener: (event: string, handler: (...args: unknown[]) => void) => void;
+  removeEventListener: (event: string, handler: (...args: unknown[]) => void) => void;
+};
+
+type LocomotiveInstance = {
+  on: (event: string, handler: (...args: unknown[]) => void) => void;
+  update: () => void;
+  destroy: () => void;
+  scrollTo: (target: number, options?: Record<string, unknown>) => void;
+  scroll?: {
+    instance?: {
+      scroll?: {
+        y?: number;
+      };
+    };
+  };
+};
+
+type LocomotiveScrollOptions = {
+  el: HTMLElement;
+  [key: string]: unknown;
+};
+
+type LocomotiveScrollClass = new (options: LocomotiveScrollOptions) => LocomotiveInstance;
+type LoadedProjectsLibs = {
+  gsap: GsapCore;
+  ScrollTrigger: ScrollTriggerPlugin;
+  LocomotiveScroll: LocomotiveScrollClass;
+};
+
+let gsapRef: GsapCore | null = null;
+let ScrollTriggerRef: ScrollTriggerPlugin | null = null;
+let LocomotiveScrollRef: LocomotiveScrollClass | null = null;
+let locomotiveStylesPromise: Promise<unknown> | null = null;
 
 let locomotiveInstance: LocomotiveInstance | null = null;
-let horizontalTween: gsap.core.Tween | null = null;
+let horizontalTween: Tween | null = null;
+let horizontalTriggerHandle: ScrollTriggerHandle | null = null;
 let refreshHandler: (() => void) | null = null;
 let resizeHandler: (() => void) | null = null;
-let projectsTriggers: ScrollTrigger[] = [];
+let projectsTriggers: ScrollTriggerHandle[] = [];
 let loadHandler: (() => void) | null = null;
 
 const getSpotlightLede = (count: number): string => {
@@ -35,6 +77,64 @@ const getSpotlightLede = (count: number): string => {
   }
 
   return 'Flagship builds that capture how I pair product strategy with execution. Dive in for the full arc.';
+};
+
+const loadProjectsLibraries = async (): Promise<LoadedProjectsLibs | null> => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  if (gsapRef && ScrollTriggerRef && LocomotiveScrollRef) {
+    return {
+      gsap: gsapRef,
+      ScrollTrigger: ScrollTriggerRef,
+      LocomotiveScroll: LocomotiveScrollRef,
+    };
+  }
+
+  try {
+    const [gsapModule, scrollTriggerModule, locomotiveModule] = await Promise.all([
+      import('gsap'),
+      import('gsap/ScrollTrigger'),
+      import('locomotive-scroll'),
+    ]);
+
+    if (!locomotiveStylesPromise) {
+      locomotiveStylesPromise = import('locomotive-scroll/dist/locomotive-scroll.css').catch(() => null);
+    }
+    await locomotiveStylesPromise;
+
+    const gsapModuleAny = gsapModule as unknown as { gsap?: GsapCore; default?: GsapCore };
+    const scrollTriggerModuleAny = scrollTriggerModule as unknown as {
+      ScrollTrigger?: ScrollTriggerPlugin;
+      default?: ScrollTriggerPlugin;
+    };
+    const locomotiveModuleAny = locomotiveModule as unknown as { default?: LocomotiveScrollClass };
+
+    const gsapExport = gsapModuleAny.gsap ?? gsapModuleAny.default;
+    const scrollTriggerExport = scrollTriggerModuleAny.ScrollTrigger ?? scrollTriggerModuleAny.default;
+    const locomotiveExport = locomotiveModuleAny.default;
+
+    if (!gsapExport || !scrollTriggerExport || !locomotiveExport) {
+      console.warn('[projects] Failed to load animation libraries. Falling back to static presentation.');
+      return null;
+    }
+
+    gsapExport.registerPlugin(scrollTriggerExport);
+
+    gsapRef = gsapExport;
+    ScrollTriggerRef = scrollTriggerExport;
+    LocomotiveScrollRef = locomotiveExport;
+
+    return {
+      gsap: gsapRef,
+      ScrollTrigger: ScrollTriggerRef,
+      LocomotiveScroll: LocomotiveScrollRef,
+    };
+  } catch (error) {
+    console.warn('[projects] Dynamic import failed; falling back to static experience.', error);
+    return null;
+  }
 };
 
 const renderHeroSection = (): string => `
@@ -126,6 +226,13 @@ export const renderProjectsPage = (): string => {
 };
 
 const setupHorizontalScroll = (container: HTMLElement) => {
+  const gsap = gsapRef;
+  const ScrollTrigger = ScrollTriggerRef;
+
+  if (!gsap || !ScrollTrigger) {
+    return;
+  }
+
   const horizontalSection = container.querySelector<HTMLElement>(PROJECTS_HORIZONTAL_SELECTOR);
   const track = container.querySelector<HTMLElement>(PROJECTS_TRACK_SELECTOR);
 
@@ -133,13 +240,15 @@ const setupHorizontalScroll = (container: HTMLElement) => {
     return;
   }
 
-  const previousTrigger = horizontalTween?.scrollTrigger ?? null;
+  if (horizontalTriggerHandle) {
+    projectsTriggers = projectsTriggers.filter((trigger) => trigger !== horizontalTriggerHandle);
+    horizontalTriggerHandle.kill();
+    horizontalTriggerHandle = null;
+  }
 
-  horizontalTween?.kill();
-  horizontalTween = null;
-
-  if (previousTrigger) {
-    projectsTriggers = projectsTriggers.filter((trigger) => trigger !== previousTrigger);
+  if (horizontalTween) {
+    horizontalTween.kill();
+    horizontalTween = null;
   }
 
   const trackWidth = track.offsetWidth;
@@ -147,7 +256,7 @@ const setupHorizontalScroll = (container: HTMLElement) => {
   const horizontalOffset = horizontalScrollLength > 0 ? -horizontalScrollLength : 0;
   const startOffset = Math.max(Math.min(window.innerHeight * 0.25, 320), 120);
 
-  horizontalTween = gsap.to(track, {
+  const tween = gsap.to(track, {
     x: horizontalOffset,
     ease: 'none',
     scrollTrigger: {
@@ -163,10 +272,13 @@ const setupHorizontalScroll = (container: HTMLElement) => {
     },
   });
 
-  const horizontalTrigger = horizontalTween.scrollTrigger;
+  horizontalTween = tween;
 
-  if (horizontalTrigger) {
-    projectsTriggers.push(horizontalTrigger);
+  const triggerHandle = (tween as unknown as { scrollTrigger?: ScrollTriggerHandle }).scrollTrigger ?? null;
+
+  if (triggerHandle) {
+    horizontalTriggerHandle = triggerHandle;
+    projectsTriggers.push(triggerHandle);
   }
 };
 
@@ -175,6 +287,7 @@ const setupKeyboardNavigation = (track: HTMLElement) => {
   if (!panels.length) return;
   
   let currentIndex = 0;
+  const gsap = gsapRef;
 
   const updateFocus = (index: number) => {
     if (index < 0) index = panels.length - 1;
@@ -192,11 +305,15 @@ const setupKeyboardNavigation = (track: HTMLElement) => {
     
     if (panelRect.left < trackRect.left || panelRect.right > trackRect.right) {
       const scrollLeft = panelRect.left - trackRect.left - (trackRect.width - panelRect.width) / 2;
-      gsap.to(track, {
-        scrollLeft: track.scrollLeft + scrollLeft,
-        duration: 0.3,
-        ease: 'power2.out'
-      });
+      if (gsap) {
+        gsap.to(track, {
+          scrollLeft: track.scrollLeft + scrollLeft,
+          duration: 0.3,
+          ease: 'power2.out',
+        });
+      } else {
+        track.scrollLeft += scrollLeft;
+      }
     }
   };
 
@@ -216,7 +333,7 @@ const setupKeyboardNavigation = (track: HTMLElement) => {
   });
 };
 
-export const initProjectsPageInteractions = (): void => {
+export const initProjectsPageInteractions = async (): Promise<void> => {
   const projectsPage = document.querySelector<HTMLElement>(PROJECTS_PAGE_SELECTOR);
   const container = projectsPage?.querySelector<HTMLElement>(PROJECTS_SCROLL_CONTAINER_SELECTOR);
 
@@ -237,6 +354,15 @@ export const initProjectsPageInteractions = (): void => {
     return;
   }
 
+  const libs = await loadProjectsLibraries();
+
+  if (!libs) {
+    projectsPage.classList.add('projects-motion-reduced');
+    return;
+  }
+
+  const { ScrollTrigger, LocomotiveScroll } = libs;
+
   locomotiveInstance = new LocomotiveScroll({
     el: container,
     smooth: true,
@@ -250,7 +376,9 @@ export const initProjectsPageInteractions = (): void => {
     },
   });
 
-  locomotiveInstance.on('scroll', ScrollTrigger.update);
+  locomotiveInstance.on('scroll', () => {
+    ScrollTrigger.update();
+  });
 
   ScrollTrigger.scrollerProxy(container, {
     scrollTop(value?: number) {
@@ -315,12 +443,14 @@ export const initProjectsPageInteractions = (): void => {
 };
 
 export const cleanupProjectsPage = (): void => {
+  const ScrollTrigger = ScrollTriggerRef;
+
   if (resizeHandler) {
     window.removeEventListener('resize', resizeHandler);
     resizeHandler = null;
   }
 
-  if (refreshHandler) {
+  if (refreshHandler && ScrollTrigger) {
     ScrollTrigger.removeEventListener('refresh', refreshHandler);
     refreshHandler = null;
   }
@@ -332,6 +462,7 @@ export const cleanupProjectsPage = (): void => {
 
   projectsTriggers.forEach((trigger) => trigger.kill());
   projectsTriggers = [];
+  horizontalTriggerHandle = null;
 
   horizontalTween?.kill();
   horizontalTween = null;
@@ -350,7 +481,9 @@ export const cleanupProjectsPage = (): void => {
   document.documentElement.classList.remove('has-scroll-smooth');
   document.body.style.height = '';
 
-  ScrollTrigger.refresh();
+  if (ScrollTrigger) {
+    ScrollTrigger.refresh();
+  }
 };
 
 export const renderLegacyProjectsPage = (): string => `

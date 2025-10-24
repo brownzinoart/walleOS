@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { dirname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serverLogger } from '../middleware/logger.js';
@@ -35,7 +35,26 @@ interface ContentFile {
 let cachedContent: ContentFile | null = null;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const contentPath = resolvePath(__dirname, '../../src/config/content.json');
+const resolveContentPath = (): string => {
+  const fromEnv = process.env['PROMPT_CONTENT_PATH'] ?? process.env['CONTENT_JSON_PATH'];
+  const candidates = [
+    fromEnv,
+    resolvePath(__dirname, '../../src/config/content.json'),
+    resolvePath(__dirname, '../config/content.json'),
+    resolvePath(process.cwd(), '..', 'src', 'config', 'content.json'),
+    resolvePath(process.cwd(), 'src', 'config', 'content.json'),
+  ].filter((candidate): candidate is string => Boolean(candidate));
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error('Unable to locate content.json for prompt building. Set PROMPT_CONTENT_PATH to override.');
+};
+
+const contentPath = resolveContentPath();
 
 const loadContent = (): ContentFile => {
   if (cachedContent) {

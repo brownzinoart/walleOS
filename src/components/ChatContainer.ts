@@ -11,16 +11,23 @@ interface ChatContainerOptions {
   appendContent?: string;
 }
 
-export const renderChatContainer = (
-  messages: ChatMessage[],
-  options: ChatContainerOptions = {}
-): string => {
-  const defaultEmptyState = `
-    <div class="chat-empty-state flex flex-col gap-6">
-      ${renderWelcomeCard()}
-    </div>
-  `;
+interface ChatContainerView {
+  ariaLive: 'off' | 'polite';
+  combinedMarkup: string;
+  hasMessages: boolean;
+  showEmptyState: boolean;
+}
 
+const defaultEmptyState = `
+  <div class="chat-empty-state flex flex-col gap-6">
+    ${renderWelcomeCard()}
+  </div>
+`;
+
+export const computeChatContainerView = (
+  messages: ChatMessage[],
+  options: ChatContainerOptions = {},
+): ChatContainerView => {
   const {
     showEmptyState = true,
     emptyStateContent = defaultEmptyState,
@@ -30,13 +37,27 @@ export const renderChatContainer = (
   const anyAnimating = messages.some(
     (message) => message.animationState === 'buffering' || message.animationState === 'animating',
   );
-  const ariaLive = anyAnimating ? 'off' : 'polite';
+  const ariaLive: ChatContainerView['ariaLive'] = anyAnimating ? 'off' : 'polite';
   const messageMarkup = hasMessages
     ? messages.map((message) => renderChatMessage(message)).join('')
     : showEmptyState
     ? emptyStateContent
     : '';
   const combinedMarkup = `${messageMarkup}${appendContent}`;
+
+  return {
+    ariaLive,
+    combinedMarkup,
+    hasMessages,
+    showEmptyState,
+  };
+};
+
+export const renderChatContainer = (
+  messages: ChatMessage[],
+  options: ChatContainerOptions = {}
+): string => {
+  const { ariaLive, combinedMarkup } = computeChatContainerView(messages, options);
 
   return `
     <section

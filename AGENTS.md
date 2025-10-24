@@ -23,6 +23,7 @@
 - `npm run type-check` – Run TypeScript type checking without emitting files
 - `npm run test` – Run unit tests with Vitest
 - `npm run test:watch` – Run tests in watch mode
+- `npm run test path/to/file.test.ts` – Run single test
 - `npm run test:coverage` – Generate test coverage report
 - `npm run test:e2e` – Run end-to-end tests with Playwright
 - `npm run prepare` – Run type-check, lint, and test sequence
@@ -30,40 +31,26 @@
 
 ## Coding Style & Naming Conventions
 
-- **TypeScript-first** codebase with strict type checking enabled
-- Use **ESLint** with `@typescript-eslint` rules enforced
-- **Prefer-const** rule enforced (error level)
-- **No explicit `any`** types (warning level) – use proper typing
-- Unused variables allowed with underscore prefix (`_variable`)
+- **TypeScript-first** codebase with strict mode enabled
+- **ESLint** enforces: prefer-const (error), no-explicit-any (warn), unused-vars (warn, allow \_ prefix)
 - Components return **template strings** for markup generation
 - Use **Tailwind utility classes** aligned with design tokens
+- Import paths: use `@/*` alias for src/\* files
 - Keep comments **minimal and purposeful**
-- Follow existing naming patterns in the codebase
+- Follow existing naming patterns in codebase
 
 ## Testing Guidelines
 
 - **Vitest** for unit testing with jsdom environment
 - **Playwright** for end-to-end testing
-- Test files should follow patterns: `*.test.ts`, `*.spec.ts`
-- Coverage reporting available via `npm run test:coverage`
-- Tests run in watch mode during development with `npm run test:watch`
+- Test files follow patterns: `*.test.ts`, `*.spec.ts`
+- Coverage reporting via `npm run test:coverage`
+- Tests run in watch mode with `npm run test:watch`
 - UI testing available with `npm run test:ui`
 
-## Commit & Pull Request Guidelines
+## Commit & Performance
 
 - Follow **Conventional Commits** specification
-- Branch off `main` for feature development
-- Submit PRs with linked issues and context
 - Run `npm run prepare` before creating PRs
-- Include relevant screenshots for UI changes
-- Ensure all tests pass and linting is clean
-- Performance regressions should be noted in PR descriptions
-
-## Performance & Accessibility
-
 - Target Lighthouse score of 95+
-- Use CSS containment and `will-change` hints judiciously
-- Respect reduced motion preferences system-wide
-- Ensure proper ARIA labels and keyboard navigation
-- Test on both desktop and mobile browsers
 - Monitor LCP (< 2.0s), FID (< 100ms), CLS (< 0.1) metrics

@@ -3,7 +3,7 @@
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { processCorpusDirectory, getAllChunks } from '../services/documentProcessor.js';
+import { processCorpusDirectoryRecursive, getAllChunks } from '../services/documentProcessor.js';
 import { embedChunks, checkEmbeddingServiceHealth } from '../services/embeddingService.js';
 import { getVectorStore } from '../services/vectorStore.js';
 import { serverLogger } from '../middleware/logger.js';
@@ -39,19 +39,44 @@ async function validateCorpusPath(corpusPath: string): Promise<void> {
     throw new Error(`Corpus directory does not exist: ${corpusPath}`);
   }
 
-  // Check for markdown files
+  // Check for markdown files recursively
   const { readdirSync } = await import('node:fs');
-  const files = readdirSync(corpusPath);
-  const markdownFiles = files.filter((file: string) => file.endsWith('.md'));
-  
-  if (markdownFiles.length === 0) {
-    throw new Error(`No markdown files found in corpus directory: ${corpusPath}`);
+
+  /**
+   * Recursively count .md files in a directory
+   */
+  function countMarkdownFiles(dirPath: string): { count: number; subdirs: number } {
+    let count = 0;
+    let subdirs = 0;
+
+    const entries = readdirSync(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = join(dirPath, entry.name);
+
+      if (entry.isDirectory()) {
+        subdirs++;
+        const subResult = countMarkdownFiles(fullPath);
+        count += subResult.count;
+        subdirs += subResult.subdirs;
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        count++;
+      }
+    }
+
+    return { count, subdirs };
+  }
+
+  const result = countMarkdownFiles(corpusPath);
+
+  if (result.count === 0) {
+    throw new Error(`No markdown files found in corpus directory (searched recursively): ${corpusPath}`);
   }
 
   serverLogger.info('Validated corpus directory', {
     path: corpusPath,
-    markdownFiles: markdownFiles.length,
-    files: markdownFiles,
+    markdownFiles: result.count,
+    subdirectoriesSearched: result.subdirs,
   });
 }
 
@@ -96,9 +121,9 @@ async function ingestCorpus(options: IngestionOptions = {}): Promise<void> {
       }
     }
 
-    // Step 1: Process documents into chunks
-    serverLogger.info('Processing documents...');
-    const documents = processCorpusDirectory(corpusPath);
+    // Step 1: Process documents into chunks (including subdirectories)
+    serverLogger.info('Processing documents recursively...');
+    const documents = processCorpusDirectoryRecursive(corpusPath);
     const allChunks = getAllChunks(documents);
 
     serverLogger.info('Document processing completed', {

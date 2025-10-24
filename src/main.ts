@@ -6,11 +6,14 @@ import {
   renderChatInput,
   attachChatInputListeners,
   setChatInputValue,
+  setButtonLoading,
 } from '@/components/ChatInput';
 import {
   renderChatContainer,
   scrollToBottom,
   CHAT_CONTAINER_SELECTOR,
+  MESSAGE_LIST_SELECTOR,
+  computeChatContainerView,
 } from '@/components/ChatContainer';
 import {
   renderSuggestionChips,
@@ -26,7 +29,13 @@ import content, {
   suggestionChips,
   validateContent,
 } from '@/config/content';
-import { streamChatResponse, /* checkHealth,*/ type ChatRequest } from '@/services/api';
+import {
+  streamChatResponse,
+  ApiAbortError,
+  /* checkHealth,*/
+  type ChatRequest,
+  type ChatStreamEvent,
+} from '@/services/api';
 import { getAppSettings } from '@/config/settings';
 import type { ChatState } from '@/types';
 import {
@@ -83,6 +92,7 @@ const CHAT_CONTEXT_INDICATOR_SELECTOR = '[data-chat-context-indicator]';
 const RESUME_CONTEXT_INDICATOR_SELECTOR = '[data-resume-context-indicator]';
 const RESUME_CONTEXT_SUGGESTIONS_SELECTOR = '[data-resume-context-suggestions]';
 const MAIN_CONTENT_SELECTOR = '[data-main-content]';
+const CHAT_NEW_MESSAGE_INDICATOR_SELECTOR = '[data-chat-new-messages]';
 const CASE_STUDY_ROUTE_MAP: Partial<Record<RouteComponentId, CaseStudyId>> = {
   'project-weready': 'weready',
   'project-listingpal': 'listingpal',
@@ -99,6 +109,106 @@ let navigationSequence = 0;
 let initialHomeAnimationsApplied = false;
 const reducedMotion = prefersReducedMotion();
 const { clearExperienceContextOnRouteChange } = getAppSettings();
+
+type ActiveChatRequest = {
+  controller: AbortController;
+  stream: AsyncGenerator<ChatStreamEvent>;
+};
+
+const CHAT_SCROLL_LOCK_THRESHOLD = 120;
+
+let activeChatRequest: ActiveChatRequest | null = null;
+let chatAutoScrollEnabled = true;
+let chatScrollContainer: HTMLElement | null = null;
+let chatScrollHandlerAttached = false;
+let chatNewMessageIndicator: HTMLButtonElement | null = null;
+
+const calculateDistanceFromBottom = (container: HTMLElement): number => {
+  return container.scrollHeight - (container.scrollTop + container.clientHeight);
+};
+
+const isNearBottom = (container: HTMLElement): boolean => {
+  return calculateDistanceFromBottom(container) <= CHAT_SCROLL_LOCK_THRESHOLD;
+};
+
+const handleChatScroll = () => {
+  if (!chatScrollContainer) {
+    return;
+  }
+  chatAutoScrollEnabled = isNearBottom(chatScrollContainer);
+  if (chatAutoScrollEnabled) {
+    hideNewMessageIndicator();
+  }
+};
+
+const ensureChatScrollObserver = (container: HTMLElement): void => {
+  if (chatScrollContainer !== container) {
+    if (chatScrollContainer && chatScrollHandlerAttached) {
+      chatScrollContainer.removeEventListener('scroll', handleChatScroll);
+      chatScrollHandlerAttached = false;
+    }
+    chatScrollContainer = container;
+  }
+
+  if (!chatScrollHandlerAttached && chatScrollContainer) {
+    chatScrollContainer.addEventListener('scroll', handleChatScroll, { passive: true });
+    chatScrollHandlerAttached = true;
+  }
+
+  if (chatScrollContainer) {
+    chatAutoScrollEnabled = isNearBottom(chatScrollContainer);
+    if (chatAutoScrollEnabled) {
+      hideNewMessageIndicator();
+    }
+  }
+};
+
+const hideNewMessageIndicator = (): void => {
+  if (!chatNewMessageIndicator) {
+    return;
+  }
+
+  chatNewMessageIndicator.classList.add('hidden');
+  chatNewMessageIndicator.setAttribute('aria-hidden', 'true');
+};
+
+const ensureNewMessageIndicator = (root: HTMLElement): HTMLButtonElement => {
+  if (chatNewMessageIndicator && root.contains(chatNewMessageIndicator)) {
+    return chatNewMessageIndicator;
+  }
+
+  const existing = root.querySelector<HTMLButtonElement>(CHAT_NEW_MESSAGE_INDICATOR_SELECTOR);
+  if (existing) {
+    chatNewMessageIndicator = existing;
+    return existing;
+  }
+
+  const indicator = document.createElement('button');
+  indicator.type = 'button';
+  indicator.className = 'chat-new-messages hidden self-center sticky bottom-6 mt-4 px-4 py-2 bg-surface-card border-2 border-neon-cyan rounded-full text-sm font-semibold shadow-brutal focus-ring-theme';
+  indicator.setAttribute('data-chat-new-messages', 'true');
+  indicator.setAttribute('aria-hidden', 'true');
+  indicator.textContent = 'New response';
+  indicator.dataset['handlerAttached'] = 'true';
+  indicator.addEventListener('click', () => {
+    chatAutoScrollEnabled = true;
+    hideNewMessageIndicator();
+    requestAnimationFrame(() => {
+      scrollToBottom(reducedMotion ? 'auto' : 'smooth');
+    });
+  });
+
+  root.appendChild(indicator);
+  chatNewMessageIndicator = indicator;
+  return indicator;
+};
+
+const showNewMessageIndicator = (root: HTMLElement): void => {
+  const indicator = ensureNewMessageIndicator(root);
+  indicator.classList.remove('hidden');
+  indicator.setAttribute('aria-hidden', 'false');
+  indicator.setAttribute('aria-live', 'polite');
+};
 
 const ensureMainContentRoot = (): HTMLElement | null => {
   if (!mainContentRoot) {
@@ -521,6 +631,13 @@ const handleUserMessage = async (message: string) => {
   }
 
   setChatTyping(true);
+  setButtonLoading(true);
+
+  if (activeChatRequest) {
+    activeChatRequest.controller.abort();
+    void activeChatRequest.stream.return?.(undefined);
+    activeChatRequest = null;
+  }
 
   // Build streaming request
   const chatRequest: ChatRequest = {
@@ -545,8 +662,18 @@ const handleUserMessage = async (message: string) => {
       : undefined,
   );
 
+  let abortController: AbortController | null = null;
+  let currentStream: AsyncGenerator<ChatStreamEvent> | null = null;
+
   try {
-    const stream = streamChatResponse(chatRequest);
+    abortController = new AbortController();
+    const stream = streamChatResponse(chatRequest, { signal: abortController.signal });
+    currentStream = stream;
+    activeChatRequest = {
+      controller: abortController,
+      stream,
+    };
+
     for await (const event of stream) {
       if (event.token) {
         appendToMessage(placeholder.id, event.token);
@@ -555,12 +682,24 @@ const handleUserMessage = async (message: string) => {
     }
     startMessageAnimation(placeholder.id);
     await waitForMessageCompletion(placeholder.id);
-  } catch (err) {
-    // Fallback to mock on error
-    const response = generateMockResponse(trimmed, matchedSuggestion?.id, experienceContextPayload);
-    appendToMessage(placeholder.id, response);
+  } catch (error) {
+    if (error instanceof ApiAbortError && abortController?.signal.aborted) {
+      // Silent abort (likely due to navigation or explicit cancellation)
+    } else {
+      console.error('Failed to stream chat response', error);
+      // Fallback to mock on error
+      const response = generateMockResponse(trimmed, matchedSuggestion?.id, experienceContextPayload);
+      appendToMessage(placeholder.id, response);
+    }
   } finally {
     setChatTyping(false);
+    setButtonLoading(false);
+    if (abortController && !abortController.signal.aborted) {
+      abortController.abort();
+    }
+    if (activeChatRequest && currentStream && activeChatRequest.stream === currentStream) {
+      activeChatRequest = null;
+    }
   }
 };
 
@@ -657,19 +796,50 @@ const renderChatView = (state: ChatState) => {
   }
 
   const chatContainer = chatRoot.querySelector<HTMLElement>(CHAT_CONTAINER_SELECTOR);
+  const shouldMaintainAutoScroll = chatAutoScrollEnabled && (!chatContainer || isNearBottom(chatContainer));
+  const containerOptions = {
+    showEmptyState: false,
+    emptyStateContent: '',
+    appendContent: state.isTyping ? renderTypingIndicator() : '',
+  } as const;
 
-  if (chatContainer) {
-    const nextMarkup = renderChatContainer(state.messages, {
-      showEmptyState: false,
-      emptyStateContent: '',
-      appendContent: state.isTyping ? renderTypingIndicator() : '',
-    });
-
-    chatContainer.outerHTML = nextMarkup;
-
-    // Remove one-shot initial-enter flags on next render
-    consumeInitialEnterFlags();
+  if (!chatContainer) {
+    chatRoot.insertAdjacentHTML('beforeend', renderChatContainer(state.messages, containerOptions));
+    const insertedContainer = chatRoot.querySelector<HTMLElement>(CHAT_CONTAINER_SELECTOR);
+    if (insertedContainer) {
+      ensureChatScrollObserver(insertedContainer);
+    }
+  } else {
+    const view = computeChatContainerView(state.messages, containerOptions);
+    chatContainer.setAttribute('aria-live', view.ariaLive);
+    const messageList = chatContainer.querySelector<HTMLElement>(MESSAGE_LIST_SELECTOR);
+    if (messageList) {
+      messageList.innerHTML = view.combinedMarkup;
+    }
+    ensureChatScrollObserver(chatContainer);
   }
+
+  const updatedContainer = chatRoot.querySelector<HTMLElement>(CHAT_CONTAINER_SELECTOR);
+  if (updatedContainer) {
+    if (shouldMaintainAutoScroll) {
+      chatAutoScrollEnabled = true;
+    } else {
+      chatAutoScrollEnabled = isNearBottom(updatedContainer);
+    }
+  }
+
+  if (updatedContainer && state.messages.length > 0) {
+    if (!chatAutoScrollEnabled) {
+      showNewMessageIndicator(chatRoot);
+    } else {
+      hideNewMessageIndicator();
+    }
+  } else {
+    hideNewMessageIndicator();
+  }
+
+  // Remove one-shot initial-enter flags on next render
+  consumeInitialEnterFlags();
 };
 
 const frameRender = rafThrottle((state: ChatState) => {
@@ -693,6 +863,15 @@ const handleRouteChange = () => {
   if (previousRoute === nextRoute) {
     return;
   }
+
+  chatAutoScrollEnabled = true;
+  hideNewMessageIndicator();
+  chatNewMessageIndicator = null;
+  if (chatScrollContainer && chatScrollHandlerAttached) {
+    chatScrollContainer.removeEventListener('scroll', handleChatScroll);
+    chatScrollHandlerAttached = false;
+  }
+  chatScrollContainer = null;
 
   currentActiveNavItem = nextRoute;
   setActiveNavItem(nextRoute, { silent: true });
@@ -813,7 +992,11 @@ subscribeToChatState((state, previousState) => {
 
   if (messagesChanged || typingChanged) {
     rerenderChat(state);
-    scrollToBottom(reducedMotion ? 'auto' : 'smooth');
+    if (chatAutoScrollEnabled) {
+      scrollToBottom(reducedMotion ? 'auto' : 'smooth');
+      chatAutoScrollEnabled = true;
+      hideNewMessageIndicator();
+    }
   }
 });
 
@@ -842,7 +1025,7 @@ validateContent();
 mount();
 
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
+  if (!document.hidden && chatAutoScrollEnabled) {
     scrollToBottom(reducedMotion ? 'auto' : 'smooth');
   }
 });
