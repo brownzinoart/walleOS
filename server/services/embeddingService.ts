@@ -1,12 +1,17 @@
-import { Ollama } from 'ollama';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import config from '../config/env.js';
 import { serverLogger } from '../middleware/logger.js';
 import type { DocumentChunk } from './documentProcessor.js';
 
-const ollamaClient = new Ollama({ host: config.ollamaHost });
+const MAX_EMBED_RETRIES = 3;
+const RETRY_BACKOFF_MS = 400;
+const DEFAULT_EMBED_DIMENSION = 768;
 
-// Embedding model from RAG schema
-const EMBEDDING_MODEL = 'nomic-embed-text';
+let geminiClient: GoogleGenerativeAI | null = null;
+let embeddingModel: ReturnType<GoogleGenerativeAI['getGenerativeModel']> | null = null;
+let fallbackDimensions = DEFAULT_EMBED_DIMENSION;
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface EmbeddedChunk extends DocumentChunk {
   embedding: number[];
@@ -24,84 +29,117 @@ export class EmbeddingServiceError extends Error {
   }
 }
 
-/**
- * Generate embedding for a single text using Ollama
- */
+const ensureEmbeddingModel = () => {
+  if (!config.geminiApiKey) {
+    throw new EmbeddingServiceError('GEMINI_API_KEY is required for embedding generation.');
+  }
+
+  if (!geminiClient) {
+    geminiClient = new GoogleGenerativeAI(config.geminiApiKey);
+  }
+
+  if (!embeddingModel) {
+    embeddingModel = geminiClient.getGenerativeModel({ model: config.geminiEmbedModel });
+    serverLogger.info('Initialized Gemini embedding model', {
+      model: config.geminiEmbedModel,
+    });
+  }
+
+  return embeddingModel;
+};
+
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
-    const response = await ollamaClient.embeddings({
-      model: EMBEDDING_MODEL,
-      prompt: text,
-    });
+    const model = ensureEmbeddingModel();
+    const response = await model.embedContent(text);
+    const embedding = response.embedding?.values;
 
-    if (!response.embedding || !Array.isArray(response.embedding)) {
-      throw new EmbeddingServiceError('Invalid embedding response from Ollama', {
+    if (!embedding || !Array.isArray(embedding) || embedding.length === 0) {
+      throw new EmbeddingServiceError('Invalid embedding response from Gemini', {
         response,
       });
     }
 
-    return response.embedding;
+    fallbackDimensions = embedding.length;
+    return embedding;
   } catch (error) {
-    serverLogger.error('Failed to generate embedding', error instanceof Error ? error : new Error(String(error)), {
-      textLength: text.length,
-      model: EMBEDDING_MODEL,
-    });
-    
+    serverLogger.error(
+      'Failed to generate embedding with Gemini',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        textLength: text.length,
+        model: config.geminiEmbedModel,
+      },
+    );
+
     if (error instanceof EmbeddingServiceError) {
       throw error;
     }
-    
+
     throw new EmbeddingServiceError('Failed to generate embedding', {
       cause: error instanceof Error ? error.message : String(error),
     });
   }
 }
 
-/**
- * Generate embeddings for multiple texts with batching and rate limiting
- */
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   const embeddings: number[][] = [];
-  const batchSize = 10; // Process in small batches to avoid overwhelming Ollama
-  const delayMs = 100; // Small delay between requests
+  const total = texts.length;
+  let fallbackVector = new Array(fallbackDimensions).fill(0);
 
-  for (let i = 0; i < texts.length; i += batchSize) {
-    const batch = texts.slice(i, i + batchSize);
-    const batchPromises = batch.map(async (text, index) => {
+  for (let index = 0; index < total; index++) {
+    const text = texts[index];
+    let embedding: number[] | null = null;
+
+    for (let attempt = 1; attempt <= MAX_EMBED_RETRIES; attempt++) {
       try {
-        // Add small delay to avoid overwhelming the service
-        if (index > 0) {
-          await new Promise(resolve => setTimeout(resolve, delayMs));
-        }
-        return await generateEmbedding(text);
+        embedding = await generateEmbedding(text);
+        break;
       } catch (error) {
-        serverLogger.warn('Failed to generate embedding for text in batch', {
-          batchIndex: i + index,
+        const message = error instanceof Error ? error.message : String(error);
+        const isLastAttempt = attempt === MAX_EMBED_RETRIES;
+
+        serverLogger.warn('Embedding request failed', {
+          attempt,
+          maxRetries: MAX_EMBED_RETRIES,
           textLength: text.length,
-          error: error instanceof Error ? error.message : String(error),
+          error: message,
         });
-        // Return zero vector as fallback
-        return new Array(384).fill(0); // nomic-embed-text has 384 dimensions
+
+        if (isLastAttempt) {
+          serverLogger.warn('Falling back to zero vector for chunk', {
+            index,
+            textLength: text.length,
+          });
+          break;
+        }
+
+        const backoff = RETRY_BACKOFF_MS * attempt;
+        await sleep(backoff);
       }
-    });
+    }
 
-    const batchEmbeddings = await Promise.all(batchPromises);
-    embeddings.push(...batchEmbeddings);
+    if (embedding) {
+      if (fallbackVector.length !== embedding.length) {
+        fallbackVector = new Array(embedding.length).fill(0);
+      }
+      embeddings.push(embedding);
+    } else {
+      embeddings.push(fallbackVector.slice());
+    }
 
-    // Log progress
-    serverLogger.info('Generated embeddings batch', {
-      processed: Math.min(i + batchSize, texts.length),
-      total: texts.length,
-      progress: `${Math.round((Math.min(i + batchSize, texts.length) / texts.length) * 100)}%`,
-    });
+    if ((index + 1) % 10 === 0 || index === total - 1) {
+      serverLogger.info('Generated embeddings progress', {
+        processed: index + 1,
+        total,
+        progress: `${Math.round(((index + 1) / total) * 100)}%`,
+      });
+    }
   }
 
   return embeddings;
 }
 
-/**
- * Embed document chunks
- */
 export async function embedChunks(chunks: DocumentChunk[]): Promise<EmbeddedChunk[]> {
   try {
     serverLogger.info('Starting chunk embedding process', {
@@ -111,10 +149,10 @@ export async function embedChunks(chunks: DocumentChunk[]): Promise<EmbeddedChun
     const texts = chunks.map(chunk => chunk.content);
     const embeddings = await generateEmbeddings(texts);
 
-    const zero = new Array(384).fill(0);
+    const zeroVector = new Array(fallbackDimensions).fill(0);
     const embeddedChunks: EmbeddedChunk[] = chunks.map((chunk, index) => ({
       ...chunk,
-      embedding: embeddings[index] ?? zero,
+      embedding: embeddings[index] ?? zeroVector,
     }));
 
     serverLogger.info('Completed chunk embedding process', {
@@ -124,25 +162,23 @@ export async function embedChunks(chunks: DocumentChunk[]): Promise<EmbeddedChun
 
     return embeddedChunks;
   } catch (error) {
-    serverLogger.error('Failed to embed chunks', error instanceof Error ? error : new Error(String(error)), {
-      chunkCount: chunks.length,
-    });
+    serverLogger.error(
+      'Failed to embed chunks',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        chunkCount: chunks.length,
+      },
+    );
     throw error;
   }
 }
 
-/**
- * Normalize embedding vector (as specified in RAG schema)
- */
 export function normalizeEmbedding(embedding: number[]): number[] {
   const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
   if (magnitude === 0) return embedding;
   return embedding.map(val => val / magnitude);
 }
 
-/**
- * Calculate cosine similarity between two embeddings
- */
 export function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length) {
     throw new Error('Embeddings must have the same dimensions');
@@ -170,16 +206,12 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return dotProduct / (normA * normB);
 }
 
-/**
- * Check if embedding service is available
- */
 export async function checkEmbeddingServiceHealth(): Promise<{ healthy: boolean; model?: string }> {
   try {
-    // Try to generate a small test embedding
-    const testEmbedding = await generateEmbedding('test');
+    await generateEmbedding('health-check');
     return {
-      healthy: testEmbedding.length > 0,
-      model: EMBEDDING_MODEL,
+      healthy: true,
+      model: config.geminiEmbedModel,
     };
   } catch (error) {
     serverLogger.warn('Embedding service health check failed', {

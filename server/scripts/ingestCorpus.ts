@@ -1,19 +1,27 @@
 #!/usr/bin/env tsx
 
-import { join, dirname } from 'node:path';
-import { existsSync, mkdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { processCorpusDirectoryRecursive, getAllChunks } from '../services/documentProcessor.js';
-import { embedChunks, checkEmbeddingServiceHealth } from '../services/embeddingService.js';
-import { getVectorStore } from '../services/vectorStore.js';
-import { serverLogger } from '../middleware/logger.js';
+import { join, dirname } from "node:path";
+import { existsSync, mkdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import {
+  processCorpusDirectoryRecursive,
+  getAllChunks,
+} from "../services/documentProcessor.js";
+import {
+  embedChunks,
+  checkEmbeddingServiceHealth,
+} from "../services/embeddingService.js";
+import { getVectorStore } from "../services/vectorStore.js";
+import { serverLogger } from "../middleware/logger.js";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-const projectRoot = join(scriptDir, '..', '..');
-const DEFAULT_CORPUS_PATH = join(projectRoot, 'wallymo_llm_corpus');
+const projectRoot = join(scriptDir, "..", "..");
+const DEFAULT_CORPUS_PATH = join(projectRoot, "wallymo_llm_corpus");
 
-const serverDir = process.cwd().endsWith('server') ? process.cwd() : join(process.cwd(), 'server');
-const DATA_DIR = join(serverDir, 'data');
+const serverDir = process.cwd().endsWith("server")
+  ? process.cwd()
+  : join(process.cwd(), "server");
+const DATA_DIR = join(serverDir, "data");
 
 interface IngestionOptions {
   corpusPath?: string;
@@ -27,7 +35,7 @@ interface IngestionOptions {
 function ensureDataDirectory(): void {
   if (!existsSync(DATA_DIR)) {
     mkdirSync(DATA_DIR, { recursive: true });
-    serverLogger.info('Created data directory', { path: DATA_DIR });
+    serverLogger.info("Created data directory", { path: DATA_DIR });
   }
 }
 
@@ -40,12 +48,15 @@ async function validateCorpusPath(corpusPath: string): Promise<void> {
   }
 
   // Check for markdown files recursively
-  const { readdirSync } = await import('node:fs');
+  const { readdirSync } = await import("node:fs");
 
   /**
    * Recursively count .md files in a directory
    */
-  function countMarkdownFiles(dirPath: string): { count: number; subdirs: number } {
+  function countMarkdownFiles(dirPath: string): {
+    count: number;
+    subdirs: number;
+  } {
     let count = 0;
     let subdirs = 0;
 
@@ -59,7 +70,7 @@ async function validateCorpusPath(corpusPath: string): Promise<void> {
         const subResult = countMarkdownFiles(fullPath);
         count += subResult.count;
         subdirs += subResult.subdirs;
-      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+      } else if (entry.isFile() && entry.name.endsWith(".md")) {
         count++;
       }
     }
@@ -70,10 +81,12 @@ async function validateCorpusPath(corpusPath: string): Promise<void> {
   const result = countMarkdownFiles(corpusPath);
 
   if (result.count === 0) {
-    throw new Error(`No markdown files found in corpus directory (searched recursively): ${corpusPath}`);
+    throw new Error(
+      `No markdown files found in corpus directory (searched recursively): ${corpusPath}`,
+    );
   }
 
-  serverLogger.info('Validated corpus directory', {
+  serverLogger.info("Validated corpus directory", {
     path: corpusPath,
     markdownFiles: result.count,
     subdirectoriesSearched: result.subdirs,
@@ -88,7 +101,7 @@ async function ingestCorpus(options: IngestionOptions = {}): Promise<void> {
   const corpusPath = options.corpusPath || DEFAULT_CORPUS_PATH;
 
   try {
-    serverLogger.info('Starting corpus ingestion', {
+    serverLogger.info("Starting corpus ingestion", {
       corpusPath,
       options,
     });
@@ -98,12 +111,16 @@ async function ingestCorpus(options: IngestionOptions = {}): Promise<void> {
     ensureDataDirectory();
 
     // Check embedding service health
-    serverLogger.info('Checking embedding service health...');
+    serverLogger.info("Checking embedding service health...");
     const embeddingHealth = await checkEmbeddingServiceHealth();
     if (!embeddingHealth.healthy) {
-      throw new Error('Embedding service is not available. Please ensure Ollama is running with nomic-embed-text model.');
+      throw new Error(
+        "Embedding service is not available. Please ensure Gemini API key is configured.",
+      );
     }
-    serverLogger.info('Embedding service is healthy', { model: embeddingHealth.model });
+    serverLogger.info("Embedding service is healthy", {
+      model: embeddingHealth.model,
+    });
 
     // Initialize vector store
     const vectorStore = getVectorStore();
@@ -113,28 +130,33 @@ async function ingestCorpus(options: IngestionOptions = {}): Promise<void> {
     const isReady = await vectorStore.isReady();
     if (isReady && !options.force) {
       const stats = await vectorStore.getStats();
-      serverLogger.info('Vector store already exists', stats);
-      
+      serverLogger.info("Vector store already exists", stats);
+
       if (!options.dryRun) {
-        console.log('Vector store already exists. Use --force to re-ingest.');
+        console.log("Vector store already exists. Use --force to re-ingest.");
         return;
       }
     }
 
     // Step 1: Process documents into chunks (including subdirectories)
-    serverLogger.info('Processing documents recursively...');
+    serverLogger.info("Processing documents recursively...");
     const documents = processCorpusDirectoryRecursive(corpusPath);
     const allChunks = getAllChunks(documents);
 
-    serverLogger.info('Document processing completed', {
+    const totalTokens = documents.reduce<number>(
+      (sum, doc) => sum + doc.totalTokens,
+      0,
+    );
+
+    serverLogger.info("Document processing completed", {
       documentsProcessed: documents.length,
       totalChunks: allChunks.length,
-      totalTokens: documents.reduce((sum, doc) => sum + doc.totalTokens, 0),
+      totalTokens,
     });
 
     // Log document summary
     for (const doc of documents) {
-      serverLogger.info('Document processed', {
+      serverLogger.info("Document processed", {
         filename: doc.filename,
         category: doc.category,
         chunks: doc.chunks.length,
@@ -144,48 +166,53 @@ async function ingestCorpus(options: IngestionOptions = {}): Promise<void> {
     }
 
     if (options.dryRun) {
-      serverLogger.info('Dry run completed - no vector store created');
+      serverLogger.info("Dry run completed - no vector store created");
       return;
     }
 
     // Step 2: Generate embeddings
-    serverLogger.info('Generating embeddings...');
+    serverLogger.info("Generating embeddings...");
     const embeddedChunks = await embedChunks(allChunks);
 
-    serverLogger.info('Embedding generation completed', {
+    serverLogger.info("Embedding generation completed", {
       chunksEmbedded: embeddedChunks.length,
       embeddingDimensions: embeddedChunks[0]?.embedding.length || 0,
     });
 
     // Step 3: Create vector store
-    serverLogger.info('Creating vector store...');
+    serverLogger.info("Creating vector store...");
     await vectorStore.createTable(embeddedChunks);
 
     // Verify vector store
     const finalStats = await vectorStore.getStats();
-    serverLogger.info('Vector store created successfully', finalStats);
+    serverLogger.info("Vector store created successfully", finalStats);
 
     const totalTime = Date.now() - startTime;
-    serverLogger.info('Corpus ingestion completed', {
+    serverLogger.info("Corpus ingestion completed", {
       totalTimeMs: totalTime,
       totalTimeSec: Math.round(totalTime / 1000),
       documentsProcessed: documents.length,
       chunksIndexed: embeddedChunks.length,
     });
 
-    console.log('\n✅ Corpus ingestion completed successfully!');
-    console.log(`📊 Processed ${documents.length} documents into ${embeddedChunks.length} chunks`);
+    console.log("\n✅ Corpus ingestion completed successfully!");
+    console.log(
+      `📊 Processed ${documents.length} documents into ${embeddedChunks.length} chunks`,
+    );
     console.log(`⏱️  Total time: ${Math.round(totalTime / 1000)}s`);
-    console.log(`📁 Vector store location: ${vectorStore['dbPath']}`);
-
+    console.log(`📁 Vector store location: ${vectorStore["dbPath"]}`);
   } catch (error) {
     const totalTime = Date.now() - startTime;
-    serverLogger.error('Corpus ingestion failed', error instanceof Error ? error : new Error(String(error)), {
-      totalTimeMs: totalTime,
-      corpusPath,
-    });
+    serverLogger.error(
+      "Corpus ingestion failed",
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        totalTimeMs: totalTime,
+        corpusPath,
+      },
+    );
 
-    console.error('\n❌ Corpus ingestion failed:');
+    console.error("\n❌ Corpus ingestion failed:");
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
@@ -201,15 +228,15 @@ async function main(): Promise<void> {
   // Parse command line arguments
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    
-    if (arg === '--corpus-path' && i + 1 < args.length) {
+
+    if (arg === "--corpus-path" && i + 1 < args.length) {
       options.corpusPath = args[i + 1] as string;
       i++; // Skip next argument
-    } else if (arg === '--force') {
+    } else if (arg === "--force") {
       options.force = true;
-    } else if (arg === '--dry-run') {
+    } else if (arg === "--dry-run") {
       options.dryRun = true;
-    } else if (arg === '--help' || arg === '-h') {
+    } else if (arg === "--help" || arg === "-h") {
       console.log(`
 Usage: tsx ingestCorpus.ts [options]
 
@@ -234,8 +261,8 @@ Examples:
 
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(error => {
-    console.error('Fatal error:', error);
+  main().catch((error) => {
+    console.error("Fatal error:", error);
     process.exit(1);
   });
 }

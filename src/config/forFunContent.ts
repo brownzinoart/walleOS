@@ -9,6 +9,8 @@ export interface ForFunSlide {
   foregroundImage: string;
   size?: BentoCardSize;
   accentColor?: string;
+  link?: string;
+  external?: boolean;
 }
 
 export interface ForFunContent {

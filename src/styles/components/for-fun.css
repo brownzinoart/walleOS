@@ -129,6 +129,34 @@
   color: var(--color-text-primary);
 }
 
+
+
+.bento-card--clickable {
+  cursor: pointer;
+}
+
+.bento-card--clickable::before {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--bento-card-accent);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'%3E%3C/path%3E%3Cpolyline points='15,3 21,3 21,9'%3E%3C/polyline%3E%3Cline x1='10' y1='14' x2='21' y2='3'%3E%3C/line%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  opacity: 0.7;
+  transform: scale(0.9);
+  transition: opacity var(--transition-base), transform var(--transition-base);
+  z-index: 1;
+}
+
+.bento-card--clickable:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .bento-card-xl {
   min-height: clamp(24rem, 32vw, 36rem);
 }

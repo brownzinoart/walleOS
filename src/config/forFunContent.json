@@ -1,60 +1,62 @@
 {
   "slides": [
     {
-      "title": "Neon Drift",
-      "category": "Synthwave Prototype",
-      "backgroundImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "/images/for-fun/neon-drift.svg",
+      "title": "Personal Hobby",
+      "category": "My Artworks",
+      "backgroundImage": "/images/for-fun/painting.jpg",
+      "foregroundImage": "/images/for-fun/painting.jpg",
       "size": "xl",
       "accentColor": "var(--color-neon-cyan)"
     },
     {
-      "title": "Gravity Sketchbook",
-      "category": "Physics Playground",
-      "backgroundImage": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "/images/for-fun/gravity-sketchbook.svg",
+      "title": "Red Dead Redemption II",
+      "category": "Motion Capture",
+      "backgroundImage": "/images/for-fun/reddead.avif",
+      "foregroundImage": "/images/for-fun/reddead.avif",
       "size": "lg",
-      "accentColor": "var(--color-neon-magenta)"
+      "accentColor": "var(--color-neon-magenta)",
+      "link": "https://www.imdb.com/title/tt6161168/?ref_=nm_knf_c_1",
+      "external": true
     },
     {
-      "title": "Solar Bloom",
-      "category": "Generative Garden",
-      "backgroundImage": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=960&h=960&q=80",
+      "title": "UX Portfolio",
+      "category": "User Experience",
+      "backgroundImage": "/images/for-fun/uxfolio.png",
+      "foregroundImage": "/images/for-fun/uxfolio.png",
       "size": "tall",
-      "accentColor": "var(--color-neon-lime)"
+      "accentColor": "var(--color-neon-lime)",
+      "link": "https://brownzinoart.wixstudio.com/wallymo",
+      "external": true
     },
     {
-      "title": "Lumen Loom",
-      "category": "Light Sculpture",
-      "backgroundImage": "https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=960&h=960&q=80",
+      "title": "Data Viz",
+      "category": "Indigo Awards",
+      "backgroundImage": "/images/for-fun/indigo-zoomed.webp",
+      "foregroundImage": "/images/for-fun/indigo-zoomed.webp",
       "size": "md",
-      "accentColor": "var(--color-neon-orange)"
+      "accentColor": "var(--color-neon-orange)",
+      "link": "https://www.indigoaward.com/winners/6748",
+      "external": true
     },
     {
-      "title": "Orbit Arcade",
-      "category": "Motion Study",
-      "backgroundImage": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&w=960&h=960&q=80",
+      "title": "AI Dashboard",
+      "category": "Indigo Awards",
+      "backgroundImage": "/images/for-fun/dxa.png",
+      "foregroundImage": "/images/for-fun/dxa.png",
       "size": "md",
-      "accentColor": "var(--color-neon-cyan)"
+      "accentColor": "#ff1493",
+      "link": "https://www.indigoaward.com/winners/4629",
+      "external": true
     },
     {
-      "title": "Mirage Atelier",
-      "category": "Spatial UI Concept",
-      "backgroundImage": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=960&h=960&q=80",
+      "title": "UX Interface",
+      "category": "Red Dot Awards",
+      "backgroundImage": "/images/for-fun/reddot.png",
+      "foregroundImage": "/images/for-fun/reddot.png",
       "size": "wide",
-      "accentColor": "var(--color-neon-magenta)"
-    },
-    {
-      "title": "Sonic Nebula",
-      "category": "Audio Reactive",
-      "backgroundImage": "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1920&h=1080&q=80",
-      "foregroundImage": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=960&h=960&q=80",
-      "size": "lg",
-      "accentColor": "var(--color-neon-lime)"
+      "accentColor": "#ff6b35",
+      "link": "https://www.red-dot.org/project/dxa-digital-experience-audit-55219",
+      "external": true
     }
   ]
 }

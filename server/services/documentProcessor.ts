@@ -30,12 +30,54 @@ export interface ProcessedDocument {
   totalTokens: number;
 }
 
-// Configuration from RAG schema (adjusted for shorter documents)
-const CHUNK_CONFIG = {
-  maxTokens: 900,
-  minTokens: 150, // Reduced from 300 to capture shorter documents
-  overlap: 50,
+interface ChunkConfig {
+  maxTokens: number;
+  minTokens: number;
+  overlap: number;
+}
+
+const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max);
+
+const parseConfigNumber = (value: string | undefined, fallback: number, min: number, max: number): number => {
+  if (!value) {
+    return fallback;
+  }
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  return clamp(parsed, min, max);
 };
+
+const resolveChunkConfig = (): ChunkConfig => {
+  const maxTokens = parseConfigNumber(process.env['RAG_CHUNK_MAX_TOKENS'], 640, 240, 1200);
+  const minTokens = parseConfigNumber(
+    process.env['RAG_CHUNK_MIN_TOKENS'],
+    160,
+    60,
+    Math.max(maxTokens - 40, 80),
+  );
+  const overlap = parseConfigNumber(
+    process.env['RAG_CHUNK_OVERLAP_TOKENS'],
+    80,
+    0,
+    Math.floor(maxTokens / 2),
+  );
+
+  return {
+    maxTokens,
+    minTokens,
+    overlap,
+  };
+};
+
+const CHUNK_CONFIG = resolveChunkConfig();
+
+serverLogger.info('Using RAG chunk configuration', {
+  maxTokens: CHUNK_CONFIG.maxTokens,
+  minTokens: CHUNK_CONFIG.minTokens,
+  overlap: CHUNK_CONFIG.overlap,
+});
 
 /**
  * Rough token estimation (1 token ≈ 4 characters for English text)
@@ -97,6 +139,55 @@ function segmentText(text: string): SentenceSegment[] {
   return segments;
 }
 
+const splitSegmentByTokens = (
+  segment: SentenceSegment,
+  fullText: string,
+  maxTokens: number,
+): SentenceSegment[] => {
+  if (segment.tokens <= maxTokens) {
+    return [segment];
+  }
+
+  const approxMaxChars = Math.max(1, Math.floor(maxTokens * 4));
+  const slices: SentenceSegment[] = [];
+  let cursor = segment.start;
+
+  while (cursor < segment.end) {
+    const tentativeEnd = Math.min(segment.end, cursor + approxMaxChars);
+    let sliceEnd = tentativeEnd;
+
+    if (tentativeEnd < segment.end) {
+      const backtrack = fullText.lastIndexOf(' ', tentativeEnd);
+      if (backtrack > cursor + Math.floor(approxMaxChars * 0.5)) {
+        sliceEnd = backtrack;
+      }
+    }
+
+    const segmentSlice = fullText.slice(cursor, sliceEnd);
+    const trimmed = segmentSlice.trim();
+
+    if (!trimmed) {
+      cursor = sliceEnd;
+      continue;
+    }
+
+    const leading = segmentSlice.indexOf(trimmed);
+    const actualStart = cursor + leading;
+    const actualEnd = actualStart + trimmed.length;
+
+    slices.push({
+      content: trimmed,
+      start: actualStart,
+      end: actualEnd,
+      tokens: estimateTokens(trimmed),
+    });
+
+    cursor = actualEnd;
+  }
+
+  return slices;
+};
+
 function inferCategoryFromFilename(filename: string): string {
   const lowerFilename = filename.toLowerCase();
 
@@ -156,7 +247,10 @@ function extractMetadata(content: string, filename: string): {
  * Split text into chunks with overlap
  */
 function createChunks(text: string, metadata: { category: string; tags: string[]; experienceIds: string[] }): DocumentChunk[] {
-  const segments = segmentText(text);
+  const baseSegments = segmentText(text);
+  const segments = baseSegments.flatMap((segment) =>
+    splitSegmentByTokens(segment, text, CHUNK_CONFIG.maxTokens),
+  );
   if (segments.length === 0) {
     return [];
   }
@@ -210,14 +304,14 @@ function createChunks(text: string, metadata: { category: string; tags: string[]
   };
 
   for (const segment of segments) {
-    if (
-      currentSegments.length > 0 &&
-      currentTokens + segment.tokens > CHUNK_CONFIG.maxTokens &&
-      currentTokens >= CHUNK_CONFIG.minTokens
-    ) {
-      const flushed = flushCurrentChunk();
+    const willExceed =
+      currentSegments.length > 0 && currentTokens + segment.tokens > CHUNK_CONFIG.maxTokens;
 
-      if (CHUNK_CONFIG.overlap > 0 && flushed.length > 0) {
+    if (willExceed) {
+      const meetsMinThreshold = currentTokens >= CHUNK_CONFIG.minTokens;
+      const flushed = meetsMinThreshold ? flushCurrentChunk() : flushCurrentChunk(true);
+
+      if (CHUNK_CONFIG.overlap > 0 && flushed.length > 0 && meetsMinThreshold) {
         let overlapTokens = 0;
         const overlapped: SentenceSegment[] = [];
 
@@ -232,6 +326,9 @@ function createChunks(text: string, metadata: { category: string; tags: string[]
 
         currentSegments = overlapped.slice();
         currentTokens = overlapTokens;
+      } else if (!meetsMinThreshold) {
+        currentSegments = [];
+        currentTokens = 0;
       }
     }
 

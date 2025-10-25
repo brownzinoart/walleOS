@@ -74,6 +74,8 @@ const renderBentoCard = (slide: ForFunSlide, index: number): string => {
   const size = resolveCardSize(slide, index);
   const accent = resolveAccentColor(slide, index);
   const sizeClass = BENTO_SIZE_CLASS_MAP[size] ?? BENTO_SIZE_CLASS_MAP.md;
+  const isClickable = slide.link && slide.external;
+  const clickableClass = isClickable ? 'bento-card--clickable' : '';
   const styleParts = [
     `grid-column: ${position.column}`,
     `grid-row: ${position.row}`,
@@ -82,9 +84,11 @@ const renderBentoCard = (slide: ForFunSlide, index: number): string => {
 
   return `
     <article
-      class="bento-card ${sizeClass}"
+      class="bento-card ${sizeClass} ${clickableClass}"
       data-bento-card
       data-card-index="${index}"
+      data-link="${slide.link || ''}"
+      data-external="${slide.external ? 'true' : 'false'}"
       role="listitem"
       tabindex="0"
       style="${styleParts.join('; ')}"
@@ -170,6 +174,44 @@ export const initForFunPageInteractions = (): void => {
     return;
   }
 
+  // Handle external link clicks
+  const handleCardClick = (event: MouseEvent, card: HTMLElement): void => {
+    const link = card.dataset['link'];
+    const isExternal = card.dataset['external'] === 'true';
+    
+    if (link && isExternal) {
+      event.preventDefault();
+      event.stopPropagation();
+      window.open(link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleCardKeydown = (event: KeyboardEvent, card: HTMLElement): void => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      const link = card.dataset['link'];
+      const isExternal = card.dataset['external'] === 'true';
+      
+      if (link && isExternal) {
+        event.preventDefault();
+        event.stopPropagation();
+        window.open(link, '_blank', 'noopener,noreferrer');
+      }
+    }
+  };
+
+  // Add click and keyboard handlers to cards with external links
+  cards.forEach((card) => {
+    const link = card.dataset['link'];
+    const isExternal = card.dataset['external'] === 'true';
+    
+    if (link && isExternal) {
+      card.addEventListener('click', (e) => handleCardClick(e, card));
+      card.addEventListener('keydown', (e) => handleCardKeydown(e, card));
+      card.setAttribute('role', 'link');
+      card.setAttribute('aria-label', `External link to ${link}`);
+    }
+  });
+
   if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') {
     hydrateCardBackgrounds(cards);
     return;
@@ -202,5 +244,21 @@ export const cleanupForFunPage = (): void => {
   if (cardBackgroundObserver) {
     cardBackgroundObserver.disconnect();
     cardBackgroundObserver = null;
+  }
+
+  // Clean up event listeners
+  const root = document.querySelector<HTMLElement>('[data-for-fun-root]');
+  if (root) {
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-bento-card]'));
+    cards.forEach((card) => {
+      const link = card.dataset['link'];
+      const isExternal = card.dataset['external'] === 'true';
+      
+      if (link && isExternal) {
+        // Clone the node to remove all event listeners
+        const newCard = card.cloneNode(true);
+        card.parentNode?.replaceChild(newCard, card);
+      }
+    });
   }
 };

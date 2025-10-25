@@ -22,7 +22,8 @@
     "prepare": "node scripts/prepare.mjs",
     "deploy": "npm run prepare && npm run build",
     "warmup:ollama": "bash -c 'ollama serve >/dev/null 2>&1 & sleep 2; ollama pull ${OLLAMA_MODEL:-llama3.1:8b} || true; ollama pull nomic-embed-text || true; echo warming; ollama run ${OLLAMA_MODEL:-llama3.1:8b} \"hi\" >/dev/null 2>&1 || true'",
-    "ingest:corpus": "cd server && npm run ingest:force",
+    "ingest:corpus": "node scripts/run-ingest.mjs",
+    "ingest:gemini": "node scripts/run-ingest.mjs --provider gemini",
     "dev:infra": "npm run warmup:ollama && npm run ingest:corpus",
     "dev:all": "concurrently -k -n SERVER,WEB \"npm:dev --prefix server\" \"npm run dev\"",
     "up": "npm run dev:infra && npm run dev:all"
@@ -55,5 +56,6 @@
   "dependencies": {
     "gsap": "^3.13.0",
     "locomotive-scroll": "^4.1.4"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

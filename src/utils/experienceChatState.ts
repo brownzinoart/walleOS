@@ -84,10 +84,17 @@ export const addExperienceChatMessage = (
   }
 
   const base = createExperienceMessage(role, trimmed, meta);
+  // Use a 'complete' state to keep CSS animations from replaying when the DOM
+  // is patched; rely on a single-use initialEnter flag for the slide-in effect.
+  const shouldAnimateInitialEntry = role === 'user' && !prefersReducedMotion();
+
   const message: ChatMessage = {
     ...base,
     ...(role === 'user'
-      ? { animationState: 'idle' as MessageAnimationState }
+      ? {
+          animationState: 'complete' as MessageAnimationState,
+          ...(shouldAnimateInitialEntry ? { initialEnter: true } : {}),
+        }
       : base.animationState !== undefined
       ? { animationState: base.animationState }
       : {}),

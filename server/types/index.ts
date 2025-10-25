@@ -13,23 +13,37 @@ export interface ChatStreamEvent {
 }
 
 export interface HealthCheckResponse {
-  status: 'healthy' | 'degraded';
+  status: "healthy" | "degraded";
   timestamp: string;
   services: {
-    ollama: {
-      status: 'up' | 'down';
+    chat: {
+      providers: Array<{
+        name: string;
+        status: "healthy" | "unhealthy";
+        error?: string;
+      }>;
+      overall: "healthy" | "unhealthy";
+    };
+    embedding: {
+      provider: string;
       model: string;
+      status: "healthy" | "unhealthy";
+      error?: string;
     };
   };
   requestId?: string;
 }
 
-export interface OllamaMessage {
-  role: 'system' | 'user' | 'assistant';
+export interface ChatMessage {
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
-export type Context7DocumentState = 'initial' | 'finalized' | 'error' | 'delete';
+export type Context7DocumentState =
+  | "initial"
+  | "finalized"
+  | "error"
+  | "delete";
 
 export interface Context7SearchResult {
   id: string;

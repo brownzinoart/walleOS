@@ -265,13 +265,16 @@ export const addChatMessage = (
   }
 
   const base = createMessage(role, trimmed, meta);
-  // New runtime messages opt into an initial enter animation via 'idle'
-  // unless reduced motion is preferred. Historical messages should be
-  // normalized elsewhere with 'complete'.
+  // Retain a 'complete' state so rerenders don't retrigger CSS animations; opt-in
+  // to the first-run slide-in via the one-shot initialEnter flag when allowed.
+  const shouldAnimateInitialEntry = role === 'user' && !prefersReducedMotion();
   const message: ChatMessage = {
     ...base,
     ...(role === 'user'
-      ? { animationState: 'idle' as MessageAnimationState }
+      ? {
+          animationState: 'complete' as MessageAnimationState,
+          ...(shouldAnimateInitialEntry ? { initialEnter: true } : {}),
+        }
       : base.animationState !== undefined
       ? { animationState: base.animationState }
       : {}),
