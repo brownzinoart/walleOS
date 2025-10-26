@@ -58,6 +58,7 @@
   width: 100%;
   background: var(--color-background);
   overflow: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .scroll-animations-example > .scrollsection {
@@ -232,7 +233,7 @@
   }
 
   .scroll-animations-example > .scrollsection {
-    padding: 0 8vh;
+    padding: 10vh 8vh 0 8vh;
     min-width: 400vh;
   }
 
@@ -250,7 +251,7 @@
   }
 
   .scroll-animations-example > .scrollsection {
-    padding: 0 5vh;
+    padding: 10vh 5vh 0 5vh;
     min-width: 300vh;
   }
 
