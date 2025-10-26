@@ -1,7 +1,8 @@
-@import './design-tokens.css';
-@import './typography.css';
-@import './components.css';
-@import './components/for-fun.css';
+@import "./design-tokens.css";
+@import "./typography.css";
+@import "./components.css";
+@import "./components/for-fun.css";
+@import "./art-gallery.css";
 
 @tailwind base;
 @tailwind components;
@@ -12,14 +13,17 @@
   --safe-area-right: env(safe-area-inset-right, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
-  --backdrop-filter-strength: var(--backdrop-filter-strength-strong, blur(18px));
+  --backdrop-filter-strength: var(
+    --backdrop-filter-strength-strong,
+    blur(18px)
+  );
 }
 
-[data-theme='dark'] {
+[data-theme="dark"] {
   color-scheme: dark;
 }
 
-[data-theme='light'] {
+[data-theme="light"] {
   color-scheme: light;
 }
 
@@ -76,7 +80,9 @@ button.chip {
   font-size: var(--font-size-sm);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 button.chip:hover,
@@ -92,10 +98,16 @@ button.chip:active {
   box-shadow: none;
 }
 
-[data-backdrop='blur'],
+[data-backdrop="blur"],
 .backdrop-blur-support {
-  -webkit-backdrop-filter: var(--backdrop-filter-strength, var(--backdrop-filter-strength-strong, blur(18px)));
-  backdrop-filter: var(--backdrop-filter-strength, var(--backdrop-filter-strength-strong, blur(18px)));
+  -webkit-backdrop-filter: var(
+    --backdrop-filter-strength,
+    var(--backdrop-filter-strength-strong, blur(18px))
+  );
+  backdrop-filter: var(
+    --backdrop-filter-strength,
+    var(--backdrop-filter-strength-strong, blur(18px))
+  );
 }
 
 .focus-visible {
@@ -173,7 +185,9 @@ button.chip:active {
   }
 
   button.chip {
-    transition: transform 120ms ease, box-shadow 120ms ease;
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease;
   }
 
   button.chip:hover,
@@ -192,10 +206,16 @@ button.chip:active {
     box-shadow: 0 0 8px rgba(var(--color-neon-cyan-rgb), 0.4);
   }
 
-  [data-backdrop='blur'],
+  [data-backdrop="blur"],
   .backdrop-blur-support {
-    -webkit-backdrop-filter: var(--backdrop-filter-strength, var(--backdrop-filter-strength-soft, blur(8px)));
-    backdrop-filter: var(--backdrop-filter-strength, var(--backdrop-filter-strength-soft, blur(8px)));
+    -webkit-backdrop-filter: var(
+      --backdrop-filter-strength,
+      var(--backdrop-filter-strength-soft, blur(8px))
+    );
+    backdrop-filter: var(
+      --backdrop-filter-strength,
+      var(--backdrop-filter-strength-soft, blur(8px))
+    );
   }
 }
 
@@ -238,7 +258,8 @@ button.chip:active {
     position: relative;
     min-height: 100vh;
     min-height: 100svh;
-    padding: clamp(var(--spacing-xl), 6vw, var(--spacing-3xl)) clamp(var(--spacing-lg), 5vw, var(--spacing-3xl));
+    padding: clamp(var(--spacing-xl), 6vw, var(--spacing-3xl))
+      clamp(var(--spacing-lg), 5vw, var(--spacing-3xl));
     overflow-y: auto;
     overflow-x: visible;
     background-color: var(--color-bg-primary);

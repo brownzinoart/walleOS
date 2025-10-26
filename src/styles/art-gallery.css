@@ -1,0 +1,291 @@
+/* Art Gallery Page Styles */
+.art-gallery-container {
+  height: 100vh;
+  width: calc(100% - var(--sidebar-width, 280px));
+  background: var(--color-background);
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width, 280px);
+  overflow: hidden;
+}
+
+.back-button {
+  position: fixed;
+  top: 2rem;
+  left: calc(var(--sidebar-width, 280px) + 2rem);
+  z-index: 100;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-neon-cyan);
+  color: var(--color-background);
+  border: 3px solid var(--color-neon-cyan);
+  border-radius: 8px;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 4px 4px 0px var(--color-neon-magenta);
+}
+
+.back-button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--color-neon-magenta);
+  background: var(--color-neon-lime);
+  border-color: var(--color-neon-lime);
+}
+
+.back-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--color-neon-magenta);
+}
+
+/* Main Content Area */
+.art-gallery-content {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Horizontal Scroll Gallery Styles - Integrated with Design System */
+.scroll-animations-example {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100%;
+  background: var(--color-background);
+  overflow: hidden;
+}
+
+.scroll-animations-example > .scrollsection {
+  padding: 10vh 10vh 0 10vh;
+  min-width: 550vh;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+}
+
+.scroll-animations-example > .scrollsection > .item {
+  display: inline-block;
+  position: relative;
+  margin: 0 -30vh 0 3vh;
+  border: 3px solid var(--color-neon-cyan);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 6px 6px 0px var(--color-neon-magenta);
+  background: var(--color-surface);
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.scroll-animations-example > .scrollsection > .item::before {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  height: 100%;
+}
+
+.scroll-animations-example > .scrollsection > .item.-big {
+  height: 80vh;
+  width: 60vh;
+}
+
+.scroll-animations-example > .scrollsection > .item.-big.-horizontal {
+  height: 60vh;
+  width: 80vh;
+}
+
+.scroll-animations-example > .scrollsection > .item.-normal {
+  height: 60vh;
+  width: 45vh;
+  z-index: 1;
+}
+
+.scroll-animations-example > .scrollsection > .item.-normal.-horizontal {
+  height: 45vh;
+  width: 60vh;
+}
+
+.scroll-animations-example > .scrollsection > .item.-normal:nth-of-type(3n) {
+  border-color: var(--color-neon-lime);
+  box-shadow: 6px 6px 0px var(--color-neon-lime);
+}
+
+.scroll-animations-example > .scrollsection > .item.-normal:nth-of-type(4n) {
+  border-color: var(--color-neon-orange);
+  box-shadow: 6px 6px 0px var(--color-neon-orange);
+}
+
+.scroll-animations-example > .scrollsection > .item.-small {
+  height: 40vh;
+  width: 30vh;
+  z-index: 2;
+  border-color: var(--color-neon-magenta);
+  box-shadow: 6px 6px 0px var(--color-neon-magenta);
+}
+
+.scroll-animations-example > .scrollsection > .item.-small.-horizontal {
+  height: 30vh;
+  width: 40vh;
+}
+
+.scroll-animations-example > .scrollsection > .item.-small:nth-of-type(3n) {
+  border-color: var(--color-neon-cyan);
+  box-shadow: 6px 6px 0px var(--color-neon-cyan);
+}
+
+.scroll-animations-example > .scrollsection > .item.-small:nth-of-type(4n) {
+  border-color: var(--color-neon-lime);
+  box-shadow: 6px 6px 0px var(--color-neon-lime);
+}
+
+.scroll-animations-example > .scrollsection > .item > .image {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.8);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(0) translateY(0) scale(1);
+  transition:
+    filter 0.3s ease,
+    opacity 1s ease,
+    transform 1s ease;
+  border-radius: 8px;
+}
+
+.scroll-animations-example > .scrollsection > .item:nth-of-type(4n) > .image {
+  transform: translateX(-30vh) translateY(-30vh) scale(0.8);
+  transition-delay: 0;
+}
+
+.scroll-animations-example
+  > .scrollsection
+  > .item:nth-of-type(4n - 1)
+  > .image {
+  transform: translateX(30vh) translateY(30vh) scale(0.8);
+  transition-delay: 0.05s;
+}
+
+.scroll-animations-example
+  > .scrollsection
+  > .item:nth-of-type(4n - 2)
+  > .image {
+  transform: translateX(-30vh) translateY(30vh) scale(0.8);
+  transition-delay: 0.1s;
+}
+
+.scroll-animations-example
+  > .scrollsection
+  > .item:nth-of-type(4n - 3)
+  > .image {
+  transform: translateX(-30vh) translateY(-30vh) scale(0.8);
+  transition-delay: 0.15s;
+}
+
+.scroll-animations-example > .scrollsection > .item > .image.-active {
+  transform: translateX(0) translateY(0) scale(1);
+  opacity: 0.9;
+  pointer-events: auto;
+  transition:
+    filter 0.3s ease,
+    opacity 1s ease,
+    transform 1s ease;
+}
+
+.scroll-animations-example > .scrollsection > .item > .image.-clicked {
+  transform: translateX(0) translateY(0) scale(5);
+  opacity: 0;
+  pointer-events: auto;
+  transition:
+    filter 0.3s ease,
+    opacity 1s ease,
+    transform 1s ease;
+}
+
+.scroll-animations-example > .scrollsection > .item > .image.-active:hover {
+  filter: grayscale(0) brightness(1.1) contrast(1.1);
+  opacity: 1;
+  cursor: pointer;
+  transform: translateX(0) translateY(0) scale(1.05);
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .art-gallery-container {
+    left: 0;
+    width: 100%;
+  }
+
+  .back-button {
+    left: 2rem;
+  }
+
+  .scroll-animations-example > .scrollsection {
+    padding: 0 8vh;
+    min-width: 400vh;
+  }
+
+  .scroll-animations-example > .scrollsection > .item {
+    margin: 0 -20vh 0 2vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .back-button {
+    top: 1rem;
+    left: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .scroll-animations-example > .scrollsection {
+    padding: 0 5vh;
+    min-width: 300vh;
+  }
+
+  .scroll-animations-example > .scrollsection > .item {
+    margin: 0 -15vh 0 2vh;
+    border-width: 2px;
+  }
+
+  .scroll-animations-example > .scrollsection > .item.-big {
+    height: 60vh;
+    width: 45vh;
+  }
+
+  .scroll-animations-example > .scrollsection > .item.-big.-horizontal {
+    height: 45vh;
+    width: 60vh;
+  }
+
+  .scroll-animations-example > .scrollsection > .item.-normal {
+    height: 45vh;
+    width: 35vh;
+  }
+
+  .scroll-animations-example > .scrollsection > .item.-normal.-horizontal {
+    height: 35vh;
+    width: 45vh;
+  }
+
+  .scroll-animations-example > .scrollsection > .item.-small {
+    height: 30vh;
+    width: 25vh;
+  }
+
+  .scroll-animations-example > .scrollsection > .item.-small.-horizontal {
+    height: 25vh;
+    width: 30vh;
+  }
+}

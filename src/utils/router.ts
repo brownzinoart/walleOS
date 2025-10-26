@@ -1,14 +1,15 @@
 export type RouteComponentId =
-  | 'home'
-  | 'projects'
-  | 'project-weready'
-  | 'project-listingpal'
-  | 'project-echo'
-  | 'project-briefflow'
-  | 'project-clockit'
-  | 'project-hq'
-  | 'resume'
-  | 'for-fun';
+  | "home"
+  | "projects"
+  | "project-weready"
+  | "project-listingpal"
+  | "project-echo"
+  | "project-briefflow"
+  | "project-clockit"
+  | "project-hq"
+  | "resume"
+  | "for-fun"
+  | "art-gallery";
 
 export type Route = {
   path: string;
@@ -21,31 +22,76 @@ export type RouterState = {
   routes: Map<string, Route>;
 };
 
-const DEFAULT_ROUTE: RouteComponentId = 'home';
+const DEFAULT_ROUTE: RouteComponentId = "home";
 
 const routerState: RouterState = {
   currentRoute: DEFAULT_ROUTE,
   routes: new Map([
-    ['#home', { path: '#home', component: 'home', title: 'Home' }],
-    ['#projects', { path: '#projects', component: 'projects', title: 'Projects' }],
-    ['#project-weready', { path: '#project-weready', component: 'project-weready', title: 'WeReady Case Study' }],
-    ['#project-listingpal', { path: '#project-listingpal', component: 'project-listingpal', title: 'ListingPal Case Study' }],
-    ['#project-echo', { path: '#project-echo', component: 'project-echo', title: 'Echo Case Study' }],
-    ['#project-briefflow', { path: '#project-briefflow', component: 'project-briefflow', title: 'BriefFlow Case Study' }],
-    ['#project-clockit', { path: '#project-clockit', component: 'project-clockit', title: 'ClockIt Case Study' }],
-    ['#project-hq', { path: '#project-hq', component: 'project-hq', title: 'HQ Case Study' }],
-    ['#resume', { path: '#resume', component: 'resume', title: 'Resume' }],
-    ['#for-fun', { path: '#for-fun', component: 'for-fun', title: 'For Fun' }],
+    ["#home", { path: "#home", component: "home", title: "Home" }],
+    [
+      "#projects",
+      { path: "#projects", component: "projects", title: "Projects" },
+    ],
+    [
+      "#project-weready",
+      {
+        path: "#project-weready",
+        component: "project-weready",
+        title: "WeReady Case Study",
+      },
+    ],
+    [
+      "#project-listingpal",
+      {
+        path: "#project-listingpal",
+        component: "project-listingpal",
+        title: "ListingPal Case Study",
+      },
+    ],
+    [
+      "#project-echo",
+      {
+        path: "#project-echo",
+        component: "project-echo",
+        title: "Echo Case Study",
+      },
+    ],
+    [
+      "#project-briefflow",
+      {
+        path: "#project-briefflow",
+        component: "project-briefflow",
+        title: "BriefFlow Case Study",
+      },
+    ],
+    [
+      "#project-clockit",
+      {
+        path: "#project-clockit",
+        component: "project-clockit",
+        title: "ClockIt Case Study",
+      },
+    ],
+    [
+      "#project-hq",
+      { path: "#project-hq", component: "project-hq", title: "HQ Case Study" },
+    ],
+    ["#resume", { path: "#resume", component: "resume", title: "Resume" }],
+    ["#for-fun", { path: "#for-fun", component: "for-fun", title: "For Fun" }],
+    [
+      "#for-fun/art-gallery",
+      { path: "#for-fun/art-gallery", component: "art-gallery", title: "Art Gallery" },
+    ],
   ]),
 };
 
 export const getCurrentRoute = (): RouteComponentId => {
-  const hash = window.location.hash || '#home';
+  const hash = window.location.hash || "#home";
   return routerState.routes.get(hash)?.component || DEFAULT_ROUTE;
 };
 
 export const getRouteTitle = (route: RouteComponentId): string => {
-  return routerState.routes.get(`#${route}`)?.title || 'Home';
+  return routerState.routes.get(`#${route}`)?.title || "Home";
 };
 
 export const navigateTo = (route: RouteComponentId): void => {
@@ -66,14 +112,16 @@ export const initRouter = (): void => {
     const newRoute = getCurrentRoute();
     if (newRoute !== routerState.currentRoute) {
       routerState.currentRoute = newRoute;
-      document.dispatchEvent(new CustomEvent('route:change', {
-        detail: { route: newRoute }
-      }));
+      document.dispatchEvent(
+        new CustomEvent("route:change", {
+          detail: { route: newRoute },
+        }),
+      );
     }
   };
 
   // Listen for hash changes
-  window.addEventListener('hashchange', handleHashChange);
+  window.addEventListener("hashchange", handleHashChange);
 
   // Handle initial route
   handleHashChange();
