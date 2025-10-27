@@ -63,16 +63,19 @@
 
 .scroll-animations-example > .scrollsection {
   padding: 10vh 10vh 0 10vh;
-  min-width: 550vh;
   height: 100%;
   display: flex;
-  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: 8vh;
+  align-items: flex-end;
+  width: max-content;
+  padding-inline-end: 20vh;
 }
 
 .scroll-animations-example > .scrollsection > .item {
   display: inline-block;
   position: relative;
-  margin: 0 -30vh 0 3vh;
+  margin: 0;
   border: 3px solid var(--color-neon-cyan);
   border-radius: 12px;
   overflow: hidden;
@@ -80,6 +83,8 @@
   background: var(--color-surface);
   flex-shrink: 0;
   vertical-align: middle;
+  height: var(--item-height, 48vh);
+  aspect-ratio: var(--aspect-ratio, 0.75);
 }
 
 .scroll-animations-example > .scrollsection > .item::before {
@@ -90,24 +95,20 @@
 }
 
 .scroll-animations-example > .scrollsection > .item.-big {
-  height: 80vh;
-  width: 60vh;
+  --item-height: 70vh;
 }
 
 .scroll-animations-example > .scrollsection > .item.-big.-horizontal {
-  height: 60vh;
-  width: 80vh;
+  --item-height: 60vh;
 }
 
 .scroll-animations-example > .scrollsection > .item.-normal {
-  height: 60vh;
-  width: 45vh;
+  --item-height: 55vh;
   z-index: 1;
 }
 
 .scroll-animations-example > .scrollsection > .item.-normal.-horizontal {
-  height: 45vh;
-  width: 60vh;
+  --item-height: 48vh;
 }
 
 .scroll-animations-example > .scrollsection > .item.-normal:nth-of-type(3n) {
@@ -121,16 +122,14 @@
 }
 
 .scroll-animations-example > .scrollsection > .item.-small {
-  height: 40vh;
-  width: 30vh;
+  --item-height: 45vh;
   z-index: 2;
   border-color: var(--color-neon-magenta);
   box-shadow: 6px 6px 0px var(--color-neon-magenta);
 }
 
 .scroll-animations-example > .scrollsection > .item.-small.-horizontal {
-  height: 30vh;
-  width: 40vh;
+  --item-height: 40vh;
 }
 
 .scroll-animations-example > .scrollsection > .item.-small:nth-of-type(3n) {
@@ -150,8 +149,8 @@
   top: 0;
   left: 0;
   object-fit: cover;
-  filter: grayscale(1) brightness(0.8);
-  opacity: 0;
+  filter: grayscale(1) brightness(0.6);
+  opacity: 0.1;
   pointer-events: none;
   transform: translateX(0) translateY(0) scale(1);
   transition:
@@ -159,36 +158,10 @@
     opacity 1s ease,
     transform 1s ease;
   border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.scroll-animations-example > .scrollsection > .item:nth-of-type(4n) > .image {
-  transform: translateX(-30vh) translateY(-30vh) scale(0.8);
-  transition-delay: 0;
-}
 
-.scroll-animations-example
-  > .scrollsection
-  > .item:nth-of-type(4n - 1)
-  > .image {
-  transform: translateX(30vh) translateY(30vh) scale(0.8);
-  transition-delay: 0.05s;
-}
-
-.scroll-animations-example
-  > .scrollsection
-  > .item:nth-of-type(4n - 2)
-  > .image {
-  transform: translateX(-30vh) translateY(30vh) scale(0.8);
-  transition-delay: 0.1s;
-}
-
-.scroll-animations-example
-  > .scrollsection
-  > .item:nth-of-type(4n - 3)
-  > .image {
-  transform: translateX(-30vh) translateY(-30vh) scale(0.8);
-  transition-delay: 0.15s;
-}
 
 .scroll-animations-example > .scrollsection > .item > .image.-active {
   transform: translateX(0) translateY(0) scale(1);
@@ -196,8 +169,8 @@
   pointer-events: auto;
   transition:
     filter 0.3s ease,
-    opacity 1s ease,
-    transform 1s ease;
+    opacity 0.4s ease,
+    transform 0.6s ease;
 }
 
 .scroll-animations-example > .scrollsection > .item > .image.-clicked {
@@ -234,11 +207,11 @@
 
   .scroll-animations-example > .scrollsection {
     padding: 10vh 8vh 0 8vh;
-    min-width: 400vh;
+    gap: 6vh;
   }
 
   .scroll-animations-example > .scrollsection > .item {
-    margin: 0 -20vh 0 2vh;
+    margin: 0;
   }
 }
 

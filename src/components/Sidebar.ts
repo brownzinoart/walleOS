@@ -485,7 +485,7 @@ export const handleNavActivation = (
       itemId === "home" ||
       itemId === "projects" ||
       itemId === "resume" ||
-      itemId === "for-fun"
+      itemId === "playground"
     ) {
       navigateTo(itemId);
       setActiveNavItem(itemId);

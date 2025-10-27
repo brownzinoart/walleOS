@@ -8,7 +8,7 @@ export type RouteComponentId =
   | "project-clockit"
   | "project-hq"
   | "resume"
-  | "for-fun"
+  | "playground"
   | "art-gallery";
 
 export type Route = {
@@ -77,10 +77,10 @@ const routerState: RouterState = {
       { path: "#project-hq", component: "project-hq", title: "HQ Case Study" },
     ],
     ["#resume", { path: "#resume", component: "resume", title: "Resume" }],
-    ["#for-fun", { path: "#for-fun", component: "for-fun", title: "For Fun" }],
+    ["#playground", { path: "#playground", component: "playground", title: "Playground" }],
     [
-      "#for-fun/art-gallery",
-      { path: "#for-fun/art-gallery", component: "art-gallery", title: "Art Gallery" },
+      "#playground/art-gallery",
+      { path: "#playground/art-gallery", component: "art-gallery", title: "Art Gallery" },
     ],
   ]),
 };

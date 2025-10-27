@@ -8,7 +8,7 @@
     { "id": "home", "label": "Home", "icon": "🏠" },
     { "id": "resume", "label": "Resume", "icon": "📄" },
     { "id": "projects", "label": "Projects", "icon": "🚀" },
-    { "id": "for-fun", "label": "For Fun", "icon": "🎮" }
+    { "id": "playground", "label": "Playground", "icon": "🎮" }
   ],
   "contact": {
     "email": "[your-email@example.com]",

@@ -18,7 +18,7 @@ const lazyRouteLoaders: LazyRouteMap = {
     import("./projectClockIt").then((mod) => mod.default),
   "project-hq": () => import("./projectHQ").then((mod) => mod.default),
   resume: () => import("./resume").then((mod) => mod.default),
-  "for-fun": () => import("./forFun").then((mod) => mod.default),
+  "playground": () => import("./playground/index"),
   "art-gallery": () => import("./artGallery").then((mod) => mod.default),
 };
 

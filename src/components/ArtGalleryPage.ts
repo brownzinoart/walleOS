@@ -1,11 +1,64 @@
 // Type declaration for LocomotiveScroll
+import { ART_GALLERY_IMAGES } from "@/config/artGalleryImages";
+
+type LocomotiveScrollOptions = {
+  el: Element | null;
+  direction?: string;
+  smooth?: boolean;
+  lerp?: number;
+  tablet?: Record<string, unknown>;
+  smartphone?: Record<string, unknown>;
+};
+
+type LocomotiveScrollInstance = {
+  destroy: () => void;
+};
+
+type LocomotiveScrollStatic = new (
+  options: LocomotiveScrollOptions,
+) => LocomotiveScrollInstance;
+
 declare global {
   interface Window {
-    LocomotiveScroll: any;
+    LocomotiveScroll?: LocomotiveScrollStatic;
   }
 }
 
 export const renderArtGalleryPage = (): string => {
+  const galleryItems = ART_GALLERY_IMAGES.map((item, index) => {
+    const itemClasses = [
+      "item",
+      `-${item.variant}`,
+      item.isHorizontal ? "-horizontal" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const imagePath = `/playground/optimized/${item.filename}`;
+    const fetchPriority = index === 0 ? "high" : "low";
+    const aspectRatio = (item.width / item.height).toFixed(4);
+
+    return `
+            <div
+              class="${itemClasses}"
+              data-scroll
+              data-scroll-speed="${item.scrollSpeed}"
+              style="--aspect-ratio: ${aspectRatio};"
+            >
+              <img
+                class="image"
+                src="${imagePath}"
+                alt="${item.alt}"
+                width="${item.width}"
+                height="${item.height}"
+                loading="lazy"
+                decoding="async"
+                fetchpriority="${fetchPriority}"
+              >
+            </div>
+    `;
+  }).join("");
+
   return `
     <div class='art-gallery-container'>
       <button class="back-button" onclick="history.back()">
@@ -14,67 +67,8 @@ export const renderArtGalleryPage = (): string => {
 
       <main class="art-gallery-content">
         <div class='scroll-animations-example' data-scroll-container>
-          <div class='scrollsection' data-scroll-section>
-            <div class='item -normal' data-scroll data-scroll-speed="2">
-              <img class='image' src='https://picsum.photos/id/1005/300/400'>
-            </div>
-            <div class='item -big' data-scroll data-scroll-speed="1">
-              <img class='image' src='https://picsum.photos/id/1019/600/800'>
-            </div>
-            <div class='item -small -horizontal' data-scroll data-scroll-speed="4">
-              <img class='image' src='https://picsum.photos/id/1027/400/300'>
-            </div>
-            <div class='item -normal' data-scroll data-scroll-speed="3">
-              <img class='image' src='https://picsum.photos/id/1028/300/400'>
-            </div>
-            <div class='item -normal -horizontal' data-scroll data-scroll-speed="2">
-              <img class='image' src='https://picsum.photos/id/1041/400/300'>
-            </div>
-            <div class='item -big -horizontal' data-scroll data-scroll-speed="4">
-              <img class='image' src='https://picsum.photos/id/1042/800/600'>
-            </div>
-            <div class='item -small' data-scroll data-scroll-speed="2">
-              <img class='image' src='https://picsum.photos/id/1049/300/400'>
-            </div>
-            <div class='item -normal -horizontal' data-scroll data-scroll-speed="1">
-              <img class='image' src='https://picsum.photos/id/1056/300/400'>
-            </div>
-            <div class='item -small -horizontal' data-scroll data-scroll-speed="3">
-              <img class='image' src='https://picsum.photos/id/1062/400/300'>
-            </div>
-            <div class='item -big' data-scroll data-scroll-speed="1">
-              <img class='image' src='https://picsum.photos/id/1068/600/800'>
-            </div>
-            <div class='item -normal -horizontal' data-scroll data-scroll-speed="2">
-              <img class='image' src='https://picsum.photos/id/1069/400/300'>
-            </div>
-            <div class='item -normal -horizontal' data-scroll data-scroll-speed="1">
-              <img class='image' src='https://picsum.photos/id/1072/300/400'>
-            </div>
-            <div class='item -small -horizontal' data-scroll data-scroll-speed="4">
-              <img class='image' src='https://picsum.photos/id/1075/400/300'>
-            </div>
-            <div class='item -big' data-scroll data-scroll-speed="3">
-              <img class='image' src='https://picsum.photos/id/1081/600/800'>
-            </div>
-            <div class='item -normal -horizontal' data-scroll data-scroll-speed="2">
-              <img class='image' src='https://picsum.photos/id/111/400/300'>
-            </div>
-            <div class='item -small -horizontal' data-scroll data-scroll-speed="4">
-              <img class='image' src='https://picsum.photos/id/129/400/300'>
-            </div>
-            <div class='item -big' data-scroll data-scroll-speed="2">
-              <img class='image' src='https://picsum.photos/id/137/600/800'>
-            </div>
-            <div class='item -normal -horizontal' data-scroll data-scroll-speed="1">
-              <img class='image' src='https://picsum.photos/id/141/300/400'>
-            </div>
-            <div class='item -small -horizontal' data-scroll data-scroll-speed="3">
-              <img class='image' src='https://picsum.photos/id/145/400/300'>
-            </div>
-            <div class='item -normal' data-scroll data-scroll-speed="1">
-              <img class='image' src='https://picsum.photos/id/147/300/400'>
-            </div>
+          <div class='scrollsection' data-scroll-section style='--gallery-count: ${ART_GALLERY_IMAGES.length};'>
+            ${galleryItems}
           </div>
         </div>
       </main>
@@ -83,14 +77,15 @@ export const renderArtGalleryPage = (): string => {
 };
 
 class ArtGalleryScroll {
-  private scroll: any;
-  private images: NodeListOf<Element> = document.querySelectorAll(".image");
+  private scroll: LocomotiveScrollInstance | null = null;
+  private images: NodeListOf<HTMLImageElement>;
   private root: HTMLElement;
 
   constructor(root: HTMLElement) {
     this.root = root;
+    this.images = this.root.querySelectorAll<HTMLImageElement>(".image");
     this.init();
-    setTimeout(this.showImages.bind(this), 1000);
+    setTimeout(this.showImages.bind(this), 200);
   }
 
   private init() {
@@ -125,7 +120,10 @@ class ArtGalleryScroll {
   private setupScroll() {
     if (typeof window === "undefined" || !window.LocomotiveScroll) return;
 
-    this.scroll = new window.LocomotiveScroll({
+    const ScrollConstructor = window.LocomotiveScroll;
+    if (!ScrollConstructor) return;
+
+    this.scroll = new ScrollConstructor({
       el: this.root.querySelector(".scroll-animations-example"),
       direction: "horizontal",
       smooth: true,

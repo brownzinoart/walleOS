@@ -1038,7 +1038,7 @@ document.addEventListener('sidebar:navigate', (event) => {
     return;
   }
 
-  if (navId === 'home' || navId === 'projects' || navId === 'resume' || navId === 'for-fun') {
+  if (navId === 'home' || navId === 'projects' || navId === 'resume' || navId === 'playground') {
     setActiveNavItem(navId, { silent: true });
   }
 });

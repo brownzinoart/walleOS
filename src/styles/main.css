@@ -1,7 +1,7 @@
 @import "./design-tokens.css";
 @import "./typography.css";
 @import "./components.css";
-@import "./components/for-fun.css";
+@import "./components/playground.css";
 @import "./art-gallery.css";
 
 @tailwind base;

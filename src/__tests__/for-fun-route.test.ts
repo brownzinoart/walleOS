@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ForFunSlide } from '@/config/forFunContent';
+import type { PlaygroundSlide } from '@/config/playgroundContent';
 
 describe('for-fun route wiring', () => {
   beforeEach(async () => {
@@ -21,9 +21,9 @@ describe('for-fun route wiring', () => {
     const routerModule = await import('@/utils/router');
     const { navigateTo, getRouteTitle } = routerModule;
 
-    expect(getRouteTitle('for-fun')).toBe('For Fun');
+    expect(getRouteTitle('playground')).toBe('Playground');
 
-    navigateTo('for-fun');
+    navigateTo('playground');
 
     expect(window.location.hash).toBe('#for-fun');
     expect(document.title).toBe('For Fun - WalleOS');

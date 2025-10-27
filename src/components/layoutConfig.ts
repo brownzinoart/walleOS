@@ -6,4 +6,4 @@ export const MAIN_CONTENT_FOR_FUN_PADDING = 'for-fun-container';
 
 export const getMainContentPaddingClass = (
   route: RouteComponentId,
-): string => (route === 'for-fun' ? MAIN_CONTENT_FOR_FUN_PADDING : MAIN_CONTENT_DEFAULT_PADDING);
+): string => (route === 'playground' ? MAIN_CONTENT_FOR_FUN_PADDING : MAIN_CONTENT_DEFAULT_PADDING);

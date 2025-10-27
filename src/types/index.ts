@@ -11,7 +11,7 @@ export type {
   ContentConfig,
 } from '@/config/content';
 
-export type { ForFunContent, ForFunSlide } from '@/config/forFunContent';
+export type { PlaygroundContent, PlaygroundSlide } from '@/config/playgroundContent';
 
 export interface LayoutState {
   isSidebarOpen: boolean;

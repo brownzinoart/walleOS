@@ -1,0 +1,171 @@
+export type ArtGalleryImageVariant = "small" | "normal" | "big";
+
+export type ArtGalleryImage = {
+  filename: string;
+  alt: string;
+  width: number;
+  height: number;
+  variant: ArtGalleryImageVariant;
+  isHorizontal?: boolean;
+  scrollSpeed: number;
+};
+
+export const ART_GALLERY_IMAGES: ArtGalleryImage[] = [
+  {
+    filename: "modern_love.jpg",
+    alt: "Modern Love — abstract expression with warm neon palette",
+    width: 1600,
+    height: 1236,
+    variant: "big",
+    isHorizontal: true,
+    scrollSpeed: 1,
+  },
+  {
+    filename: "phone_who.jpg",
+    alt: "Phone Who — elongated surreal portrait",
+    width: 1280,
+    height: 1600,
+    variant: "big",
+    scrollSpeed: 2,
+  },
+  {
+    filename: "you_stole_my_heart.jpg",
+    alt: "You Stole My Heart — illustrative mixed-media portrait",
+    width: 1400,
+    height: 1600,
+    variant: "normal",
+    scrollSpeed: 4,
+  },
+  {
+    filename: "cosmic_confusion.jpg",
+    alt: "Cosmic Confusion — vibrant celestial collage",
+    width: 1600,
+    height: 1600,
+    variant: "normal",
+    isHorizontal: true,
+    scrollSpeed: 1,
+  },
+  {
+    filename: "ancient_blender.jpg",
+    alt: "Ancient Blender — futuristic still life with ornate textures",
+    width: 1600,
+    height: 900,
+    variant: "big",
+    isHorizontal: true,
+    scrollSpeed: 3,
+  },
+  {
+    filename: "ancient_diner.jpg",
+    alt: "Ancient Diner — moody retro diner study",
+    width: 1542,
+    height: 1600,
+    variant: "big",
+    scrollSpeed: 2,
+  },
+  {
+    filename: "royal_guardian.jpg",
+    alt: "Royal Guardian — regal figure in ceremonial attire",
+    width: 1600,
+    height: 1501,
+    variant: "big",
+    scrollSpeed: 4,
+  },
+  {
+    filename: "painting.jpg",
+    alt: "Painting — vibrant studio work in progress",
+    width: 1148,
+    height: 1600,
+    variant: "big",
+    scrollSpeed: 3,
+  },
+  {
+    filename: "you_choose.jpg",
+    alt: "You Choose — expressive brushwork portrait",
+    width: 1257,
+    height: 1600,
+    variant: "normal",
+    scrollSpeed: 4,
+  },
+  {
+    filename: "calm_blossom.jpg",
+    alt: "Calm Blossom — delicate floral vignette",
+    width: 1200,
+    height: 1600,
+    variant: "small",
+    scrollSpeed: 2,
+  },
+  {
+    filename: "bad_day.jpg",
+    alt: "Bad Day — expressive monochrome portrait",
+    width: 1257,
+    height: 1600,
+    variant: "normal",
+    scrollSpeed: 1,
+  },
+  {
+    filename: "bad_day2.jpg",
+    alt: "Bad Day II — companion piece with distorted perspective",
+    width: 1231,
+    height: 1600,
+    variant: "small",
+    scrollSpeed: 3,
+  },
+  {
+    filename: "horizons.jpg",
+    alt: "Horizons — expansive dreamscape horizon study",
+    width: 1280,
+    height: 1600,
+    variant: "normal",
+    scrollSpeed: 2,
+  },
+  {
+    filename: "in_the_wild.jpg",
+    alt: "In The Wild — photo-real mixed-media wildlife portrait",
+    width: 1582,
+    height: 1600,
+    variant: "normal",
+    scrollSpeed: 1,
+  },
+  {
+    filename: "mixlate.jpg",
+    alt: "Mixlate — glitchy split-toned headshot",
+    width: 1600,
+    height: 1117,
+    variant: "normal",
+    isHorizontal: true,
+    scrollSpeed: 3,
+  },
+  {
+    filename: "I_me_you_he.jpg",
+    alt: "I, Me, You, He — layered typographic portrait",
+    width: 1078,
+    height: 1600,
+    variant: "small",
+    scrollSpeed: 4,
+  },
+  {
+    filename: "wallcasso.jpg",
+    alt: "Wallcasso — cubist wall portrait study",
+    width: 1400,
+    height: 1600,
+    variant: "normal",
+    scrollSpeed: 2,
+  },
+  {
+    filename: "thats_love.jpg",
+    alt: "That's Love — retro-futuristic character moment",
+    width: 1236,
+    height: 1600,
+    variant: "small",
+    scrollSpeed: 4,
+  },
+  {
+    filename: "when_then.jpg",
+    alt: "When Then — synthwave architectural composition",
+    width: 1600,
+    height: 1100,
+    variant: "normal",
+    isHorizontal: true,
+    scrollSpeed: 1,
+  },
+];
