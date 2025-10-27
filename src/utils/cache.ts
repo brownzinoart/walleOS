@@ -502,7 +502,7 @@ export const apiCache = new AdvancedCache<unknown>({
   enablePersistence: false,
 });
 
-// Cache decorator for functions
+// Cache decorator used on functions
 export function cached<T extends (...args: unknown[]) => unknown>(
   cache: AdvancedCache<Awaited<ReturnType<T>>>,
   options?: {

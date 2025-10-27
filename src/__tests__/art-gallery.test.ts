@@ -19,15 +19,14 @@ describe("ArtGalleryPage", () => {
       const markup = renderArtGalleryPage();
 
       expect(markup).toContain("art-gallery-container");
-      expect(markup).toContain("art-gallery-header");
+      expect(markup).toContain("art-gallery-content");
       expect(markup).toContain("back-button");
-      expect(markup).toContain("Art Gallery");
     });
 
     it("should include navigation elements", () => {
       const markup = renderArtGalleryPage();
 
-      expect(markup).toContain("Back to For Fun");
+      expect(markup).toContain("Back");
       expect(markup).toContain('onclick="history.back()"');
     });
 
@@ -45,8 +44,8 @@ describe("ArtGalleryPage", () => {
 
       expect(markup).toContain("data-scroll");
       expect(markup).toContain("data-scroll-speed");
-      expect(markup).toContain("class='image'");
-      expect(markup).toContain("picsum.photos");
+      expect(markup).toContain('class="image"');
+      expect(markup).toContain("/playground/optimized/");
     });
 
     it("should include different item sizes", () => {
@@ -58,12 +57,12 @@ describe("ArtGalleryPage", () => {
       expect(markup).toContain("-horizontal");
     });
 
-    it("should use stock images from Picsum", () => {
+    it("should include optimized playground images", () => {
       const markup = renderArtGalleryPage();
 
-      expect(markup).toContain("https://picsum.photos/id/1005/300/400");
-      expect(markup).toContain("https://picsum.photos/id/1019/600/800");
-      expect(markup).toContain("https://picsum.photos/id/1027/400/300");
+      expect(markup).toContain("/playground/optimized/modern_love.jpg");
+      expect(markup).toContain("/playground/optimized/phone_who.jpg");
+      expect(markup).toContain("/playground/optimized/you_stole_my_heart.jpg");
     });
   });
 

@@ -77,7 +77,7 @@ import type { RouteModule } from '@/routes/types';
 import {
   MAIN_CONTENT_BASE_CLASSES,
   MAIN_CONTENT_DEFAULT_PADDING,
-  MAIN_CONTENT_FOR_FUN_PADDING,
+  MAIN_CONTENT_PLAYGROUND_PADDING,
   getMainContentPaddingClass,
 } from '@/components/layoutConfig';
 import { setCaseStudyReferrerRoute } from '@/components/ProjectCaseStudyPage';
@@ -229,7 +229,7 @@ const applyMainContentPadding = (route: RouteComponentId) => {
 
   const removableClasses = [
     MAIN_CONTENT_DEFAULT_PADDING,
-    MAIN_CONTENT_FOR_FUN_PADDING,
+    MAIN_CONTENT_PLAYGROUND_PADDING,
   ];
 
   removableClasses.forEach((group) => {

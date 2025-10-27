@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PlaygroundSlide } from '@/config/playgroundContent';
 
-describe('for-fun route wiring', () => {
+describe('Playground route wiring', () => {
   beforeEach(async () => {
     // Ensure fresh module state and reset document context
     vi.resetModules();
@@ -9,15 +9,15 @@ describe('for-fun route wiring', () => {
     document.title = 'WalleOS';
   });
 
-  it('exposes a navigation entry for the For Fun route', async () => {
+  it('exposes a navigation entry for the Playground route', async () => {
     const contentModule = await import('@/config/content');
     const { navigation } = contentModule;
 
-    const hasForFunNav = navigation.some((item) => item.id === 'for-fun');
-    expect(hasForFunNav).toBe(true);
+    const hasPlaygroundNav = navigation.some((item) => item.id === 'playground');
+    expect(hasPlaygroundNav).toBe(true);
   });
 
-  it('updates hash and title when navigating to the For Fun route', async () => {
+  it('updates hash and title when navigating to the Playground route', async () => {
     const routerModule = await import('@/utils/router');
     const { navigateTo, getRouteTitle } = routerModule;
 
@@ -25,46 +25,46 @@ describe('for-fun route wiring', () => {
 
     navigateTo('playground');
 
-    expect(window.location.hash).toBe('#for-fun');
-    expect(document.title).toBe('For Fun - WalleOS');
+    expect(window.location.hash).toBe('#playground');
+    expect(document.title).toBe('Playground - WalleOS');
   });
 });
 
-describe('for-fun page layout', () => {
+describe('Playground page layout', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
   });
 
   it('renders a bento grid with cards for each slide', async () => {
-    const [{ renderForFunPage }, { forFunSlides }] = await Promise.all([
-      import('@/components/ForFunPage'),
-      import('@/config/forFunContent'),
+    const [{ render }, { playgroundSlides }] = await Promise.all([
+      import('@/routes/playground/index'),
+      import('@/config/playgroundContent'),
     ]);
 
-    document.body.innerHTML = renderForFunPage();
+    document.body.innerHTML = render();
 
-    const root = document.querySelector('[data-for-fun-root]');
+    const root = document.querySelector('[data-playground-root]');
     expect(root).not.toBeNull();
 
     const grid = root?.querySelector('.bento-grid-container');
     expect(grid).not.toBeNull();
 
     const cards = root?.querySelectorAll('[data-bento-card]') ?? [];
-    expect(cards.length).toBe(forFunSlides.length);
+    expect(cards.length).toBe(playgroundSlides.length);
 
-    forFunSlides.forEach(({ title, category }) => {
+    playgroundSlides.forEach(({ title, category }) => {
       expect(root?.textContent?.includes(title)).toBe(true);
       expect(root?.textContent?.includes(category)).toBe(true);
     });
   });
 
   it('applies card size classes and accent styling', async () => {
-    const [{ renderForFunPage }, { getBentoCardSize }] = await Promise.all([
-      import('@/components/ForFunPage'),
-      import('@/config/forFunContent'),
+    const [{ render }, { getBentoCardSize }] = await Promise.all([
+      import('@/routes/playground/index'),
+      import('@/config/playgroundContent'),
     ]);
 
-    document.body.innerHTML = renderForFunPage();
+    document.body.innerHTML = render();
 
     const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-bento-card]'));
     expect(cards).not.toHaveLength(0);
@@ -81,20 +81,20 @@ describe('for-fun page layout', () => {
   it('falls back to auto placement when slides exceed defined positions', async () => {
     vi.resetModules();
 
-    const mockSlides: ForFunSlide[] = Array.from({ length: 9 }, (_, index) => ({
+    const mockSlides: PlaygroundSlide[] = Array.from({ length: 9 }, (_, index) => ({
       title: `Mock Slide ${index + 1}`,
       category: 'Mock Category',
       backgroundImage: `/mock-background-${index + 1}.jpg`,
       foregroundImage: `/mock-foreground-${index + 1}.png`,
     }));
 
-    const actualModule = await vi.importActual<typeof import('@/config/forFunContent')>(
-      '@/config/forFunContent',
+    const actualModule = await vi.importActual<typeof import('@/config/playgroundContent')>(
+      '@/config/playgroundContent',
     );
 
-    vi.doMock('@/config/forFunContent', () => ({
+    vi.doMock('@/config/playgroundContent', () => ({
       ...actualModule,
-      forFunSlides: mockSlides,
+      playgroundSlides: mockSlides,
       getBentoCardSize: (index: number): ReturnType<typeof actualModule.getBentoCardSize> => {
         const fallbackSizes = ['xl', 'lg', 'tall', 'md', 'md', 'wide', 'lg'] as const;
 
@@ -108,9 +108,9 @@ describe('for-fun page layout', () => {
       },
     }));
 
-    const { renderForFunPage } = await import('@/components/ForFunPage');
+    const { render } = await import('@/routes/playground/index');
 
-    document.body.innerHTML = renderForFunPage();
+    document.body.innerHTML = render();
 
     const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-bento-card]'));
     expect(cards).toHaveLength(mockSlides.length);
@@ -124,7 +124,7 @@ describe('for-fun page layout', () => {
       expect(style.includes('grid-row: auto')).toBe(true);
     });
 
-    vi.doUnmock('@/config/forFunContent');
+    vi.doUnmock('@/config/playgroundContent');
     vi.resetModules();
   });
 });

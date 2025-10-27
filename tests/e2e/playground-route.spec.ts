@@ -1,19 +1,19 @@
 import { test, expect } from '@playwright/test';
 
-const FOR_FUN_HASH = '#for-fun';
+const PLAYGROUND_HASH = '#playground';
 
-test.describe('For Fun route navigation', () => {
+test.describe('Playground route navigation', () => {
   test('navigates via sidebar button and renders bento grid', async ({ page }) => {
     await page.goto('/');
 
-    const forFunNav = page.getByRole('button', { name: 'For Fun' });
-    await forFunNav.click();
+    const playgroundNav = page.getByRole('button', { name: 'Playground' });
+    await playgroundNav.click();
 
-    await expect(page).toHaveURL(new RegExp(`${FOR_FUN_HASH}$`));
-    await expect(page).toHaveTitle(/For Fun - WalleOS$/);
+    await expect(page).toHaveURL(new RegExp(`${PLAYGROUND_HASH}$`));
+    await expect(page).toHaveTitle(/Playground - WalleOS$/);
 
-    const forFunSection = page.locator('[data-for-fun-root]');
-    await expect(forFunSection).toBeVisible();
+    const playgroundSection = page.locator('[data-playground-root]');
+    await expect(playgroundSection).toBeVisible();
     await expect(page.locator('.bento-grid-container')).toBeVisible();
 
     const cards = page.locator('[data-bento-card]');
@@ -21,8 +21,8 @@ test.describe('For Fun route navigation', () => {
     await expect(cards.first().locator('.bento-card__title')).toContainText(/Neon Drift/i);
   });
 
-  test('loads For Fun route directly via hash', async ({ page }) => {
-    await page.goto(`/${FOR_FUN_HASH}`);
+  test('loads Playground route directly via hash', async ({ page }) => {
+    await page.goto(`/${PLAYGROUND_HASH}`);
 
     const grid = page.locator('.bento-grid-container');
     await expect(grid).toBeVisible();
@@ -30,7 +30,7 @@ test.describe('For Fun route navigation', () => {
   });
 
   test('animates cards on hover', async ({ page }) => {
-    await page.goto(`/${FOR_FUN_HASH}`);
+    await page.goto(`/${PLAYGROUND_HASH}`);
 
     const card = page.locator('[data-bento-card]').first();
     const initialTransform = await card.evaluate((element) => getComputedStyle(element).transform);
@@ -44,7 +44,7 @@ test.describe('For Fun route navigation', () => {
 
   test('collapses to a single column layout on mobile widths', async ({ page }) => {
     await page.setViewportSize({ width: 640, height: 960 });
-    await page.goto(`/${FOR_FUN_HASH}`);
+    await page.goto(`/${PLAYGROUND_HASH}`);
 
     const columnTemplate = await page
       .locator('.bento-grid-container')
@@ -55,7 +55,7 @@ test.describe('For Fun route navigation', () => {
 
   test('respects reduced motion preference', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto(`/${FOR_FUN_HASH}`);
+    await page.goto(`/${PLAYGROUND_HASH}`);
 
     const transitionDuration = await page
       .locator('[data-bento-card]')

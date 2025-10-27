@@ -1,4 +1,5 @@
 import { ZhipuAI } from "zhipuai";
+import type { ChatCompletionChunk } from "zhipuai";
 import envConfig from "../config/env.js";
 
 export class GlmServiceError extends Error {
@@ -29,7 +30,7 @@ export async function* streamGlmChatResponse(
   });
 
   try {
-    const stream = await client.chat.completions.create({
+    const stream: AsyncIterable<ChatCompletionChunk> = await client.chat.completions.create({
       model,
       messages,
       stream: true,
@@ -37,7 +38,7 @@ export async function* streamGlmChatResponse(
       max_tokens: 1000,
     });
 
-    for await (const chunk of stream as any) {
+    for await (const chunk of stream) {
       const content = chunk.choices?.[0]?.delta?.content;
       if (content) {
         yield content;

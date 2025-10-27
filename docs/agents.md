@@ -35,7 +35,7 @@ Derived from tone analysis of the uploaded RAG corpus:
 - `redact(text)` → masks PII flagged as sensitive unless explicitly whitelisted.
 - `context7_search(query)` → resolves library IDs and metadata from the Context7 MCP proxy.
 - `context7_docs(libraryId, tokens?, topic?)` → fetches up-to-date documentation from Context7 for grounding technical answers.
-- Data stores: `resume`, `projects`, `skills`, `timeline`, `plans`, plus optional `for_fun`.
+- Data stores: `resume`, `projects`, `skills`, `timeline`, `plans`, plus optional `playground`.
 
 ## 6. Conversation Architecture
 - Built as a LangGraph (or comparable) workflow with the following nodes:
@@ -67,7 +67,7 @@ Derived from tone analysis of the uploaded RAG corpus:
 - **Recruiter Quick Scan**: summarize top 2 roles with impact metrics, offer resume download, surface contact CTA.
 - **Project Deep Dive**: when user asks "Tell me about Project X", fetch case study, share problem → actions → results, link to visuals, offer follow-up such as "Want the design deck?".
 - **Career Narrative**: respond to transition questions with timeline snippets and reflective tone.
-- **Fun Fact Mode**: lighten tone, reference `for_fun` store, always check visibility flag before sharing.
+- **Playground Mode**: lighten tone, reference `playground` store, always check visibility flag before sharing.
 - **Fallback**: if query ambiguous or unsupported, ask single clarifying question; if still unresolved, respond with "Unknown in current records".
 
 ## 9. Memory & Context Handling

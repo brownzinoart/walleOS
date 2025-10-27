@@ -253,8 +253,8 @@ button.chip:active {
     @apply w-full max-w-5xl mx-auto;
   }
 
-  /* For Fun page container: provides spacing and layout context for the grid */
-  .for-fun-container {
+  /* Playground page container: provides spacing and layout context for the grid */
+  .playground-container {
     position: relative;
     min-height: 100vh;
     min-height: 100svh;

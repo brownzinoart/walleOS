@@ -6,7 +6,7 @@ This document contains all pre-suggested prompts and conversation starters acros
 
 - [Main Chat Suggestion Chips](#main-chat-suggestion-chips)
 - [Experience-Specific Suggestion Chips](#experience-specific-suggestion-chips)
-- [For Fun Section](#for-fun-section)
+- [Playground Section](#playground-section)
 - [Conversation Sparkers](#conversation-sparkers)
 - [Mock Response Templates](#mock-response-templates)
 
@@ -106,7 +106,7 @@ These prompts are dynamically shown based on the context of specific work experi
 
 ---
 
-## For Fun Section
+## Playground Section
 
 ### Creative Projects & Artworks
 

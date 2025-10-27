@@ -13,14 +13,14 @@
 
 ## 3. Success Metrics
 - Engagement: >60% of sessions trigger at least one chat exchange or suggestion chip tap.
-- Discoverability: >70% of unique visitors view or receive information about at least two distinct portfolio collections (e.g., Projects + For Fun).
+- Discoverability: >70% of unique visitors view or receive information about at least two distinct portfolio collections (e.g., Projects + Playground).
 - Responsiveness: perceived latency under 1.5s for chat responses and <500ms for navigation transitions on broadband.
 - Maintainability: new content uploads (projects, tone corpus) reflected on the site within <10 minutes without developer intervention.
 
 ## 4. Target Audience & Use Cases
 - **Recruiters / Hiring Managers**: scan projects, validate skills, request contact info, feel Wally's personality.
 - **Peers & Collaborators**: learn Wally's capabilities, explore past UX work, identify partnership angles.
-- **Casual Visitors**: browse For Fun content, understand Wally's story, engage with playful chat prompts.
+- **Casual Visitors**: browse Playground content, understand Wally's story, engage with playful chat prompts.
 - Core use cases: ask "What did you ship at X?", browse featured projects, request resume, explore transition from UX to current focus, get a quick bio.
 
 ## 5. Experience Principles
@@ -44,7 +44,7 @@
 - Quick actions: copy response, share link, escalate to email CTA.
 
 ### 7.2 Navigation & Layout
-- Left sidebar with sections: Projects, Resume, For Fun (customizable labels).
+- Left sidebar with sections: Projects, Resume, Playground (customizable labels).
 - Sticky contact block featuring name, email (with antispam obfuscation), optional socials.
 - Responsive design: two-column layout on desktop, collapsible drawer + floating chat on mobile.
 
