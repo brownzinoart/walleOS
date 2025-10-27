@@ -49,6 +49,64 @@
   overflow: hidden;
 }
 
+.art-gallery-container.is-native {
+  position: relative;
+  left: 0;
+  width: 100%;
+  height: auto;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.art-gallery-container.is-native .art-gallery-content {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+.art-gallery-container.is-native .back-button {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 5rem);
+  left: 1.5rem;
+  right: auto;
+  margin-top: 1.5rem;
+  z-index: 40;
+}
+
+.art-gallery-container.is-native .scroll-animations-example {
+  position: static;
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+.art-gallery-container.is-native .scroll-animations-example > .scrollsection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 6rem 1.5rem 4rem;
+  min-width: 0;
+}
+
+.art-gallery-container.is-native .scroll-animations-example > .scrollsection > .item {
+  width: min(100%, 480px);
+  height: auto;
+  aspect-ratio: var(--aspect-ratio, 0.75);
+  margin: 0;
+}
+
+.art-gallery-container.is-native .scroll-animations-example > .scrollsection > .item.-horizontal {
+  aspect-ratio: var(--aspect-ratio, 1.3333);
+}
+
+.art-gallery-container.is-native .scroll-animations-example > .scrollsection > .item > .image {
+  position: absolute;
+  inset: 0;
+}
+
 /* Horizontal Scroll Gallery Styles - Integrated with Design System */
 .scroll-animations-example {
   position: absolute;
@@ -213,6 +271,17 @@
   .scroll-animations-example > .scrollsection > .item {
     margin: 0;
   }
+
+  .art-gallery-container.is-native .scroll-animations-example > .scrollsection {
+    padding: 6rem 1.5rem 4rem;
+    gap: 2rem;
+  }
+
+  .art-gallery-container.is-native .back-button {
+    top: calc(env(safe-area-inset-top, 0px) + 4.75rem);
+    left: 1.25rem;
+    margin-top: 1.25rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -261,5 +330,23 @@
   .scroll-animations-example > .scrollsection > .item.-small.-horizontal {
     height: 25vh;
     width: 30vh;
+  }
+
+  .art-gallery-container.is-native .scroll-animations-example > .scrollsection {
+    padding: 5rem 1.25rem 3.5rem;
+    gap: 1.75rem;
+  }
+
+  .art-gallery-container.is-native .scroll-animations-example > .scrollsection > .item {
+    width: 100%;
+    max-width: 420px;
+    margin: 0;
+    border-width: 2px;
+  }
+
+  .art-gallery-container.is-native .back-button {
+    top: calc(env(safe-area-inset-top, 0px) + 4.5rem);
+    left: 1rem;
+    margin-top: 1rem;
   }
 }
