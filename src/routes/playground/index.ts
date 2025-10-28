@@ -82,8 +82,9 @@ const renderBentoCard = (slide: PlaygroundSlide, index: number): string => {
   const sizeClass = BENTO_SIZE_CLASS_MAP[size] ?? BENTO_SIZE_CLASS_MAP.md;
   const isClickable = slide.link && slide.external;
   const isArtCard = index === 0;
+  const isGamesCard = index === 6;
   const clickableClass =
-    isClickable || isArtCard ? "bento-card--clickable" : "";
+    isClickable || isArtCard || isGamesCard ? "bento-card--clickable" : "";
   const styleParts = [
     `grid-column: ${position.column}`,
     `grid-row: ${position.row}`,
@@ -188,6 +189,14 @@ const init = (): void => {
       return;
     }
 
+    // Check if this is the games card (Take a Break)
+    if (cardIndex === "6") {
+      event.preventDefault();
+      event.stopPropagation();
+      window.location.hash = "#playground/games";
+      return;
+    }
+
     if (link && isExternal) {
       event.preventDefault();
       event.stopPropagation();
@@ -205,7 +214,15 @@ const init = (): void => {
       if (cardIndex === "0") {
         event.preventDefault();
         event.stopPropagation();
-        window.location.hash = "#art-gallery";
+        window.location.hash = "#playground/art-gallery";
+        return;
+      }
+
+      // Check if this is the games card (Take a Break)
+      if (cardIndex === "6") {
+        event.preventDefault();
+        event.stopPropagation();
+        window.location.hash = "#playground/games";
         return;
       }
 
@@ -223,14 +240,19 @@ const init = (): void => {
     const isExternal = card.dataset["external"] === "true";
     const cardIndex = card.dataset["cardIndex"];
     const isArtCard = cardIndex === "0";
+    const isGamesCard = cardIndex === "6";
 
-    if ((link && isExternal) || isArtCard) {
+    if ((link && isExternal) || isArtCard || isGamesCard) {
       card.addEventListener("click", (e) => handleCardClick(e, card));
       card.addEventListener("keydown", (e) => handleCardKeydown(e, card));
 
       if (isArtCard) {
         card.setAttribute("role", "button");
         card.setAttribute("aria-label", "View art gallery");
+        card.setAttribute("tabindex", "0");
+      } else if (isGamesCard) {
+        card.setAttribute("role", "button");
+        card.setAttribute("aria-label", "Play interactive games");
         card.setAttribute("tabindex", "0");
       } else {
         card.setAttribute("role", "link");
@@ -287,8 +309,9 @@ const cleanup = (): void => {
       const isExternal = card.dataset["external"] === "true";
       const cardIndex = card.dataset["cardIndex"];
       const isArtCard = cardIndex === "0";
+      const isGamesCard = cardIndex === "6";
 
-      if ((link && isExternal) || isArtCard) {
+      if ((link && isExternal) || isArtCard || isGamesCard) {
         // Clone the node to remove all event listeners
         const newCard = card.cloneNode(true);
         card.parentNode?.replaceChild(newCard, card);
