@@ -24,6 +24,7 @@ The Lance-based vector database is not committed to Git and must be generated wi
 - **Deploy-time (recommended):** Run the ingestion as a post-deploy task or init job where all dependencies (LLM service, filesystem permissions) are available. This avoids long first-request latency.
 - **Build-time:** Possible in container builds if the LLM/model and data are accessible during the image build. Be mindful of large image sizes and external service access during CI.
 - **On first request:** Lazy generation keeps deploys fast but introduces cold-start latency and potential concurrency issues. If chosen, guard with a lock to prevent multiple ingestions.
+- **Content refreshes:** Any edits to `docs/chat-pills.md` or the `wallymo_llm_corpus/` directory should trigger a fresh ingestion so the deployed index mirrors the latest answers.
 
 ### How to Run
 Execute one of the following in the deployment environment:

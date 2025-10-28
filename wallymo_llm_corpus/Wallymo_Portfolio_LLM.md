@@ -13,16 +13,15 @@ UX systems architect and AI implementation lead with 10+ years bridging product 
 **Strategy**: “Research Roadshow” training; flexible process; open Figma library.
 **Tooling**: Typeform, Useberry, Heap, Microsoft Teams, Figma.
 **Process**: Recruit → Schedule → Interview/Record → Findings deck.
-**Impact**: Design org scaled 2→30 in ~3.5 years; regional insights; direct pipeline into Splash and DXA.
+**Impact**: See [Team Growth](Wallymo_Metrics_and_Awards.md#team-growth) for design-org scale and research throughput; the portfolio created a repeatable pipeline into Splash and DXA.
 
 ---
 
 ## DESIGN SYSTEM – “SPLASH”
 **Summary**: Enterprise design system unifying >20 products; award‑winning.
-**Architecture**: ~500 components · 140 styles · 300 icons · 50 personas; atomic approach; governance and tokens.
+**Architecture**: Atomic library covering components, personas, and governance (metrics in [Product Metrics](Wallymo_Metrics_and_Awards.md#product-metrics)).
 **Signature features**: System‑wide navigation; global color picker; Design Excellence Bot; white‑label builder; AI‑driven personalization.
-**Impact & Metrics**: +68% YoY users; ~7K+ MAU; +79% reuse; −40% release QA time.
-**Awards**: Indigo 2023: 3× Gold, 2× Silver.
+**Proof**: Adoption and reuse metrics documented in [Product Metrics](Wallymo_Metrics_and_Awards.md#product-metrics); Indigo 2023 recognition captured under [Awards](Wallymo_Metrics_and_Awards.md#awards).
 
 ---
 
@@ -42,7 +41,7 @@ UX systems architect and AI implementation lead with 10+ years bridging product 
 ---
 
 ## HIGHLIGHTS
-Scaled team 2→30; mentored hybrid org; embedded UX into engineering and sales; multiple global awards.
+Scaled the design team and embedded UX into engineering and sales; quantitative growth and awards are captured in [Team Growth](Wallymo_Metrics_and_Awards.md#team-growth) and [Awards](Wallymo_Metrics_and_Awards.md#awards).
 
 ---
 

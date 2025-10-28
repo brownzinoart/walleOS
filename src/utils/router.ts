@@ -9,7 +9,8 @@ export type RouteComponentId =
   | "project-hq"
   | "resume"
   | "playground"
-  | "art-gallery";
+  | "art-gallery"
+  | "playground-games";
 
 export type Route = {
   path: string;
@@ -81,6 +82,14 @@ const routerState: RouterState = {
     [
       "#playground/art-gallery",
       { path: "#playground/art-gallery", component: "art-gallery", title: "Art Gallery" },
+    ],
+    [
+      "#playground/games",
+      { path: "#playground/games", component: "playground-games", title: "Games" },
+    ],
+    [
+      "#playground-games",
+      { path: "#playground/games", component: "playground-games", title: "Games" },
     ],
   ]),
 };

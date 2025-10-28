@@ -81,4 +81,15 @@ describe('Games route component', () => {
     expect(simonFrame.style.display).toBe('none');
     expect(wordFrame.style.display).toBe('block');
   });
+
+  it('has a registered route for playground-games', async () => {
+    const { navigateTo, getRouteTitle } = await import('@/utils/router');
+
+    expect(getRouteTitle('playground-games')).toBe('Games');
+
+    navigateTo('playground-games');
+
+    expect(window.location.hash).toBe('#playground-games');
+    expect(document.title).toBe('Games - WalleOS');
+  });
 });

@@ -5,12 +5,12 @@
 
 **WeReady (https://weready.dev/)**: Startup intelligence platform that helps founders and investors diagnose company readiness for success. Analyzes code quality, business model viability, investment readiness, and design/UX across four equal-weight pillars. Uses evidence-based methodology with 65+ authoritative data sources including government databases, academic research, and VC benchmarks to produce actionable recommendations and WeReady Scores.
 
-**ListingPal (https://listingpal.info/)**: AI-powered real estate marketing platform that generates complete marketing campaigns in 90 seconds. Uses proprietary AgentSelect™ framework to orchestrate multiple LLMs for MLS/SEO-ready descriptions, social media content, interior styling suggestions, and paid advertising copy. Features multi-model orchestration, smart prompt engineering, and automated AI model updates.
+**ListingPal (https://listingpal.info/)**: AI-powered real estate marketing platform built on the AgentSelect™ framework to orchestrate MLS/SEO-ready descriptions, social content, interior styling suggestions, and paid advertising copy. Efficiency metrics live under [Venture Performance](Wallymo_Metrics_and_Awards.md#venture-performance).
 
 **Technical Infrastructure**: Built with modern web technologies including TypeScript, React frontend, Node.js/Express backend. Implements CORS configuration for cross-origin requests, environment-based configuration management, vector database storage with LanceDB, and streaming API endpoints for real-time AI responses. Features comprehensive error handling, request queuing, and performance optimization.
 
 **Responsibilities**: Multi‑model workflows; client consulting; low‑cost RAG/agents; local+cloud inference.
-**Impact**: Reusable orchestration framework; ~60% faster prototyping; hands‑on founder/architect role.
+**Impact**: Reusable orchestration framework; see [Venture Performance](Wallymo_Metrics_and_Awards.md#venture-performance) for MVP velocity data; hands-on founder/architect role.
 
 ---
 

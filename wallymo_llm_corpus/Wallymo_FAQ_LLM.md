@@ -8,7 +8,7 @@
 **A:** Clarity over hype. Automate without alienating.
 
 ## KINESSO
-Role: Director, Experience & Innovation. Grew design 2→30; built Splash DS; led DXA. Awards: Red Dot 2021; Indigo 2022–23.
+Role: Director, Experience & Innovation. Led Splash DS and DXA; quantitative outcomes live in [Team Growth](Wallymo_Metrics_and_Awards.md#team-growth), [Product Metrics](Wallymo_Metrics_and_Awards.md#product-metrics), and [Awards](Wallymo_Metrics_and_Awards.md#awards).
 
 ## ONE BLOCK AWAY
 Independent lab for orchestrated AI MVPs (WeReady, ListingPal, Sagedvice).

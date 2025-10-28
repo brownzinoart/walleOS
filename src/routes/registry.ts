@@ -20,6 +20,7 @@ const lazyRouteLoaders: LazyRouteMap = {
   resume: () => import("./resume").then((mod) => mod.default),
   "playground": () => import("./playground/index"),
   "art-gallery": () => import("./artGallery").then((mod) => mod.default),
+  "playground-games": () => import("./playground/games"),
 };
 
 const routeModuleCache = new Map<RouteComponentId, RouteModule>();

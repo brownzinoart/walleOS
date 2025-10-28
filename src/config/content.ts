@@ -1,4 +1,5 @@
 import contentData from './content.json';
+import { chatPills, chatPillMap } from './chatPills';
 
 export interface NavigationItem {
   id: string;
@@ -67,7 +68,45 @@ export interface ContentConfig {
   metadata: Metadata;
 }
 
-const content = contentData as ContentConfig;
+const baseContent = contentData as ContentConfig;
+
+const baseSuggestionChipMap = new Map(baseContent.suggestionChips.map((chip) => [chip.id, chip]));
+
+const hydratedSuggestionChips: SuggestionChip[] = baseContent.suggestionChips.map((chip) => {
+  const pill = chatPillMap.get(chip.id);
+  if (!pill) {
+    return chip;
+  }
+
+  return {
+    ...chip,
+    text: pill.prompt,
+  };
+});
+
+chatPills.forEach((pill) => {
+  if (!baseSuggestionChipMap.has(pill.id)) {
+    hydratedSuggestionChips.push({
+      id: pill.id,
+      text: pill.prompt,
+      category: 'general',
+    });
+  }
+});
+
+const hydratedMockResponses: MockResponses = {
+  ...baseContent.mockResponses,
+};
+
+chatPills.forEach((pill) => {
+  hydratedMockResponses[pill.id] = pill.response;
+});
+
+const content: ContentConfig = {
+  ...baseContent,
+  suggestionChips: hydratedSuggestionChips,
+  mockResponses: hydratedMockResponses,
+};
 
 export const {
   branding,
@@ -81,6 +120,7 @@ export const {
 } = content;
 
 export const featuredProjects: FeaturedProject[] = content.featuredProjects;
+export { chatPills, chatPillMap };
 
 export const getAllSuggestionChips = (): SuggestionChip[] => suggestionChips;
 

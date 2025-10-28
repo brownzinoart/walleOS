@@ -71,6 +71,11 @@ When running the script from within `server/`, the corpus path resolves automati
 
 After completion, the Lance vector database will be present under `server/data/vectordb/` and available to the backend for retrieval.
 
+#### Refreshing After Content Edits
+- The home chat pills now source their prompts/responses directly from [`docs/chat-pills.md`](docs/chat-pills.md). Update the markdown table and the frontend will pick up the new copy immediately.
+- Re-run the ingestion command above whenever you change that table (or any file in `wallymo_llm_corpus/`) so semantic retrieval reflects the latest content.
+- Optional quick check: `npm run test src/__tests__/chat-pills-config.test.ts` ensures every pill row hydrated correctly.
+
 ### Deployment
 - Only the frontend deploys to Vercel; the backend remains local or must be hosted separately on a service like Railway, Render, or DigitalOcean.
 - The longer-term plan is to swap the local Ollama integration for a production-ready provider (OpenAI, Anthropic, hosted LLM service) before shipping.
