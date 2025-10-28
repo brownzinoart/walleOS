@@ -1,4 +1,5 @@
 import '@/styles/main.css';
+import '@/styles/games.css';
 import { renderLayout, initLayout } from '@/components/Layout';
 import { setActiveNavItem } from '@/components/Sidebar';
 import { renderWelcomeCard } from '@/components/WelcomeCard';
