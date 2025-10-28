@@ -5,7 +5,11 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/((?!assets|.*\\..*).*)",
+      "source": "/playground/games/(.*)",
+      "destination": "/playground/games/$1"
+    },
+    {
+      "source": "/((?!assets|.*\\..*|playground/games).*)",
       "destination": "/index.html"
     }
   ],
@@ -33,6 +37,15 @@
     },
     {
       "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/playground/games/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
