@@ -51,6 +51,7 @@ describe('Playground page layout', () => {
 
     const cards = root?.querySelectorAll('[data-bento-card]') ?? [];
     expect(cards.length).toBe(playgroundSlides.length);
+    expect(cards.length).toBe(7); // Confirms the games card is included
 
     playgroundSlides.forEach(({ title, category }) => {
       expect(root?.textContent?.includes(title)).toBe(true);
