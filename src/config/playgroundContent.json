@@ -57,6 +57,14 @@
       "accentColor": "#ff6b35",
       "link": "https://www.red-dot.org/project/dxa-digital-experience-audit-55219",
       "external": true
+    },
+    {
+      "title": "Take a Break",
+      "category": "Interactive Games",
+      "backgroundImage": "/images/playground/games-preview.jpg",
+      "foregroundImage": "/images/playground/games-preview.jpg",
+      "size": "md",
+      "accentColor": "var(--color-neon-lime)"
     }
   ]
 }
