@@ -14,8 +14,6 @@ const GAMES = [
 
 type GameId = typeof GAMES[number]['id'];
 
-let currentGameId: GameId = 'simon-says';
-
 const render = (): string => {
   return `
     <div data-games-root class="games-page">
@@ -72,8 +70,6 @@ const init = (): void => {
 
   // Toggle game display
   const switchToGame = (gameId: GameId): void => {
-    currentGameId = gameId;
-
     gameFrames.forEach(frame => {
       const frameGameId = frame.dataset['gameFrame'];
       frame.style.display = frameGameId === gameId ? 'block' : 'none';
@@ -106,9 +102,6 @@ const cleanup = (): void => {
     const newBtn = btn.cloneNode(true);
     btn.parentNode?.replaceChild(newBtn, btn);
   });
-
-  // Reset current game state
-  currentGameId = 'simon-says';
 };
 
 export { render, init, cleanup };

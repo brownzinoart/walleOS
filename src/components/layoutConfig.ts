@@ -6,4 +6,10 @@ export const MAIN_CONTENT_PLAYGROUND_PADDING = 'playground-container';
 
 export const getMainContentPaddingClass = (
   route: RouteComponentId,
-): string => (route === 'playground' ? MAIN_CONTENT_PLAYGROUND_PADDING : MAIN_CONTENT_DEFAULT_PADDING);
+): string => {
+  // Use playground container padding for playground and related routes
+  if (route === 'playground' || route === 'art-gallery' || route === 'playground-games') {
+    return MAIN_CONTENT_PLAYGROUND_PADDING;
+  }
+  return MAIN_CONTENT_DEFAULT_PADDING;
+};
