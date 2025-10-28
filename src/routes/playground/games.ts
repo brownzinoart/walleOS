@@ -25,18 +25,18 @@ const render = (): string => {
       </header>
       <div class="games-container">
         <div class="games-toggle" data-games-toggle>
-          ${GAMES.map(game => `
+          ${GAMES.map((game, index) => `
             <button
               class="game-toggle-btn"
               data-game-id="${game.id}"
-              aria-pressed="false"
+              aria-pressed="${index === 0 ? 'true' : 'false'}"
             >
               ${game.title}
             </button>
           `).join('')}
         </div>
         <div class="games-viewport" data-games-viewport>
-          ${GAMES.map(game => `
+          ${GAMES.map((game, index) => `
             <iframe
               id="game-${game.id}"
               class="game-iframe"
@@ -44,7 +44,7 @@ const render = (): string => {
               src="${game.path}"
               title="${game.title} game"
               sandbox="allow-scripts allow-same-origin"
-              style="display: none;"
+              style="display: ${index === 0 ? 'block' : 'none'};"
             ></iframe>
           `).join('')}
         </div>
