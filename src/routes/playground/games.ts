@@ -14,6 +14,8 @@ const GAMES = [
 
 type GameId = typeof GAMES[number]['id'];
 
+let currentGameId: GameId = 'simon-says';
+
 const render = (): string => {
   return `
     <div data-games-root class="games-page">
@@ -52,7 +54,43 @@ const render = (): string => {
 };
 
 const init = (): void => {
-  // Placeholder for initialization logic
+  const root = document.querySelector<HTMLElement>('[data-games-root]');
+  if (!root) return;
+
+  const toggleButtons = Array.from(
+    root.querySelectorAll<HTMLButtonElement>('[data-game-id]')
+  );
+  const gameFrames = Array.from(
+    root.querySelectorAll<HTMLIFrameElement>('[data-game-frame]')
+  );
+
+  // Show first game by default
+  const firstFrame = gameFrames[0];
+  const firstButton = toggleButtons[0];
+  if (firstFrame) firstFrame.style.display = 'block';
+  if (firstButton) firstButton.setAttribute('aria-pressed', 'true');
+
+  // Toggle game display
+  const switchToGame = (gameId: GameId): void => {
+    currentGameId = gameId;
+
+    gameFrames.forEach(frame => {
+      const frameGameId = frame.dataset['gameFrame'];
+      frame.style.display = frameGameId === gameId ? 'block' : 'none';
+    });
+
+    toggleButtons.forEach(btn => {
+      const btnGameId = btn.dataset['gameId'];
+      btn.setAttribute('aria-pressed', String(btnGameId === gameId));
+    });
+  };
+
+  toggleButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const gameId = btn.dataset['gameId'] as GameId;
+      if (gameId) switchToGame(gameId);
+    });
+  });
 };
 
 const cleanup = (): void => {

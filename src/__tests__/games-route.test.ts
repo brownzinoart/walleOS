@@ -16,4 +16,34 @@ describe('Games route component', () => {
     expect(gamesModule.cleanup).toBeDefined();
     expect(typeof gamesModule.cleanup).toBe('function');
   });
+
+  it('shows first game by default and hides others', async () => {
+    const { render, init } = await import('@/routes/playground/games');
+
+    document.body.innerHTML = render();
+    init();
+
+    const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLElement;
+    const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLElement;
+
+    expect(simonFrame.style.display).not.toBe('none');
+    expect(wordFrame.style.display).toBe('none');
+  });
+
+  it('switches games when toggle button is clicked', async () => {
+    const { render, init } = await import('@/routes/playground/games');
+
+    document.body.innerHTML = render();
+    init();
+
+    const wordSearchBtn = document.querySelector('[data-game-id="word-search"]') as HTMLButtonElement;
+    const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLElement;
+    const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLElement;
+
+    wordSearchBtn.click();
+
+    expect(simonFrame.style.display).toBe('none');
+    expect(wordFrame.style.display).not.toBe('none');
+    expect(wordSearchBtn.getAttribute('aria-pressed')).toBe('true');
+  });
 });
