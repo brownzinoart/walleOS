@@ -46,4 +46,39 @@ describe('Games route component', () => {
     expect(wordFrame.style.display).not.toBe('none');
     expect(wordSearchBtn.getAttribute('aria-pressed')).toBe('true');
   });
+
+  it('removes event listeners on cleanup', async () => {
+    const { render, init, cleanup } = await import('@/routes/playground/games');
+
+    document.body.innerHTML = render();
+    init();
+
+    const root = document.querySelector('[data-games-root]');
+    const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLElement;
+    const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLElement;
+    const wordSearchBtn = document.querySelector('[data-game-id="word-search"]') as HTMLButtonElement;
+
+    // Verify initial state - first game is showing
+    expect(simonFrame.style.display).toBe('block');
+    expect(wordFrame.style.display).toBe('none');
+
+    // Switch to second game
+    wordSearchBtn.click();
+    expect(simonFrame.style.display).toBe('none');
+    expect(wordFrame.style.display).toBe('block');
+
+    // Run cleanup
+    cleanup();
+
+    // After cleanup, root should still exist
+    expect(root).not.toBeNull();
+
+    // Clicking buttons after cleanup should not switch games (listeners removed)
+    const simonBtn = document.querySelector('[data-game-id="simon-says"]') as HTMLButtonElement;
+    simonBtn.click();
+
+    // Games should remain in same state (word-search visible, simon-says hidden)
+    expect(simonFrame.style.display).toBe('none');
+    expect(wordFrame.style.display).toBe('block');
+  });
 });

@@ -94,7 +94,21 @@ const init = (): void => {
 };
 
 const cleanup = (): void => {
-  // Placeholder for cleanup logic
+  const root = document.querySelector<HTMLElement>('[data-games-root]');
+  if (!root) return;
+
+  const toggleButtons = Array.from(
+    root.querySelectorAll<HTMLButtonElement>('[data-game-id]')
+  );
+
+  // Remove event listeners by cloning nodes
+  toggleButtons.forEach(btn => {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode?.replaceChild(newBtn, btn);
+  });
+
+  // Reset current game state
+  currentGameId = 'simon-says';
 };
 
 export { render, init, cleanup };
