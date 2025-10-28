@@ -30,8 +30,8 @@ const parseTableRow = (line: string): ChatPill | null => {
   const [idCell, promptCell, ...rest] = cells;
   const responseCell = rest.join(' | ').trim();
 
-  const id = idCell.replace(/`/g, '').trim();
-  const prompt = promptCell.trim();
+  const id = idCell?.replace(/`/g, '').trim() ?? '';
+  const prompt = promptCell?.trim() ?? '';
   const response = responseCell.trim();
 
   if (!id || !prompt || !response) {
