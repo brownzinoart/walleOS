@@ -93,3 +93,43 @@ describe('Games route component', () => {
     expect(document.title).toBe('Games - WalleOS');
   });
 });
+
+describe('Games page integration', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('renders complete games page with all elements', async () => {
+    const { render, init } = await import('@/routes/playground/games');
+
+    document.body.innerHTML = render();
+    init();
+
+    const root = document.querySelector('[data-games-root]');
+    expect(root).not.toBeNull();
+
+    const header = root?.querySelector('.games-header');
+    expect(header).not.toBeNull();
+
+    const title = root?.querySelector('.games-title');
+    expect(title?.textContent).toBe('Take a Break');
+
+    const toggleButtons = root?.querySelectorAll('[data-game-id]');
+    expect(toggleButtons?.length).toBe(2);
+
+    const iframes = root?.querySelectorAll('[data-game-frame]');
+    expect(iframes?.length).toBe(2);
+  });
+
+  it('loads correct iframe sources for each game', async () => {
+    const { render } = await import('@/routes/playground/games');
+
+    document.body.innerHTML = render();
+
+    const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLIFrameElement;
+    const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLIFrameElement;
+
+    expect(simonFrame.src).toContain('/playground/games/simon-says-game-in-css-jquery/dist/index.html');
+    expect(wordFrame.src).toContain('/playground/games/word-seach/dist/index.html');
+  });
+});
