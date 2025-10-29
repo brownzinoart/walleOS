@@ -25,11 +25,28 @@ async function buildGames() {
     
     try {
       if (game === 'simon-says-game-in-css-jquery') {
-        // Create a fallback HTML for Simon Says
-        // Use the pre-existing compiled CSS from CodePen
+        // Compile SCSS to CSS using sass package
+        const { compileString } = await import('sass');
         const jsContent = readFileSync(join(srcPath, 'script.js'), 'utf8');
+        const scssContent = readFileSync(join(srcPath, 'style.scss'), 'utf8');
 
-        // Create compiled HTML with inline CSS (converted from SCSS)
+        // Define tint() function (Compass legacy function)
+        // tint() mixes a color with white
+        const tintFunction = `
+@function tint($color, $percentage) {
+  @return mix(white, $color, $percentage);
+}
+`;
+
+        // Compile SCSS to CSS with tint() function prepended
+        const result = compileString(tintFunction + scssContent, {
+          style: 'expanded',
+          sourceMap: false
+        });
+
+        const cssContent = result.css;
+
+        // Create HTML with compiled CSS
         const finalHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,7 +58,7 @@ async function buildGames() {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/buzz/1.2.1/buzz.min.js"></script>
-    <link rel="stylesheet" href="https://s3-us-west-2.amazonaws.com/s.cdpn.io/507450/simon.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="case" class="center-block">
@@ -90,8 +107,9 @@ async function buildGames() {
     </script>
 </body>
 </html>`;
-        
+
         writeFileSync(join(distPath, 'index.html'), finalHtml);
+        writeFileSync(join(distPath, 'style.css'), cssContent);
 
       } else if (game === 'word-seach') {
         // Copy existing HTML/CSS/JS files and inline them
