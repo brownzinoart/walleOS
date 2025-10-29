@@ -247,6 +247,11 @@
   .bento-card {
     padding: clamp(var(--spacing-lg), 4vw, var(--spacing-2xl));
   }
+
+  /* Hide games card on mobile as additional safeguard */
+  .bento-card[data-card-index="6"] {
+    display: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

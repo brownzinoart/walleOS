@@ -4,6 +4,11 @@ import {
   getBentoCardSize,
 } from "@/config/playgroundContent";
 
+// Mobile detection utility (matches Layout.ts pattern)
+const isDesktop = (): boolean => {
+  return window.matchMedia('(min-width: 1024px)').matches;
+};
+
 type BentoCardSize = ReturnType<typeof getBentoCardSize>;
 
 interface BentoCardPosition {
@@ -115,11 +120,24 @@ const renderBentoCard = (slide: PlaygroundSlide, index: number): string => {
   `;
 };
 
-const renderBentoGrid = (): string => `
-  <section class="bento-grid-container" role="list">
-    ${playgroundSlides.map((slide, index) => renderBentoCard(slide, index)).join("")}
-  </section>
-`;
+const renderBentoGrid = (): string => {
+  const isMobile = !isDesktop();
+
+  return `
+    <section class="bento-grid-container" role="list">
+      ${playgroundSlides
+        .filter((_slide, index) => {
+          // Hide games card (index 6) on mobile
+          if (isMobile && index === 6) {
+            return false;
+          }
+          return true;
+        })
+        .map((slide, index) => renderBentoCard(slide, index))
+        .join("")}
+    </section>
+  `;
+};
 
 const renderPlaygroundIntro = (): string => `
   <header class="playground-hero playground-hero--single">
