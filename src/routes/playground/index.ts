@@ -126,14 +126,13 @@ const renderBentoGrid = (): string => {
   return `
     <section class="bento-grid-container" role="list">
       ${playgroundSlides
-        .filter((_slide, index) => {
+        .map((slide, originalIndex) => {
           // Hide games card (index 6) on mobile
-          if (isMobile && index === 6) {
-            return false;
+          if (isMobile && originalIndex === 6) {
+            return '';
           }
-          return true;
+          return renderBentoCard(slide, originalIndex);
         })
-        .map((slide, index) => renderBentoCard(slide, index))
         .join("")}
     </section>
   `;
