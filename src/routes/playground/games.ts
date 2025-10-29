@@ -48,6 +48,13 @@ const render = (): string => {
 };
 
 const init = (): void => {
+  // Redirect mobile users back to playground
+  const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+  if (!isDesktop) {
+    window.location.hash = '#playground';
+    return;
+  }
+
   const root = document.querySelector<HTMLElement>('[data-games-root]');
   if (!root) return;
 
