@@ -25,28 +25,23 @@ async function buildGames() {
     
     try {
       if (game === 'simon-says-game-in-css-jquery') {
-        // Create a fallback HTML for Simon Says since we don't have Pug compiler
-        const scssContent = readFileSync(join(srcPath, 'style.scss'), 'utf8');
+        // Create a fallback HTML for Simon Says
+        // Use the pre-existing compiled CSS from CodePen
         const jsContent = readFileSync(join(srcPath, 'script.js'), 'utf8');
-        
-        // Simple SCSS to CSS conversion (basic variable substitution)
-        let cssContent = scssContent
-          .replace(/\$([a-zA-Z-]+)/g, 'var(--$1)')
-          .replace(/\$\{([^}]+)\}/g, 'var($1)');
-        
-        // Create compiled HTML with the Pug structure converted to HTML
+
+        // Create compiled HTML with inline CSS (converted from SCSS)
         const finalHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simon Says Game</title>
-    <link rel="stylesheet" href="style.css">
     <!-- External Dependencies -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/buzz/1.2.1/buzz.min.js"></script>
+    <link rel="stylesheet" href="https://s3-us-west-2.amazonaws.com/s.cdpn.io/507450/simon.css">
 </head>
 <body>
     <div id="case" class="center-block">
@@ -97,12 +92,6 @@ async function buildGames() {
 </html>`;
         
         writeFileSync(join(distPath, 'index.html'), finalHtml);
-
-        // Also write the compiled CSS file
-        writeFileSync(join(distPath, 'style.css'), cssContent);
-
-        // Copy the script.js file
-        writeFileSync(join(distPath, 'script.js'), jsContent);
 
       } else if (game === 'word-seach') {
         // Copy existing HTML/CSS/JS files and inline them
