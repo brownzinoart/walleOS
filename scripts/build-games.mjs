@@ -90,15 +90,18 @@ async function buildGames() {
             </div>
         </div>
         <div id="green" class="playbtn btn">
+            <div class="innerbutton"></div>
             <div class="lightbulb"></div>
         </div>
         <div id="red" class="playbtn btn">
             <div class="lightbulb"></div>
         </div>
         <div id="yellow" class="playbtn btn">
+            <div class="innerbutton"></div>
             <div class="lightbulb"></div>
         </div>
         <div id="blue" class="playbtn btn">
+            <div class="innerbutton"></div>
             <div class="lightbulb"></div>
         </div>
     </div>
