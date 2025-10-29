@@ -41,9 +41,12 @@ async function buildGames() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simon Says Game</title>
-    <style>
-    ${cssContent}
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <!-- External Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/buzz/1.2.1/buzz.min.js"></script>
 </head>
 <body>
     <div id="case" class="center-block">
@@ -94,7 +97,13 @@ async function buildGames() {
 </html>`;
         
         writeFileSync(join(distPath, 'index.html'), finalHtml);
-        
+
+        // Also write the compiled CSS file
+        writeFileSync(join(distPath, 'style.css'), cssContent);
+
+        // Copy the script.js file
+        writeFileSync(join(distPath, 'script.js'), jsContent);
+
       } else if (game === 'word-seach') {
         // Copy existing HTML/CSS/JS files and inline them
         const htmlContent = readFileSync(join(srcPath, 'index.html'), 'utf8');
@@ -112,6 +121,9 @@ async function buildGames() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Search Game</title>
+    <!-- External Dependencies -->
+    <link href="https://fonts.googleapis.com/css?family=Fresca&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
     ${cssContent}
     </style>
