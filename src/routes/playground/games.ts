@@ -2,13 +2,13 @@
 const GAMES = [
   {
     id: 'simon-says',
-    title: 'Simon Says',
-    path: '/playground/games/simon-says-game-in-css-jquery/dist/index.html'
+    title: 'Neon Simon',
+    path: '/playground/games/neon-simon/index.html'
   },
   {
-    id: 'word-search',
-    title: 'Word Search',
-    path: '/playground/games/word-seach/dist/index.html'
+    id: 'reaction-sprint',
+    title: 'Reaction Sprint',
+    path: '/playground/games/reaction-sprint/index.html'
   }
 ] as const;
 
