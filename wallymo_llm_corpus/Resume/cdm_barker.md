@@ -2,6 +2,13 @@
 tags: [cdm-ny, barker-dzp, zoloft, tough-mudder, pdi-healthcare, digital-marketing, mentorship]
 category: resume
 experienceIds: [cdm-ny, barker-dzp]
+voice_rules:
+  - "Write with precision and directness"
+  - "Every sentence must earn its place"
+  - "Avoid filler and emotional exaggeration but convey conviction"
+  - "Balance system-level reasoning with hands-on practicality"
+  - "Lead with impact, then process, then proof"
+  - "Treat design, leadership, and AI implementation as one discipline—clarity, scalability, and function"
 ---
 
 # Account Supervisor — CDM NY & Barker DZP (New York, NY | 2013–2014)
@@ -15,6 +22,5 @@ experienceIds: [cdm-ny, barker-dzp]
 - Built waiting-room and loyalty content that improved adherence metrics while respecting regulatory guardrails.
 - Mentored junior strategists and creatives, setting the stage for future team-building at Kinesso.
 
-## See Also
-- [Wallymo_Experience_LLM.md](../Wallymo_Experience_LLM.md)
-- [Wallymo_Voice_and_Career_Narrative.md](../Wallymo_Voice_and_Career_Narrative.md)
+## Context
+This phase bridged my pharmaceutical expertise with broader consumer marketing, introducing data-driven targeting while maintaining regulatory discipline. The mentorship experience here laid groundwork for future team leadership at Kinesso.

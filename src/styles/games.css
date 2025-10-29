@@ -53,8 +53,21 @@
 }
 
 .game-toggle-btn:focus-visible {
-  outline: var(--focus-ring-width) solid var(--focus-ring-color);
-  outline-offset: var(--focus-ring-offset);
+  /* Outline removed to clean up visual appearance */
+}
+
+/* Disabled: remove interactivity and hover affordances */
+.game-toggle-btn:disabled,
+.game-toggle-btn[aria-disabled="true"] {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.game-toggle-btn:disabled:hover,
+.game-toggle-btn[aria-disabled="true"]:hover {
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
 }
 
 .game-toggle-btn[aria-pressed="true"] {
@@ -66,7 +79,7 @@
 .games-viewport {
   position: relative;
   width: 100%;
-  height: 600px;
+  height: 1200px; /* increased to fit full Word Search including all words */
   border: 2px solid var(--color-border);
   border-radius: 12px;
   overflow: hidden;
@@ -99,6 +112,6 @@
   }
 
   .games-viewport {
-    height: 500px;
+    height: 900px; /* keep full height on mobile, game uses fixed layout */
   }
 }

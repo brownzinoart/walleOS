@@ -7,6 +7,7 @@
   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 </head>
 <body>
+	<div id="wrapper">
 	<div id="main">
 		<div class="left">
       <div class="letters">
@@ -15,9 +16,20 @@
       </div>
     </div>
     <div class="right">
+      <div class="controls" id="controls">
+        <div class="timer-row">
+          <span id="timer-display" aria-live="polite">00:00</span>
+          <span id="best-display" title="Best time">Best: --:--</span>
+        </div>
+        <div class="buttons">
+          <button id="start-timer" aria-pressed="false">Start</button>
+          <button id="reset-timer">Reset</button>
+        </div>
+      </div>
       <div class="words">
       </div>
   	</div>
+  </div>
   </div>
 </body>
 </html>

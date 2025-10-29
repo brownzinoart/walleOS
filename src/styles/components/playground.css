@@ -139,6 +139,8 @@
 
 
 
+/* Games card uses the default media rules (cover) to match others */
+
 .bento-card--clickable {
   cursor: pointer;
 }

@@ -2,6 +2,13 @@
 tags: [account-supervisor-scout, sr-account-exec-fcb, scout-marketing, fcb-health, linzess, xyrem, tv-production, fda-preclearance, ux-discovery]
 category: resume
 experienceIds: [account-supervisor-scout, sr-account-exec-fcb]
+voice_rules:
+  - "Write with precision and directness"
+  - "Every sentence must earn its place"
+  - "Avoid filler and emotional exaggeration but convey conviction"
+  - "Balance system-level reasoning with hands-on practicality"
+  - "Lead with impact, then process, then proof"
+  - "Treat design, leadership, and AI implementation as one discipline—clarity, scalability, and function"
 ---
 
 # Account Leadership — FCB Health & Scout Marketing (NYC & San Diego | 2014–2017)
@@ -16,6 +23,5 @@ experienceIds: [account-supervisor-scout, sr-account-exec-fcb]
 - Extended campaign ecosystems beyond broadcast into digital, aligning messaging and analytics across patient, HCP, and caregiver audiences.
 - Treated Scout Marketing as the launchpad into UX discovery, pairing account leadership with emerging design responsibilities.
 
-## See Also
-- [Wallymo_Experience_LLM.md](../Wallymo_Experience_LLM.md)
-- [Wallymo_Voice_and_Career_Narrative.md](../Wallymo_Voice_and_Career_Narrative.md)
+## Context
+Account management in NYC was my professional boot camp. I consistently worked on flagship accounts at every agency. Those years gave me access to the decision-making table early, teaching me how to strategize across creative, production, and client layers. That confidence and cross-functional fluency became the foundation for my later transition into UX.

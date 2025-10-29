@@ -12,11 +12,18 @@ html {
 	background-size: cover;
 }
 
+#wrapper {
+	width: 100%;
+	margin: 0 auto;
+	overflow: hidden;
+}
+
 #main {
 	width: 70em;
 	height: 51em;
 	margin: 10px auto;
 	display: block;
+	transform-origin: top left;
 }
 
 .left {
@@ -52,19 +59,69 @@ html {
 .right {
 	float: right;
 	width: 220px;
-	height: auto;
+	height: 820px; /* match left total (800 grid + 20 border) to avoid page scroll */
 	border: 10px solid #9dd2ea;
 	border-radius: 3px;
+	display: flex;
+	flex-direction: column;
 
 	box-shadow: 0 10px 6px -6px rgba(0,0,0,0.5);
 	-moz-box-shadow: 0 10px 6px -6px rgba(0,0,0,0.5);
 	-webkit-box-shadow: 0 10px 6px -6px rgba(0,0,0,0.5);
 }
 
+/* Timer + Controls */
+.controls {
+  background: #ffffff;
+  padding: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Happy Monkey', cursive;
+  margin-bottom: 6px;
+}
+
+#timer-display {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+#best-display {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+#start-timer, #reset-timer {
+  appearance: none;
+  border: 1px solid #9dd2ea;
+  background: #f5fbff;
+  color: #333;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Fresca', serif;
+}
+
+#start-timer[aria-pressed="true"] {
+  background: #9dd2ea;
+  color: #000;
+}
+
 .words {
 	font-size: 1.3em;
 	font-family: 'Fresca', serif;
-
+	flex: 1 1 auto;
+	min-height: 0; /* allow flex child to shrink */
+	overflow-y: auto;
 }
 
 .words span {

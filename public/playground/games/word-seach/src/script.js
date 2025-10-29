@@ -24,7 +24,80 @@ var words = [ { "word": "BUFFALO", "direction": "N", "start": 254 },
 			  { "word": "HICKORYJUMP", "direction": "NE", "start": 204 },
 			  { "word": "CHROME", "direction": "NW", "start": 266},
 			  { "word": "MULDER", "direction": "S", "start": 41 },
-			];
+];
+
+// --- Timer state ---
+var timerInterval = null;
+var timerStartTs = null;
+var elapsedMs = 0;
+var bestMs = parseInt(localStorage.getItem('wordsearchBestMs') || '0', 10) || 0;
+
+function formatTime(ms) {
+  var totalSeconds = Math.floor(ms / 1000);
+  var minutes = Math.floor(totalSeconds / 60);
+  var seconds = totalSeconds % 60;
+  return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+}
+
+function updateTimerDisplay() {
+  var display = document.getElementById('timer-display');
+  if (!display) return;
+  var nowMs = timerStartTs ? (Date.now() - timerStartTs) + elapsedMs : elapsedMs;
+  display.textContent = formatTime(nowMs);
+}
+
+function updateBestDisplay() {
+  var bestEl = document.getElementById('best-display');
+  if (!bestEl) return;
+  bestEl.textContent = bestMs > 0 ? ('Best: ' + formatTime(bestMs)) : 'Best: --:--';
+}
+
+function startTimer() {
+  if (timerInterval) return; // already running
+  // reset elapsed and start fresh
+  elapsedMs = 0;
+  timerStartTs = Date.now();
+  timerInterval = setInterval(updateTimerDisplay, 200);
+  var startBtn = document.getElementById('start-timer');
+  if (startBtn) startBtn.setAttribute('aria-pressed', 'true');
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  if (timerStartTs) {
+    elapsedMs = (Date.now() - timerStartTs);
+    timerStartTs = null;
+  }
+  var startBtn = document.getElementById('start-timer');
+  if (startBtn) startBtn.setAttribute('aria-pressed', 'false');
+  updateTimerDisplay();
+}
+
+function resetTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  timerStartTs = null;
+  elapsedMs = 0;
+  var startBtn = document.getElementById('start-timer');
+  if (startBtn) startBtn.setAttribute('aria-pressed', 'false');
+  updateTimerDisplay();
+}
+
+function completeGame() {
+  stopTimer();
+  // Save best time
+  if (elapsedMs > 0 && (bestMs === 0 || elapsedMs < bestMs)) {
+    bestMs = elapsedMs;
+    localStorage.setItem('wordsearchBestMs', String(bestMs));
+  }
+  updateBestDisplay();
+  alert('Great job! Time: ' + formatTime(elapsedMs));
+}
 
 
 // Prepare the wordsearch with random letters and word layout
@@ -54,6 +127,38 @@ $(document).ready(function() {
 		$("#main").slideDown("slow", function() {
 		})
 	});
+
+  // Timer controls
+  updateTimerDisplay();
+  updateBestDisplay();
+  $(document).on('click', '#start-timer', function() {
+    startTimer();
+  });
+  $(document).on('click', '#reset-timer', function() {
+    resetTimer();
+  });
+
+  // Responsive scale to fit smaller viewports
+  (function responsiveScale(){
+    var main = document.getElementById('main');
+    var wrapper = document.getElementById('wrapper');
+    if (!main || !wrapper) return;
+    var baseWidth = main.offsetWidth; // 70em ≈ 1120px
+    var baseHeight = main.offsetHeight; // ≈ 816px
+    function applyScale(){
+      // Account for some padding
+      var availableW = document.documentElement.clientWidth - 16;
+      var scale = Math.min(1, availableW / baseWidth);
+      main.style.transform = 'scale(' + scale + ')';
+      wrapper.style.height = (baseHeight * scale) + 'px';
+      document.documentElement.style.overflowX = 'hidden';
+      document.body.style.overflowX = 'hidden';
+    }
+    window.addEventListener('resize', applyScale);
+    window.addEventListener('orientationchange', applyScale);
+    // Initial pass
+    applyScale();
+  })();
 })
 
 function getRandomLetter() {
@@ -158,7 +263,7 @@ $(document).ready(function() {
 					scratchWord();
 					// Check if the game is over
 					if(isEndOfGame()) {
-						alert("Good job!");
+						completeGame();
 					}
 				}
 

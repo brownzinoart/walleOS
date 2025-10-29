@@ -416,6 +416,15 @@ export function processCorpusDirectory(corpusPath: string): ProcessedDocument[] 
 }
 
 /**
+ * Files to exclude from RAG indexing (documentation, schema files, etc.)
+ */
+const EXCLUDED_FILES = [
+  'Wallymo_RAG_Schema.md',
+  'README.md',
+  '.ragignore'
+];
+
+/**
  * Process all markdown files in the corpus directory recursively
  */
 export function processCorpusDirectoryRecursive(corpusPath: string, recursive = true): ProcessedDocument[] {
@@ -432,6 +441,15 @@ export function processCorpusDirectoryRecursive(corpusPath: string, recursive = 
         const subDocs = processCorpusDirectoryRecursive(fullPath, recursive);
         documents.push(...subDocs);
       } else if (entry.isFile() && extname(entry.name).toLowerCase() === '.md') {
+        // Skip excluded files
+        if (EXCLUDED_FILES.includes(entry.name)) {
+          serverLogger.info('Skipping excluded file', {
+            filename: entry.name,
+            directory: corpusPath,
+          });
+          continue;
+        }
+
         // Process markdown file
         try {
           const document = processDocument(fullPath);

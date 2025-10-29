@@ -6,7 +6,6 @@ import { resolve, join } from 'path';
 
 const gamesDir = resolve('public/playground/games');
 const games = [
-  'simon-says-game-in-css-jquery',
   'word-seach'
 ];
 
@@ -24,97 +23,7 @@ async function buildGames() {
     }
     
     try {
-      if (game === 'simon-says-game-in-css-jquery') {
-        // Compile SCSS to CSS using sass package
-        const { compileString } = await import('sass');
-        const jsContent = readFileSync(join(srcPath, 'script.js'), 'utf8');
-        const scssContent = readFileSync(join(srcPath, 'style.scss'), 'utf8');
-
-        // Define tint() function (Compass legacy function)
-        // tint() mixes a color with white
-        const tintFunction = `
-@function tint($color, $percentage) {
-  @return mix(white, $color, $percentage);
-}
-`;
-
-        // Compile SCSS to CSS with tint() function prepended
-        const result = compileString(tintFunction + scssContent, {
-          style: 'expanded',
-          sourceMap: false
-        });
-
-        const cssContent = result.css;
-
-        // Create HTML with compiled CSS
-        const finalHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simon Says Game</title>
-    <!-- External Dependencies -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/buzz/1.2.1/buzz.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="case" class="center-block">
-        <div id="control">
-            <div id="brand">Sl<span class="large">m</span>O<span class="large">n</span><span class="tiny">®</span>
-                <div class="detail"></div>
-            </div>
-            <div id="buttons">
-                <div class="row">
-                    <div class="col display">
-                        <div id="display">
-                            <div id="number">888</div>
-                        </div>
-                        <div class="label">COUNT</div>
-                    </div>
-                    <div class="col start">
-                        <div id="start" class="roundbtn btn"></div>
-                        <div class="label">START</div>
-                    </div>
-                    <div class="col strict">
-                        <div id="strictlight" class="center-block"></div>
-                        <div id="strict" class="roundbtn btn"></div>
-                        <div class="label">STRICT</div>
-                    </div>
-                </div>
-                <div class="row power">
-                    <input type="checkbox" name="switch" class="switch">
-                </div>
-            </div>
-        </div>
-        <div id="green" class="playbtn btn">
-            <div class="innerbutton"></div>
-            <div class="lightbulb"></div>
-        </div>
-        <div id="red" class="playbtn btn">
-            <div class="lightbulb"></div>
-        </div>
-        <div id="yellow" class="playbtn btn">
-            <div class="innerbutton"></div>
-            <div class="lightbulb"></div>
-        </div>
-        <div id="blue" class="playbtn btn">
-            <div class="innerbutton"></div>
-            <div class="lightbulb"></div>
-        </div>
-    </div>
-    <script>
-    ${jsContent}
-    </script>
-</body>
-</html>`;
-
-        writeFileSync(join(distPath, 'index.html'), finalHtml);
-        writeFileSync(join(distPath, 'style.css'), cssContent);
-
-      } else if (game === 'word-seach') {
+      if (game === 'word-seach') {
         // Copy existing HTML/CSS/JS files and inline them
         const htmlContent = readFileSync(join(srcPath, 'index.html'), 'utf8');
         const cssContent = readFileSync(join(srcPath, 'style.css'), 'utf8');
@@ -133,6 +42,7 @@ async function buildGames() {
     <title>Word Search Game</title>
     <!-- External Dependencies -->
     <link href="https://fonts.googleapis.com/css?family=Fresca&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Happy+Monkey&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
     ${cssContent}
@@ -148,7 +58,6 @@ async function buildGames() {
         
         writeFileSync(join(distPath, 'index.html'), finalHtml);
       }
-      
       console.log(`✅ Built ${game}`);
     } catch (error) {
       console.error(`❌ Failed to build ${game}:`, error.message);

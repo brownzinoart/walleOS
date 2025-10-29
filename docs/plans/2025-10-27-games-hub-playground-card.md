@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Add an interactive games hub card to the playground bento grid that allows recruiters to play Simon Says and Word Search games in a single embedded experience with a toggle to switch between games.
+**Goal:** Add an interactive games hub card to the playground bento grid that allows recruiters to play the Word Search game in an embedded experience.
 
 **Architecture:** Create a new playground card entry in playgroundContent.json that links to a dedicated games route (#playground/games). Build a new games page component with iframe-based game embedding and a toggle control. Register the route and ensure proper navigation from the playground bento grid.
 
@@ -35,7 +35,7 @@ Add this entry to the slides array (after the last existing slide):
 
 Run: `npm run dev`
 Navigate to: `http://localhost:3002/#playground`
-Expected: New "Take a Break" card appears in bento grid with "Interactive Games" category label
+Expected: New "Take a Break" card appears in bento grid with "Interactive Games" category label. Clicking the card opens the Word Search page.
 
 **Step 3: Commit the content change**
 
@@ -89,18 +89,13 @@ Expected: FAIL with "Cannot find module" error
 // src/routes/playground/games.ts
 const GAMES = [
   {
-    id: 'simon-says',
-    title: 'Simon Says',
-    path: '/playground/games/simon-says-game-in-css-jquery/dist/index.html'
-  },
-  {
     id: 'word-search',
     title: 'Word Search',
     path: '/playground/games/word-seach/dist/index.html'
   }
 ] as const;
 
-type GameId = typeof GAMES[number]['id'];
+// Single-game hub; no toggle logic required beyond pressed state
 
 const render = (): string => {
   return `
@@ -181,11 +176,8 @@ it('shows first game by default and hides others', async () => {
   document.body.innerHTML = render();
   init();
 
-  const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLElement;
   const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLElement;
-
-  expect(simonFrame.style.display).not.toBe('none');
-  expect(wordFrame.style.display).toBe('none');
+  expect(wordFrame.style.display).toBe('block');
 });
 
 it('switches games when toggle button is clicked', async () => {
@@ -195,13 +187,11 @@ it('switches games when toggle button is clicked', async () => {
   init();
 
   const wordSearchBtn = document.querySelector('[data-game-id="word-search"]') as HTMLButtonElement;
-  const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLElement;
   const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLElement;
 
   wordSearchBtn.click();
 
-  expect(simonFrame.style.display).toBe('none');
-  expect(wordFrame.style.display).not.toBe('none');
+  expect(wordFrame.style.display).toBe('block');
   expect(wordSearchBtn.getAttribute('aria-pressed')).toBe('true');
 });
 ```
@@ -216,7 +206,7 @@ Expected: FAIL - games don't toggle, display properties not set correctly
 Replace the init function in `src/routes/playground/games.ts`:
 
 ```typescript
-let currentGameId: GameId = 'simon-says';
+// Single game: default is 'word-search'
 
 const init = (): void => {
   const root = document.querySelector<HTMLElement>('[data-games-root]');
@@ -329,7 +319,7 @@ const cleanup = (): void => {
   });
 
   // Reset current game state
-  currentGameId = 'simon-says';
+  // No Simon toggle (removed)
 };
 ```
 
@@ -771,10 +761,10 @@ describe('Games page integration', () => {
     expect(title?.textContent).toBe('Take a Break');
 
     const toggleButtons = root?.querySelectorAll('[data-game-id]');
-    expect(toggleButtons?.length).toBe(2);
+    expect(toggleButtons?.length).toBe(1);
 
     const iframes = root?.querySelectorAll('[data-game-frame]');
-    expect(iframes?.length).toBe(2);
+    expect(iframes?.length).toBe(1);
   });
 
   it('loads correct iframe sources for each game', async () => {
@@ -782,10 +772,7 @@ describe('Games page integration', () => {
 
     document.body.innerHTML = render();
 
-    const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLIFrameElement;
     const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLIFrameElement;
-
-    expect(simonFrame.src).toContain('/playground/games/simon-says-game-in-css-jquery/dist/index.html');
     expect(wordFrame.src).toContain('/playground/games/word-seach/dist/index.html');
   });
 });
@@ -873,11 +860,8 @@ git commit -m "test: update playground tests for games card"
 3. Verify games card appears with correct styling
 4. Click games card
 5. Verify navigation to `#playground/games`
-6. Verify Simon Says game loads by default
-7. Click "Word Search" toggle button
-8. Verify Word Search game displays and Simon Says hides
-9. Click "Simon Says" toggle button
-10. Verify Simon Says game displays and Word Search hides
+6. Verify Word Search game loads by default
+7. Verify timer controls render and function
 11. Navigate back to playground using browser back or sidebar
 12. Verify smooth navigation
 

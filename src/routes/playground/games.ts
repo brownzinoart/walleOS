@@ -1,18 +1,12 @@
 // src/routes/playground/games.ts
 const GAMES = [
   {
-    id: 'simon-says',
-    title: 'Simon Says',
-    path: '/playground/games/simon-says-game-in-css-jquery/dist/index.html'
-  },
-  {
     id: 'word-search',
     title: 'Word Search',
     path: '/playground/games/word-seach/dist/index.html'
   }
 ] as const;
 
-type GameId = typeof GAMES[number]['id'];
 
 const render = (): string => {
   return `
@@ -28,6 +22,8 @@ const render = (): string => {
               class="game-toggle-btn"
               data-game-id="${game.id}"
               aria-pressed="${index === 0 ? 'true' : 'false'}"
+              disabled
+              aria-disabled="true"
             >
               ${game.title}
             </button>
@@ -62,31 +58,13 @@ const init = (): void => {
     root.querySelectorAll<HTMLIFrameElement>('[data-game-frame]')
   );
 
-  // Show first game by default
+  // Show first (and only) game by default
   const firstFrame = gameFrames[0];
   const firstButton = toggleButtons[0];
   if (firstFrame) firstFrame.style.display = 'block';
   if (firstButton) firstButton.setAttribute('aria-pressed', 'true');
 
-  // Toggle game display
-  const switchToGame = (gameId: GameId): void => {
-    gameFrames.forEach(frame => {
-      const frameGameId = frame.dataset['gameFrame'];
-      frame.style.display = frameGameId === gameId ? 'block' : 'none';
-    });
-
-    toggleButtons.forEach(btn => {
-      const btnGameId = btn.dataset['gameId'];
-      btn.setAttribute('aria-pressed', String(btnGameId === gameId));
-    });
-  };
-
-  toggleButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const gameId = btn.dataset['gameId'] as GameId;
-      if (gameId) switchToGame(gameId);
-    });
-  });
+  // Remove clickable behavior: no event listeners needed for a single disabled button
 };
 
 const cleanup = (): void => {

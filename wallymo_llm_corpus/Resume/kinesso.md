@@ -2,6 +2,13 @@
 tags: [director-kinesso, kinesso, splash, dxa, design-system, indigo-awards, red-dot, ipg, ux-systems]
 category: resume
 experienceIds: [director-kinesso]
+voice_rules:
+  - "Write with precision and directness"
+  - "Every sentence must earn its place"
+  - "Avoid filler and emotional exaggeration but convey conviction"
+  - "Balance system-level reasoning with hands-on practicality"
+  - "Lead with impact, then process, then proof"
+  - "Treat design, leadership, and AI implementation as one discipline—clarity, scalability, and function"
 ---
 
 # Director, Experience & Innovation — Kinesso (IPG) (Remote | 2020–2023)
@@ -15,6 +22,5 @@ experienceIds: [director-kinesso]
 - Partnered with product and engineering leads to co-create Splash’s governance, personalization framework, and Design Bot auditing workflow.
 - Led a multi-region team through pandemic-era scaling, pairing culture building with measurable delivery cadence.
 
-## See Also
-- [Wallymo_Portfolio_LLM.md](../Wallymo_Portfolio_LLM.md)
-- [Wallymo_Voice_and_Career_Narrative.md](../Wallymo_Voice_and_Career_Narrative.md)
+## Context
+I joined as the second member of a nascent design team tasked with transforming developer-built analytics tools into consumer-ready SaaS products. We built everything from scratch and scaled from two to thirty designers across global time zones during COVID. Under IPG, Kinesso felt like a startup with enterprise resources—energizing and effective.

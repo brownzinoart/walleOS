@@ -17,33 +17,29 @@ describe('Games route component', () => {
     expect(typeof gamesModule.cleanup).toBe('function');
   });
 
-  it('shows first game by default and hides others', async () => {
+  it('shows the word search game by default', async () => {
     const { render, init } = await import('@/routes/playground/games');
 
     document.body.innerHTML = render();
     init();
 
-    const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLElement;
     const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLElement;
 
-    expect(simonFrame.style.display).not.toBe('none');
-    expect(wordFrame.style.display).toBe('none');
+    expect(wordFrame.style.display).toBe('block');
   });
 
-  it('switches games when toggle button is clicked', async () => {
+  it('keeps the only game selected when its button is clicked', async () => {
     const { render, init } = await import('@/routes/playground/games');
 
     document.body.innerHTML = render();
     init();
 
     const wordSearchBtn = document.querySelector('[data-game-id="word-search"]') as HTMLButtonElement;
-    const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLElement;
     const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLElement;
 
     wordSearchBtn.click();
 
-    expect(simonFrame.style.display).toBe('none');
-    expect(wordFrame.style.display).not.toBe('none');
+    expect(wordFrame.style.display).toBe('block');
     expect(wordSearchBtn.getAttribute('aria-pressed')).toBe('true');
   });
 
@@ -54,17 +50,14 @@ describe('Games route component', () => {
     init();
 
     const root = document.querySelector('[data-games-root]');
-    const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLElement;
     const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLElement;
     const wordSearchBtn = document.querySelector('[data-game-id="word-search"]') as HTMLButtonElement;
 
-    // Verify initial state - first game is showing
-    expect(simonFrame.style.display).toBe('block');
-    expect(wordFrame.style.display).toBe('none');
+    // Verify initial state - word search is showing
+    expect(wordFrame.style.display).toBe('block');
 
-    // Switch to second game
+    // Click its button again
     wordSearchBtn.click();
-    expect(simonFrame.style.display).toBe('none');
     expect(wordFrame.style.display).toBe('block');
 
     // Run cleanup
@@ -74,11 +67,8 @@ describe('Games route component', () => {
     expect(root).not.toBeNull();
 
     // Clicking buttons after cleanup should not switch games (listeners removed)
-    const simonBtn = document.querySelector('[data-game-id="simon-says"]') as HTMLButtonElement;
-    simonBtn.click();
-
-    // Games should remain in same state (word-search visible, simon-says hidden)
-    expect(simonFrame.style.display).toBe('none');
+    // Clicking after cleanup should not throw and state remains
+    wordSearchBtn.click();
     expect(wordFrame.style.display).toBe('block');
   });
 
@@ -115,10 +105,10 @@ describe('Games page integration', () => {
     expect(title?.textContent).toBe('Take a Break');
 
     const toggleButtons = root?.querySelectorAll('[data-game-id]');
-    expect(toggleButtons?.length).toBe(2);
+    expect(toggleButtons?.length).toBe(1);
 
     const iframes = root?.querySelectorAll('[data-game-frame]');
-    expect(iframes?.length).toBe(2);
+    expect(iframes?.length).toBe(1);
   });
 
   it('loads correct iframe sources for each game', async () => {
@@ -126,10 +116,7 @@ describe('Games page integration', () => {
 
     document.body.innerHTML = render();
 
-    const simonFrame = document.querySelector('[data-game-frame="simon-says"]') as HTMLIFrameElement;
     const wordFrame = document.querySelector('[data-game-frame="word-search"]') as HTMLIFrameElement;
-
-    expect(simonFrame.src).toContain('/playground/games/simon-says-game-in-css-jquery/dist/index.html');
     expect(wordFrame.src).toContain('/playground/games/word-seach/dist/index.html');
   });
 });

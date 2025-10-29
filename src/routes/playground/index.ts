@@ -27,7 +27,7 @@ const BENTO_CARD_POSITIONS: BentoCardPosition[] = [
   { column: "1 / span 4", row: "5 / span 3" },
   { column: "5 / span 3", row: "5 / span 3" },
   { column: "8 / span 5", row: "6 / span 2" },
-  { column: "1 / span 12", row: "8 / span 3" },
+  { column: "1 / span 12", row: "8 / span 2" },
 ];
 
 const BENTO_SIZE_CLASS_MAP: Record<BentoCardSize, string> = {

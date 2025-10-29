@@ -2,6 +2,13 @@
 tags: [sr-account-exec-fcb, account-exec-fcb, fcb-health, nuvigil, teva, mlr, xbox-live, times-square, pharmaceutical-advertising]
 category: resume
 experienceIds: [sr-account-exec-fcb, account-exec-fcb]
+voice_rules:
+  - "Write with precision and directness"
+  - "Every sentence must earn its place"
+  - "Avoid filler and emotional exaggeration but convey conviction"
+  - "Balance system-level reasoning with hands-on practicality"
+  - "Lead with impact, then process, then proof"
+  - "Treat design, leadership, and AI implementation as one discipline—clarity, scalability, and function"
 ---
 
 # Sr. Account Executive — FCB Health (New York, NY | 2011–2015)
@@ -15,6 +22,5 @@ experienceIds: [sr-account-exec-fcb, account-exec-fcb]
 - Negotiated with Medical/Legal/Regulatory partners to keep creative intent while satisfying FDA guidance.
 - Operationalized broadcast production budgets and timelines without missing ship dates.
 
-## See Also
-- [Wallymo_Experience_LLM.md](../Wallymo_Experience_LLM.md)
-- [Wallymo_Portfolio_LLM.md](../Wallymo_Portfolio_LLM.md)
+## Context
+At FCB Health, I managed the consumer side of a $10MM account for NUVIGIL, overseeing four creative teams, a strategy unit, and full production across radio, print, and digital. This role gave me formative experience orchestrating cross-functional teams and navigating complex regulatory requirements.

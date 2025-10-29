@@ -4,21 +4,13 @@
 
 **Goal:** Fix games not loading assets in iframes and ensure production deployment works on Vercel
 
-**Architecture:** The games are self-contained HTML files with inline styles and scripts. They depend on external resources (jQuery, Bootstrap Switch, Buzz.js for Simon Says). The games are loaded in iframes from `/playground/games/` directory. The issue is that both games have missing external dependencies and incorrect asset paths.
+**Architecture:** The Word Search game is a self-contained HTML/CSS/JS experience loaded in an iframe from `/playground/games/`. The Simon Says game has been removed.
 
 **Tech Stack:** Vanilla HTML/CSS/JS, jQuery, Vite (build tool), Vercel (hosting)
 
 ---
 
 ## Root Cause Analysis
-
-**Simon Says Game Issues:**
-1. Missing external dependencies in index.html:
-   - jQuery (required by script.js)
-   - Bootstrap Switch CSS/JS (for power toggle)
-   - Buzz.js (for audio playback)
-2. Inline CSS contains SCSS syntax (var(--color), tint(), darken(), lighten()) which browsers don't understand
-3. Script.js is external but expects jQuery and Bootstrap Switch to be loaded
 
 **Word Search Game Issues:**
 1. Missing jQuery dependency (script uses `$(document).ready()`)
@@ -30,34 +22,9 @@
 
 ---
 
-## Task 1: Fix Simon Says External Dependencies
+## Task 1: Word Search Dependencies
 
-**Files:**
-- Modify: `public/playground/games/simon-says-game-in-css-jquery/dist/index.html`
-
-**Step 1: Add missing CDN dependencies to head section**
-
-Add before closing `</head>` tag at line 468:
-
-```html
-    <!-- External Dependencies -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/buzz/1.2.1/buzz.min.js"></script>
-```
-
-**Step 2: Test Simon Says game in browser**
-
-Run: Open `http://localhost:3000/#playground/games` and click "Simon Says"
-Expected: Game loads with working power toggle and all UI elements visible
-
-**Step 3: Commit Simon Says dependency fix**
-
-```bash
-git add public/playground/games/simon-says-game-in-css-jquery/dist/index.html
-git commit -m "fix: add missing jQuery, Bootstrap Switch, and Buzz.js dependencies to Simon Says game"
-```
+Ensure required dependencies are present in the inlined head of the built file.
 
 ---
 
@@ -90,7 +57,7 @@ git commit -m "fix: add missing jQuery and Fresca font dependencies to Word Sear
 
 ---
 
-## Task 3: Verify Vite Build Includes Games Directory
+## Task 2: Verify Vite Build Includes Games Directory
 
 **Files:**
 - Read: `vite.config.ts`
@@ -111,7 +78,7 @@ Expected: Build succeeds without errors
 **Step 3: Verify games are in dist directory**
 
 Run: `ls -la dist/playground/games/`
-Expected: Both game directories present with all assets
+Expected: Word Search directory present with all assets
 
 **Step 4: Test production build locally**
 
@@ -121,7 +88,7 @@ Expected: Preview server starts on port 3000
 **Step 5: Test games in preview mode**
 
 Run: Open `http://localhost:3000/#playground/games` in browser
-Expected: Both games load and function correctly
+Expected: Word Search loads and functions correctly
 
 **Step 6: Commit if any config changes were needed**
 
@@ -132,10 +99,9 @@ git commit -m "chore: verify Vite build configuration includes games directory"
 
 ---
 
-## Task 4: Fix CSS Variable Syntax in Simon Says
+<!-- Simon Says tasks removed: game no longer included -->
 
-**Files:**
-- Modify: `public/playground/games/simon-says-game-in-css-jquery/dist/index.html`
+<!-- Removed file references related to Simon Says -->
 
 **Step 1: Replace SCSS variable declarations with CSS custom properties**
 
@@ -221,17 +187,7 @@ Replace the inline `<style>` tag (lines 7-468) with:
 <link rel="stylesheet" href="style.css">
 ```
 
-**Step 4: Test Simon Says game appearance**
-
-Run: Open `http://localhost:3000/#playground/games` and click "Simon Says"
-Expected: Game displays with correct colors, buttons look styled properly
-
-**Step 5: Commit CSS fixes**
-
-```bash
-git add public/playground/games/simon-says-game-in-css-jquery/dist/index.html
-git commit -m "fix: replace inline SCSS with compiled CSS link for Simon Says game"
-```
+<!-- Removed test and commit steps related to Simon Says appearance -->
 
 ---
 
@@ -263,10 +219,7 @@ Expected: Both games load correctly with all assets and functionality
 **Step 5: Test both games thoroughly on production**
 
 Manual testing checklist:
-- [ ] Simon Says loads with correct styling
-- [ ] Simon Says power toggle works
-- [ ] Simon Says buttons light up and play sounds
-- [ ] Simon Says game logic functions correctly
+<!-- Simon Says checklist items removed -->
 - [ ] Word Search loads with correct font
 - [ ] Word Search grid displays properly
 - [ ] Word Search mouse drawing works
@@ -288,7 +241,7 @@ git push origin main
 
 After completing all tasks, verify:
 
-- [ ] Simon Says game loads in local dev (localhost:3000)
+<!-- Simon Says dev checklist removed -->
 - [ ] Word Search game loads in local dev (localhost:3000)
 - [ ] Both games load in local preview build (npm run preview)
 - [ ] Both games load in Vercel production
@@ -306,7 +259,7 @@ After completing all tasks, verify:
 
 1. **Missing Dependencies**: The HTML files were generated from CodePen demos which assume jQuery and other libraries are loaded by the CodePen environment. When moved to standalone files, these dependencies must be explicitly included.
 
-2. **SCSS vs CSS**: The Simon Says game had inline SCSS syntax embedded in the `<style>` tag, but browsers only understand standard CSS. SCSS needs to be pre-compiled or replaced with valid CSS.
+2. **Inlining**: Word Search CSS/JS are inlined during build for portability.
 
 3. **Build System**: Vite automatically copies `public/` to `dist/`, so no build configuration changes were needed. The issue was purely with the HTML files themselves.
 

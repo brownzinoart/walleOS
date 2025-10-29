@@ -2,6 +2,13 @@
 tags: [career-overview, professional-journey, career-narrative, all-experiences]
 category: resume
 experienceIds: []
+voice_rules:
+  - "Write with precision and directness"
+  - "Every sentence must earn its place"
+  - "Avoid filler and emotional exaggeration but convey conviction"
+  - "Balance system-level reasoning with hands-on practicality"
+  - "Lead with impact, then process, then proof"
+  - "Treat design, leadership, and AI implementation as one discipline—clarity, scalability, and function"
 ---
 
 # Career Overview — Wally Mostafa
@@ -16,6 +23,3 @@ experienceIds: []
 - **2020–2023:** Directed Experience & Innovation at Kinesso, delivering the Splash design system and DXA platform while scaling the design organization.
 - **2023–Present:** Founded One Block Away LLC to launch ListingPal, evolve WeReady’s evidence engine, and prototype new agentic workflows.
 
-## See Also
-- [Wallymo_Experience_LLM.md](../Wallymo_Experience_LLM.md)
-- [Wallymo_Voice_and_Career_Narrative.md](../Wallymo_Voice_and_Career_Narrative.md)
