@@ -28,11 +28,12 @@ async function buildGames() {
         const htmlContent = readFileSync(join(srcPath, 'index.html'), 'utf8');
         const cssContent = readFileSync(join(srcPath, 'style.css'), 'utf8');
         const jsContent = readFileSync(join(srcPath, 'script.js'), 'utf8');
-        
+        const jqueryContent = readFileSync(join(gamePath, 'jquery-3.6.0.min.js'), 'utf8');
+
         // Extract body content from existing HTML
         const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
         const bodyContent = bodyMatch ? bodyMatch[1] : htmlContent;
-        
+
         // Create final HTML with inlined CSS and JS
         const finalHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -43,13 +44,15 @@ async function buildGames() {
     <!-- External Dependencies -->
     <link href="https://fonts.googleapis.com/css?family=Fresca&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Happy+Monkey&display=swap" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
     ${cssContent}
     </style>
 </head>
 <body>
     ${bodyContent}
+    <script>
+    ${jqueryContent}
+    </script>
     <script>
     ${jsContent}
     </script>
