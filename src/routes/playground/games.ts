@@ -49,7 +49,9 @@ const render = (): string => {
 
 const init = (): void => {
   // Redirect mobile users back to playground
-  const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+  const isDesktop = typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia('(min-width: 1024px)').matches
+    : true; // Default to desktop during SSR/tests
   if (!isDesktop) {
     window.location.hash = '#playground';
     return;

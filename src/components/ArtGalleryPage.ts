@@ -96,7 +96,7 @@ class ArtGalleryScroll {
   }
 
   private init() {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !window.matchMedia) return;
 
     this.mediaQuery = window.matchMedia("(max-width: 1024px)");
 

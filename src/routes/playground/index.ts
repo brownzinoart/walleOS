@@ -6,6 +6,7 @@ import {
 
 // Mobile detection utility (matches Layout.ts pattern)
 const isDesktop = (): boolean => {
+  if (typeof window === 'undefined' || !window.matchMedia) return true; // Default to desktop during SSR/tests
   return window.matchMedia('(min-width: 1024px)').matches;
 };
 
