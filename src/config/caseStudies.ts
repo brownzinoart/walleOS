@@ -57,6 +57,12 @@ export interface CaseStudyContent {
   heroDescriptionFallback: string;
   heroEyebrow: string;
   heroMeta: CaseStudyMetaBlock[];
+  overview?: {
+    eyebrow: string;
+    title: string;
+    copyHtml?: string;
+    cards?: CaseStudyCard[];
+  };
   problem: {
     eyebrow: string;
     title: string;
@@ -870,7 +876,7 @@ export const caseStudyContent: CaseStudyContentMap = {
     heroMeta: [
       {
         label: "Role",
-        value: "Founder, AI Product Designer, Marketing Automation Specialist",
+        value: "Partner, AI Product Designer, Automation Specialist",
       },
       {
         label: "Focus",
@@ -880,14 +886,32 @@ export const caseStudyContent: CaseStudyContentMap = {
       {
         label: "Built With",
         value:
-          "Claude Code + Codex CLI + Traycer.ai orchestration, Next.js, Supabase",
+          "Claude Code + Codex CLI + Gemini + Traycer.ai, Next.js, Supabase",
       },
     ],
+    overview: {
+      eyebrow: "Problem - Challenge - Solution",
+      title: "Overview",
+      cards: [
+        {
+          title: "Problem",
+          description: "Creative teams lose weeks to unclear client input and weak briefing processes. On average, 21–56 days vanish in review loops while 33% of marketing budgets are wasted on rework and misaligned deliverables.",
+        },
+        {
+          title: "Challenge",
+          description: "Traditional briefing depends on manual intake, back-and-forth revisions, and scattered communication. Teams burn time translating client notes into structure, while project scopes drift and accountability disappears.",
+        },
+        {
+          title: "Solution",
+          description: "BriefFlow uses AI orchestration to compress that chaos into clarity. It captures right inputs, generates structured creative briefs in minutes, and delivers client-approved outputs with audit trails—turning weeks of friction into a single, efficient workflow.",
+        },
+      ],
+    },
     problem: {
-      eyebrow: "The Problem",
-      title: "Why I Built BriefFlow",
+      eyebrow: "Why We Built BriefFlow",
+      title: "Why We Built BriefFlow",
       copyHtml:
-        "After years in marketing and creative agencies, I witnessed teams wasting 30% of project time on poor briefing and endless revisions. Teams spend 21-56 days in review cycles while 33% of marketing budgets get squandered on misdirected work. I knew AI could transform this broken process.",
+        "Years in agency environments showed how dysfunctional briefing kills momentum. Teams spend 21–56 days in review loops while client trust and internal bandwidth erode. We built BriefFlow to compress that entire cycle—giving teams time back for growth, strategy, and relationship-building.",
       cards: [
         {
           title: "Briefing Process Hell",
@@ -908,7 +932,7 @@ export const caseStudyContent: CaseStudyContentMap = {
     },
     capabilities: {
       eyebrow: "AI-Powered Brief Creation",
-      title: "Transform messy inputs into approved briefs in minutes",
+      title: "We transformed messy inputs into approved briefs in minutes",
       cards: [
         {
           title: "Smart Intake Forms",
@@ -934,7 +958,7 @@ export const caseStudyContent: CaseStudyContentMap = {
     },
     toolkit: {
       eyebrow: "AI Agent Orchestration Toolkit",
-      title: "Tools Used",
+      title: "Full Toolset Used",
       cards: [
         {
           title: "Claude Code CLI",
@@ -968,7 +992,7 @@ export const caseStudyContent: CaseStudyContentMap = {
         {
           title: "Ollama",
           description:
-            "Local testing and optimization for brief generation quality",
+            "Local testing and optimization for brief generation quality without sacrificing paid tokens",
           icon: {
             type: "image",
             src: "https://ollama.com/public/ollama.png",
@@ -976,8 +1000,8 @@ export const caseStudyContent: CaseStudyContentMap = {
           },
         },
         {
-          title: "VS Code + Roo",
-          description: "Integrated development environment with AI assistance",
+          title: "VS Code and/or Roo, Cline, Kilo Code",
+          description: "Integrated development environment with AI assistance for quick revisions",
           icon: {
             type: "image",
             src: "https://code.visualstudio.com/assets/images/code-stable.png",
@@ -985,13 +1009,13 @@ export const caseStudyContent: CaseStudyContentMap = {
           },
         },
         {
-          title: "BriefFlow Workflow",
+          title: "AI Agent Orchestration",
           description:
-            "Intake → AI Generation → Client Review → Approval → Export methodology using specialized agents",
+            "Multi-agent coordination methodology using specialized models for optimal results",
           icon: {
             type: "gradient",
-            label: "📝",
-            colors: ["#ff6b35", "#f7931e"],
+            label: "AI",
+            colors: ["#00d4ff", "#ff0080"],
           },
         },
       ],
@@ -999,22 +1023,22 @@ export const caseStudyContent: CaseStudyContentMap = {
     process: {
       eyebrow: "AI Agent Orchestration",
       title: "How I built BriefFlow using multi-agent coordination",
-      lede: "From identifying marketing briefing pain points to orchestrating Claude Code, Codex CLI, and Traycer.ai to build a production-ready platform.",
+      lede: "From identifying marketing briefing pain points to orchestrating AI tools to build a production-ready platform.",
       milestones: [
         {
           number: "01",
           title: "Marketing Research",
           copyHtml:
-            "I used <strong>Traycer.ai</strong> to analyze marketing briefing workflows and identify the 30% time waste and 33% budget loss from poor briefing processes.",
+            "We reached out to several of our old colleagues regarding this issue we had a hunch was still present in the advertising agency world. It surely was. We met with 12 of our ex colleagues in the product mgmt and account mgmt space.",
           stats: [
             {
               label: "Research Tool:",
-              value: "Traycer.ai for marketing workflow analysis",
+              value: "Open-ended zoom chats",
             },
             {
               label: "Focus:",
               value:
-                "Creative brief inefficiencies and client communication gaps",
+                "Confirming creative brief inefficiencies and client communication gaps",
             },
           ],
         },
@@ -1022,11 +1046,11 @@ export const caseStudyContent: CaseStudyContentMap = {
           number: "02",
           title: "AI Architecture Design",
           copyHtml:
-            "I leveraged <strong>Claude Code</strong> to design the AI briefing system, conditional form logic, and client approval workflows that eliminate revision cycles.",
+            "I leveraged Gemini and Claude mostly to design the AI briefing system, create a design system, and focus on top notch UX/UI experiences",
           stats: [
             {
               label: "Architecture Agent:",
-              value: "Claude Code for AI briefing design",
+              value: "Claude Code & Gemini provide a great solid planning base prior to implementation, and Claude specifically, does an amazing job of providing users with the best AI engineering UX/UI practices",
             },
             {
               label: "Output:",
@@ -1038,11 +1062,11 @@ export const caseStudyContent: CaseStudyContentMap = {
           number: "03",
           title: "Implementation",
           copyHtml:
-            "I used <strong>Codex CLI</strong> for rapid implementation of form builders, AI processing pipelines, and integration systems that transform chaotic inputs into structured briefs.",
+            "I used <strong>Codex CLI</strong> to build rapid implementation of form builders, AI processing pipelines, and integration systems that transform chaotic inputs into structured briefs. Codex has such a sharp eye for backend implementation and efficiencies. It is able to remove a ton of fluff to enhance user and developer experiences alike through codebase optimizations",
           stats: [
             {
               label: "Implementation Agent:",
-              value: "Codex CLI for workflow automation",
+              value: "Codex CLI for workflow automation and backend reviews",
             },
             {
               label: "Result:",
@@ -1062,7 +1086,7 @@ export const caseStudyContent: CaseStudyContentMap = {
             },
             {
               label: "Impact:",
-              value: "Structured client communication at scale",
+              value: "Structured client communication at scale, and internal efficiencies in brief approvals",
             },
           ],
         },
@@ -1095,9 +1119,9 @@ export const caseStudyContent: CaseStudyContentMap = {
     },
     results: {
       eyebrow: "Results",
-      title: "What I achieved through AI agent orchestration",
+      title: "What We achieved through AI agent orchestration",
       copyHtml:
-        "Building BriefFlow demonstrated my ability to coordinate multiple AI agents for marketing automation, delivering a production platform that saves 30% of marketing budgets while eliminating chaotic briefing processes and revision cycles.",
+        "Building BriefFlow demonstrated my ability to coordinate multiple AI agents for marketing automation. The abundance of tools these days can create an overwhelming feeling of having too many choices, but the reality is, some models perform better than others when it comes to certain verticals of the AI engineering process (i.e. Codex backend, Claude frontend, Gemini planning…etc) these models can certainly do a ton maybe everything, but it depends on how well they can do things in particular which needs to be identified.",
       cards: [
         {
           title: "30% Budget Savings",
@@ -1110,9 +1134,9 @@ export const caseStudyContent: CaseStudyContentMap = {
             "Leveraged AI orchestration to build a system that transforms 21-56 day review cycles into minutes-long brief creation processes.",
         },
         {
-          title: "Client Communication",
+          title: "What's Next?",
           description:
-            "Designed structured, approval-ready systems that eliminate scope creep. Every brief maintains clarity and prevents misdirected work.",
+            "We have begun finalizing our codebase for security and Beta testing with some of those interviewed colleagues, it seems to be a solution that everyone is very excited to try and implement within their workflows and we are excited to get the feedback to continue to iterate on the product",
         },
       ],
     },

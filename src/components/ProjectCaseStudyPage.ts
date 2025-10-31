@@ -179,6 +179,19 @@ export const renderProjectCaseStudyPage = (projectId: CaseStudyId): string => {
   const processId = buildSectionId(projectId, 'process-title');
   const showcaseId = buildSectionId(projectId, 'showcase-title');
 
+  const overviewSection = content.overview ? `
+    <section class="weready-outro">
+      <div class="weready-outro__inner">
+        <div class="weready-outro__content">
+          <p class="weready-overview__eyebrow">${escapeHtml(content.overview.eyebrow)}</p>
+          <h2 class="weready-outro__title">${escapeHtml(content.overview.title)}</h2>
+          ${content.overview.copyHtml ? `<p class="weready-outro__copy">${content.overview.copyHtml}</p>` : ''}
+        </div>
+        ${content.overview.cards ? `<div class="weready-outro__grid">${renderSimpleCards(content.overview.cards)}</div>` : ''}
+      </div>
+    </section>
+  ` : '';
+
   return `
     <article class="project-case-study-page project-case-study-page--${projectId}" data-project-case-study-page="${projectId}">
       <header class="weready-hero">
@@ -201,6 +214,8 @@ export const renderProjectCaseStudyPage = (projectId: CaseStudyId): string => {
           ${externalLinkMarkup}
         </div>
       </header>
+
+      ${overviewSection}
 
       <section class="weready-outro">
         <div class="weready-outro__inner">

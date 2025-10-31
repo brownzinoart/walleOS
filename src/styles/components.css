@@ -1083,6 +1083,12 @@
   will-change: transform;
 }
 
+.chat-input-textarea:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--color-neon-cyan-rgb), 0.15);
+  border-color: rgba(var(--color-neon-cyan-rgb), 0.5);
+}
+
 .chat-input-textarea:focus {
   transform: scale(1.01);
   box-shadow: 0 0 0 2px rgba(var(--color-neon-cyan-rgb), 0.25);
@@ -1205,7 +1211,17 @@
   --chip-translate-y: -2px;
   --chip-scale: 1.05;
   --chip-rotate: -1deg;
-  box-shadow: 8px 8px 0 rgba(var(--color-bg-primary-rgb), 0.45);
+  border-color: var(--color-neon-cyan);
+  box-shadow:
+    8px 8px 0 rgba(var(--color-bg-primary-rgb), 0.45),
+    0 0 20px rgba(var(--color-neon-cyan-rgb), 0.6),
+    0 0 40px rgba(var(--color-neon-cyan-rgb), 0.4),
+    inset 0 0 20px rgba(var(--color-neon-cyan-rgb), 0.1);
+  text-shadow: 0 0 8px rgba(var(--color-neon-cyan-rgb), 0.8);
+  background: linear-gradient(145deg,
+    rgba(var(--color-neon-cyan-rgb), 0.15) 0%,
+    rgba(var(--color-surface-muted-rgb), 0.95) 50%,
+    rgba(var(--color-neon-cyan-rgb), 0.08) 100%);
 }
 
 .suggestion-chip:hover {
@@ -4393,7 +4409,17 @@
     --chip-translate-y: -1px;
     --chip-scale: 1.03;
     --chip-rotate: -0.5deg;
-    box-shadow: 6px 6px 0 rgba(var(--color-bg-primary-rgb), 0.35);
+    border-color: var(--color-neon-cyan);
+    box-shadow:
+      6px 6px 0 rgba(var(--color-bg-primary-rgb), 0.35),
+      0 0 15px rgba(var(--color-neon-cyan-rgb), 0.5),
+      0 0 30px rgba(var(--color-neon-cyan-rgb), 0.3),
+      inset 0 0 15px rgba(var(--color-neon-cyan-rgb), 0.08);
+    text-shadow: 0 0 6px rgba(var(--color-neon-cyan-rgb), 0.7);
+    background: linear-gradient(145deg,
+      rgba(var(--color-neon-cyan-rgb), 0.12) 0%,
+      rgba(var(--color-surface-muted-rgb), 0.95) 50%,
+      rgba(var(--color-neon-cyan-rgb), 0.06) 100%);
   }
 
   .suggestion-chip:active {

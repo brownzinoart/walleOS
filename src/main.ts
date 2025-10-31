@@ -421,13 +421,13 @@ const renderHomeView = (): string => {
         ${indicatorMarkup}
       </div>
       ${welcomeSection}
+      ${renderChatInput()}
       ${suggestionsSection}
       ${renderChatContainer(state.messages, {
         showEmptyState: false,
         emptyStateContent: '',
         appendContent: typingMarkup,
       })}
-      ${renderChatInput()}
     </section>
     ${projectCardsMarkup}
   `;
@@ -778,12 +778,17 @@ const renderChatView = (state: ChatState) => {
       suggestionsContainer.className = 'chat-suggestions';
       suggestionsContainer.setAttribute('data-chat-suggestions', '');
 
-      const insertionTarget = welcomeSlot ?? contextIndicatorSlot;
-
-      if (insertionTarget) {
-        insertionTarget.insertAdjacentElement('afterend', suggestionsContainer);
+      // Insert after chat input (which should come after welcome)
+      const chatInput = chatRoot.querySelector('[data-chat-input-container]');
+      if (chatInput) {
+        chatInput.insertAdjacentElement('afterend', suggestionsContainer);
       } else {
-        chatRoot.insertAdjacentElement('afterbegin', suggestionsContainer);
+        const insertionTarget = welcomeSlot ?? contextIndicatorSlot;
+        if (insertionTarget) {
+          insertionTarget.insertAdjacentElement('afterend', suggestionsContainer);
+        } else {
+          chatRoot.insertAdjacentElement('afterbegin', suggestionsContainer);
+        }
       }
 
       suggestionSlot = suggestionsContainer;
@@ -863,6 +868,11 @@ const handleRouteChange = () => {
 
   if (previousRoute === nextRoute) {
     return;
+  }
+
+  // Scroll to top when navigating to home route
+  if (nextRoute === 'home') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   chatAutoScrollEnabled = true;
