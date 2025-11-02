@@ -85,7 +85,7 @@
     {
       "id": "weready",
       "title": "WeReady",
-      "description": "I built WeReady using AI agent orchestration (Claude Code + Codex CLI + Traycer.ai) to create a startup intelligence platform that processes 60+ data signals for evidence-based readiness scoring.",
+      "description": "I built WeReady using AI agent orchestration (Claude Code + Codex CLI + Qwen Code) to create a startup intelligence platform that processes 60+ data signals for evidence-based readiness scoring.",
       "tags": ["AI Orchestration", "Multi-Agent Systems", "Startup Intelligence"],
       "thumbnail": "/images/projects/weready/pic2.png",
       "url": "https://weready.dev/",
@@ -94,7 +94,7 @@
     {
       "id": "listingpal",
       "title": "ListingPal",
-      "description": "AI tool that builds a full listing campaign in ~90 seconds—descriptions, social, and ads from just an address.",
+      "description": "AI tool that generates complete real estate marketing campaigns in 90 seconds—MLS descriptions, social content, and paid ads from just an address.",
       "tags": ["Marketing", "Real Estate", "Dashboard"],
       "thumbnail": "/images/projects/listingpal/pic1.png",
       "url": "https://listingpal.info",

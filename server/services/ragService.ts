@@ -71,51 +71,30 @@ export class RAGServiceError extends Error {
 export function preprocessQuery(query: string): string {
   const trimmed = query.trim().toLowerCase();
 
-  // Expand common abbreviations and add relevant keywords
+  // Only expand very short queries (< 20 chars) since modern embeddings handle synonyms well
+  // This reduces unnecessary token usage and embedding costs
+  if (trimmed.length >= 20) {
+    return trimmed;
+  }
+
+  // Expand common abbreviations only for short queries
   const expansions: Record<string, string[]> = {
-    'ai': ['artificial intelligence', 'machine learning', 'neural networks'],
-    'ml': ['machine learning', 'artificial intelligence', 'data science'],
-    'ux': ['user experience', 'user interface', 'design', 'usability'],
-    'ui': ['user interface', 'design', 'frontend', 'interaction'],
-    'dev': ['development', 'programming', 'coding', 'software'],
-    'experience': ['background', 'history', 'career', 'work'],
-    'skills': ['abilities', 'competencies', 'expertise', 'technologies'],
-    'projects': ['portfolio', 'work', 'achievements', 'accomplishments'],
-    'leadership': ['management', 'team', 'supervision', 'direction'],
-    // domain/project synonyms
-    'weready': ['startup intelligence', 'readiness score', 'investment readiness', 'bailey engine', 'evidence-based'],
-    'listingpal': ['real estate marketing', 'agentselect', 'mls', 'ad copy', 'campaign generator'],
-    'dxa': ['digital audit experience', 'analytics platform', 'audit canvas', 'prescriptive insights'],
-    'splash': ['design system', 'atomic design', 'tokens', 'component library'],
-    'kinesso': ['indigo awards', 'ux systems', 'media intelligence', 'ipg'],
-    'one block away': ['weready', 'listingpal', 'mvp', 'llm orchestration'],
-    // chips
-    'portfolio-awards': ['awards', 'indigo', 'red dot', 'recognition', 'dxa', 'splash'],
-    'current-ventures': ['weready', 'listingpal', 'one block away', 'mvp', 'startup'],
-    'design-systems-leadership': ['splash', 'design system', 'governance', 'tokens', 'components'],
-    'ai-implementation': ['orchestration', 'function calling', 'rag', 'lancedb', 'embedding'],
+    'ai': ['artificial intelligence', 'machine learning'],
+    'ml': ['machine learning', 'data science'],
+    'ux': ['user experience', 'design'],
+    'ui': ['user interface', 'design'],
+    'skills': ['expertise', 'technologies'],
+    'weready': ['startup intelligence', 'readiness score'],
+    'listingpal': ['real estate marketing'],
   };
 
   let expanded = trimmed;
 
-  // Apply expansions
+  // Apply expansions for short queries only
   for (const [key, values] of Object.entries(expansions)) {
     if (trimmed.includes(key)) {
       expanded += ' ' + values.join(' ');
     }
-  }
-
-  // Add contextual keywords based on query content
-  if (trimmed.includes('experience') || trimmed.includes('background')) {
-    expanded += ' career work history professional';
-  }
-
-  if (trimmed.includes('technical') || trimmed.includes('technology')) {
-    expanded += ' programming development software engineering';
-  }
-
-  if (trimmed.includes('design') || trimmed.includes('creative')) {
-    expanded += ' user experience user interface visual';
   }
 
   return expanded.trim();

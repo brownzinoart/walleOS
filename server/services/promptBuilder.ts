@@ -3,6 +3,19 @@ import { dirname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serverLogger } from '../middleware/logger.js';
 import { retrieveContext, retrieveNarrativeContext, getRAGServiceHealth } from './ragService.js';
+import { LRUCache } from '../utils/lruCache.js';
+
+// Cache for RAG health check (1 minute TTL)
+const ragHealthCache = new LRUCache<string, Awaited<ReturnType<typeof getRAGServiceHealth>>>({
+  max: 1,
+  ttl: 60000, // 1 minute
+});
+
+// Cache for narrative context (1 hour TTL)
+const narrativeContextCache = new LRUCache<string, Awaited<ReturnType<typeof retrieveNarrativeContext>>>({
+  max: 1,
+  ttl: 3600000, // 1 hour
+});
 
 interface ResumeExperience {
   id: string;
@@ -75,18 +88,61 @@ const loadContent = (): ContentFile => {
   }
 };
 
+/**
+ * Preload content.json on server startup to avoid blocking first request
+ */
+export const preloadContent = (): void => {
+  try {
+    loadContent();
+    serverLogger.info('Preloaded content.json for prompt building');
+  } catch (error) {
+    serverLogger.warn('Failed to preload content.json, will load on first request', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+/**
+ * Cached RAG health check (avoids querying vector store on every request)
+ */
+const getCachedRAGHealth = async (): Promise<Awaited<ReturnType<typeof getRAGServiceHealth>>> => {
+  const cached = ragHealthCache.get('health');
+  if (cached) {
+    return cached;
+  }
+
+  const health = await getRAGServiceHealth();
+  ragHealthCache.set('health', health);
+  return health;
+};
+
+/**
+ * Cached narrative context retrieval (same query every time)
+ */
+const getCachedNarrativeContext = async (): Promise<Awaited<ReturnType<typeof retrieveNarrativeContext>>> => {
+  const cacheKey = 'narrative';
+  const cached = narrativeContextCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const context = await retrieveNarrativeContext('voice tone writing style career narrative precision directness');
+  narrativeContextCache.set(cacheKey, context);
+  return context;
+};
+
 export const buildSystemPrompt = async (): Promise<string> => {
   const content = loadContent();
   const { branding: _branding } = content;
 
-  // Check if RAG service is available
-  const ragHealth = await getRAGServiceHealth();
+  // Check if RAG service is available (cached)
+  const ragHealth = await getCachedRAGHealth();
 
   if (ragHealth.healthy && ragHealth.vectorStoreReady) {
     // Use RAG-enhanced system prompt
     try {
-      // Get narrative context for tone and voice - use better search terms
-      const narrativeContext = await retrieveNarrativeContext('voice tone writing style career narrative precision directness');
+      // Get narrative context for tone and voice (cached)
+      const narrativeContext = await getCachedNarrativeContext();
 
       const promptSections = [
         'You are Wally Mostafa, a UX systems architect and AI specialist.',
@@ -191,8 +247,8 @@ export const buildExperienceContextPrompt = (experienceId: string): string | und
 export const buildUserPromptWithRAG = async (userMessage: string, experienceId?: string): Promise<string> => {
   const sections: string[] = [];
 
-  // Check if RAG service is available
-  const ragHealth = await getRAGServiceHealth();
+  // Check if RAG service is available (cached)
+  const ragHealth = await getCachedRAGHealth();
 
   if (ragHealth.healthy && ragHealth.vectorStoreReady) {
     try {

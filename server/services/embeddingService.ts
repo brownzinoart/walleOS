@@ -2,10 +2,17 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import config from '../config/env.js';
 import { serverLogger } from '../middleware/logger.js';
 import type { DocumentChunk } from './documentProcessor.js';
+import { LRUCache } from '../utils/lruCache.js';
 
 const MAX_EMBED_RETRIES = 3;
 const RETRY_BACKOFF_MS = 400;
 const DEFAULT_EMBED_DIMENSION = 768;
+
+// Cache for embeddings (500 entries, 1 hour TTL)
+const embeddingCache = new LRUCache<string, number[]>({
+  max: 500,
+  ttl: 3600000, // 1 hour
+});
 
 let geminiClient: GoogleGenerativeAI | null = null;
 let embeddingModel: ReturnType<GoogleGenerativeAI['getGenerativeModel']> | null = null;
@@ -49,6 +56,13 @@ const ensureEmbeddingModel = () => {
 };
 
 export async function generateEmbedding(text: string): Promise<number[]> {
+  // Check cache first (normalize key: lowercase + trim)
+  const cacheKey = text.toLowerCase().trim();
+  const cached = embeddingCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   try {
     const model = ensureEmbeddingModel();
     const response = await model.embedContent(text);
@@ -61,6 +75,10 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     }
 
     fallbackDimensions = embedding.length;
+
+    // Cache the embedding
+    embeddingCache.set(cacheKey, embedding);
+
     return embedding;
   } catch (error) {
     serverLogger.error(

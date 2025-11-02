@@ -57,6 +57,18 @@ const init = (): void => {
     return;
   }
 
+  // Ensure we anchor to the top when entering the Games page (no animation)
+  if (typeof document !== 'undefined') {
+    const main = document.querySelector<HTMLElement>('[data-main-content]');
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+    if (main) {
+      main.scrollTop = 0; // instant, ignores CSS scroll-behavior
+    } else if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+  }
+
   const root = document.querySelector<HTMLElement>('[data-games-root]');
   if (!root) return;
 

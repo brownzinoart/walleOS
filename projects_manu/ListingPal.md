@@ -7,10 +7,19 @@ AI tool that generates complete real estate marketing campaigns in 90 seconds—
 ## Project Details
 
 **Role:** Founder, AI Agent Orchestrator, Real Estate Tech Architect  
-**Focus:** AgentSelect™ framework, marketing automation, MLS integration  
-**Built With:** Claude Code + Codex CLI + Traycer.ai orchestration, React, OpenAI API  
+**Focus:** AgentSelect™ framework, marketing automation, 100% Agent owned data  
+**Built With:** Claude Code + Codex CLI + Traycer.ai orchestration + Gemini, Gemini API, Haiku API, OpenAI APIs, React  
 
-## The Problem
+## Problem, Challenge, and Solution
+
+**Problem:**
+Real estate agents are buried under fragmented workflows. They juggle copywriting, ad optimization, MLS compliance, and client management—often across disconnected tools and under intense time pressure. Marketing materials that should take minutes routinely take hours.
+
+**Challenge:**
+Each listing demands multiple content types—MLS descriptions, social captions, paid ads—each with its own format, tone, and compliance standards. Agents rarely have the bandwidth or expertise to optimize across all channels. The result: inconsistent branding, slower listings, and lost leads in competitive markets.
+
+**Solution:**
+ListingPal automates the entire real estate marketing pipeline. Using AI agent orchestration and various API model pulls, it generates complete MLS-ready descriptions, platform-specific social content, and optimized ad campaigns in 90 seconds—all from a single property address. The result: professional-quality marketing at speed and scale, with agents retaining full control of their data.
 
 ### Why I Built ListingPal
 

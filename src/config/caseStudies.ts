@@ -106,7 +106,7 @@ export const caseStudyContent: CaseStudyContentMap = {
     id: "weready",
     heroTitleFallback: "WeReady",
     heroDescriptionFallback:
-      "I built WeReady using AI agent orchestration (Claude Code + Codex CLI + Traycer.ai) to create a startup intelligence platform that processes 60+ data signals for evidence-based readiness scoring.",
+      "I built WeReady using AI agent orchestration (Claude Code + Codex CLI + Qwen Code) to create a startup intelligence platform that processes 60+ data signals for evidence-based readiness scoring.",
     heroEyebrow: "Case Study",
     heroMeta: [
       {
@@ -121,14 +121,14 @@ export const caseStudyContent: CaseStudyContentMap = {
       {
         label: "Built With",
         value:
-          "Claude Code + Codex CLI + Traycer.ai orchestration, Next.js, Supabase",
+          "Claude Code + Codex CLI + Qwen Code, Next.js, Supabase",
       },
     ],
     problem: {
-      eyebrow: "The Problem",
+      eyebrow: "Problem, Challenge, and Solution",
       title: "Why I Built WeReady",
       copyHtml:
-        "I was struggling to find a service that could review my code holistically—not just for technical production readiness, but also for AI hallucination concerns since I use AI engineering extensively. I realized that codebases reveal far more than just code quality.",
+        "I was struggling to find a service that could review my code holistically, not just for technical production readiness, but also for AI hallucination concerns since I use AI engineering extensively. I realized that codebases reveal far more than just code quality.",
       cards: [
         {
           title: "The Complete Story",
@@ -144,6 +144,24 @@ export const caseStudyContent: CaseStudyContentMap = {
           title: "Evidence-Based Analysis",
           description:
             "WeReady analyzes deeper signals that traditional code reviews completely miss for startup intelligence.",
+        },
+      ],
+    },
+    overview: {
+      eyebrow: "Problem, Challenge, and Solution",
+      title: "Overview",
+      cards: [
+        {
+          title: "Problem",
+          description: "Founders and investors lacked a single, reliable way to measure a startup's real readiness. Traditional tools only score surface metrics—like traffic or funding—while ignoring what actually drives execution: code health, design cohesion, momentum, and trust signals.",
+        },
+        {
+          title: "Challenge",
+          description: "Startup analysis is fragmented. Technical reviews focus on syntax, not systems. Investors rely on pitch decks, not data. Founders can't see where their startup stands across product, revenue, momentum, and trust pillars. This gap wastes time, weakens fundraising efforts, and hides critical weaknesses until it's too late.",
+        },
+        {
+          title: "Solution",
+          description: "WeReady built an AI-orchestrated readiness engine that ingests 60+ operational signals to produce an evidence-based Launch Readiness Score. Using coordinated AI agents (Claude Code, Codex CLI, Qwen Code), it unifies code quality, design systems, and business metrics into a transparent, stage-adaptive report—giving founders a data-driven snapshot of where they stand and how to improve before investors ever ask.",
         },
       ],
     },
@@ -197,7 +215,7 @@ export const caseStudyContent: CaseStudyContentMap = {
           },
         },
         {
-          title: "Gemini + Traycer.ai",
+          title: "Gemini",
           description: "Strategic planning and system architecture design",
           icon: {
             type: "image",
@@ -206,16 +224,16 @@ export const caseStudyContent: CaseStudyContentMap = {
           },
         },
         {
-          title: "Ollama",
-          description: "Quick edits and iterations to optimize API usage",
+          title: "Qwen Code",
+          description: "Quick edits, testing, and iterations to optimize API usage",
           icon: {
             type: "image",
-            src: "https://ollama.com/public/ollama.png",
-            alt: "Ollama",
+            src: "https://qwen.github.io/qwen.github.io/assets/logo.svg",
+            alt: "Qwen Code",
           },
         },
         {
-          title: "VS Code + Roo",
+          title: "VS Code + Roo + Cline + Kilo",
           description: "Integrated development environment with AI assistance",
           icon: {
             type: "image",
@@ -238,17 +256,17 @@ export const caseStudyContent: CaseStudyContentMap = {
     process: {
       eyebrow: "AI Agent Orchestration",
       title: "How I built WeReady using multi-agent coordination",
-      lede: "From identifying the need for startup intelligence to orchestrating Claude Code, Codex CLI, and Traycer.ai to build a production-ready platform.",
+      lede: "From identifying the need for startup intelligence to orchestrating Claude Code, Codex CLI, and Qwen Code to build a production-ready platform.",
       milestones: [
         {
           number: "01",
           title: "Strategic Planning",
           copyHtml:
-            "I used <strong>Traycer.ai</strong> to architect the overall system design and plan the multi-agent workflow. This helped me map out how different AI agents would coordinate to process 60+ data signals for startup intelligence.",
+            "I used <strong>Gemini</strong> to architect the overall system architecture and plan the multi-agent workflow. This helped me map out how different AI agents would coordinate to process 60+ data signals for startup intelligence.",
           stats: [
             {
               label: "Planning Tool:",
-              value: "Traycer.ai for system architecture",
+              value: "Gemini for system architecture",
             },
             {
               label: "Focus:",
@@ -260,7 +278,7 @@ export const caseStudyContent: CaseStudyContentMap = {
           number: "02",
           title: "Architecture & Design",
           copyHtml:
-            "I leveraged <strong>Claude Code</strong> to make critical architectural decisions, design data pipelines, and create the evidence-based scoring methodology. Claude helped optimize the agent coordination patterns.",
+            "I leveraged <strong>Claude Code</strong> to make critical UX/UI decisions, design data pipelines, and create the evidence-based scoring methodology. Claude helped optimize the agent coordination patterns.",
           stats: [
             {
               label: "Architecture Agent:",
@@ -314,7 +332,7 @@ export const caseStudyContent: CaseStudyContentMap = {
           image: "/images/projects/weready/pic1.webp",
           alt: "WeReady dashboard showing readiness scores",
           caption:
-            "Traycer.ai system planning resulted in a unified intelligence dashboard that synthesizes 60+ data signals into actionable startup readiness insights.",
+            "Gemini system planning resulted in a unified intelligence dashboard that synthesizes 60+ data signals into actionable startup readiness insights.",
         },
         {
           image: "/images/projects/weready/pic2.webp",
@@ -339,7 +357,7 @@ export const caseStudyContent: CaseStudyContentMap = {
         {
           title: "Multi-Agent System Mastery",
           description:
-            "Successfully coordinated Traycer.ai, Claude Code, and Codex CLI to build a complex startup intelligence platform. Demonstrated advanced AI orchestration capabilities for real-world applications.",
+            "Successfully coordinated Gemini, Claude Code, Codex CLI, and Qwen to build a complex startup intelligence platform. Demonstrated advanced AI orchestration capabilities for real-world applications.",
         },
         {
           title: "Rapid MVP Development",
@@ -368,16 +386,37 @@ export const caseStudyContent: CaseStudyContentMap = {
       },
       {
         label: "Focus",
-        value: "AgentSelect™ framework, marketing automation, MLS integration",
+        value: "AgentSelect™ framework, marketing automation, 100% Agent owned data",
       },
       {
         label: "Built With",
         value:
-          "Claude Code + Codex CLI + Traycer.ai orchestration, React, OpenAI API",
+          "Claude Code + Codex CLI + Traycer.ai orchestration + Gemini, Gemini API, Haiku API, OpenAI APIs, React",
       },
     ],
+    overview: {
+      eyebrow: "Problem, Challenge, and Solution",
+      title: "Overview",
+      cards: [
+        {
+          title: "Problem",
+          description:
+            "Real estate agents are buried under fragmented workflows. They juggle copywriting, ad optimization, MLS compliance, and client management—often across disconnected tools and under intense time pressure. Marketing materials that should take minutes routinely take hours.",
+        },
+        {
+          title: "Challenge",
+          description:
+            "Each listing demands multiple content types—MLS descriptions, social captions, paid ads—each with its own format, tone, and compliance standards. Agents rarely have the bandwidth or expertise to optimize across all channels. The result: inconsistent branding, slower listings, and lost leads in competitive markets.",
+        },
+        {
+          title: "Solution",
+          description:
+            "ListingPal automates the entire real estate marketing pipeline. Using AI agent orchestration and various API model pulls, it generates complete MLS-ready descriptions, platform-specific social content, and optimized ad campaigns in 90 seconds—all from a single property address. The result: professional-quality marketing at speed and scale, with agents retaining full control of their data.",
+        },
+      ],
+    },
     problem: {
-      eyebrow: "The Problem",
+      eyebrow: "Problem, Challenge, and Solution",
       title: "Why I Built ListingPal",
       copyHtml:
         "I was part of my parents' latest house buying experience and couldn't fathom how the real estate agent was able to handle everything they had to—not to mention, my parents were enough to handle, but all the marketing involved for listings and steps needed to complete a sale were overwhelming.",

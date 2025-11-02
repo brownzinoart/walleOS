@@ -503,6 +503,15 @@ const renderRouteContent = async (
   }
 
   applyMainContentPadding(route);
+  // Reset scroll position of the main content container before rendering
+  try {
+    const main = ensureMainContentRoot();
+    if (main) {
+      main.scrollTop = 0; // instant jump to top (ignores CSS smooth behavior)
+    }
+  } catch {
+    // no-op
+  }
 
   const module = await getRouteModule(route);
 

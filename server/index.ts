@@ -2,10 +2,14 @@ import http from 'node:http';
 import app from './app.js';
 import config from './config/env.js';
 import { serverLogger } from './middleware/logger.js';
+import { preloadContent } from './services/promptBuilder.js';
 
 const port = config.serverPort;
 
 const server = http.createServer(app);
+
+// Preload content.json before accepting requests
+preloadContent();
 
 server.listen(port, () => {
   serverLogger.info(`Backend server listening on port ${port}`);

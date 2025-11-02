@@ -204,13 +204,15 @@ export class VectorStore {
       const topK = options.topK || RETRIEVAL_CONFIG.topKDefault;
       const minConfidence = options.minConfidence || RETRIEVAL_CONFIG.minConfidence;
 
-      // Normalize query embedding
-      const normalizedQuery = normalizeEmbedding(queryEmbedding);
+      // Note: Gemini API returns normalized embeddings, so we skip normalization
+      // to save computation time. If using a different embedding provider that doesn't
+      // normalize, uncomment the line below:
+      // const normalizedQuery = normalizeEmbedding(queryEmbedding);
 
-      // Perform vector search
+      // Perform vector search (using query embedding directly)
       const results = (await table
-        .search(normalizedQuery)
-        .limit(topK * 2) // Get more results for filtering
+        .search(queryEmbedding)
+        .limit(Math.ceil(topK * 1.3)) // Get slightly more results for filtering (reduced from 2x)
         .toArray()) as LanceSearchRow[];
 
       // Convert results and apply filters
@@ -265,7 +267,7 @@ export class VectorStore {
           score = Math.max(0, Math.min(1, Math.exp(-normalizedDistance * 2) * (1 - normalizedDistance * 0.3)));
         } else if (result.embedding) {
           // Fallback to cosine similarity if embedding is available
-          score = cosineSimilarity(normalizedQuery, result.embedding);
+          score = cosineSimilarity(queryEmbedding, result.embedding);
         }
 
         // Apply confidence threshold
@@ -307,7 +309,7 @@ export class VectorStore {
       searchResults.sort((a, b) => b.score - a.score);
 
       serverLogger.info('Vector search completed', {
-        queryLength: normalizedQuery.length,
+        queryLength: queryEmbedding.length,
         resultsFound: searchResults.length,
         topScore: searchResults[0]?.score || 0,
         minConfidence,
