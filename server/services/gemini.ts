@@ -82,7 +82,7 @@ export const streamGeminiChatResponse = async function* (
     const model = client.getGenerativeModel({
       model: config.geminiChatModel,
       systemInstruction: combinedSystemPrompt,
-    });
+    } as any);
 
     const streamResult = await model.generateContentStream({
       contents: [
