@@ -1,0 +1,42 @@
+# Frontend files - not needed for backend deployment
+node_modules
+dist
+.vite
+src
+public
+tests
+.github
+docs
+
+# Development files
+*.test.ts
+*.spec.ts
+*.config.ts
+vite.config.ts
+vitest.config.ts
+playwright.config.ts
+tailwind.config.js
+postcss.config.js
+
+# Documentation
+README.md
+*.md
+!server/README.md
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment (Railway provides its own)
+.env.example
+
+# Vector DB (will be generated on Railway)
+server/data/vectordb
