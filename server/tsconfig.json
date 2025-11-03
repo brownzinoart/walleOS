@@ -1,5 +1,4 @@
 {
-  "extends": "../tsconfig.json",
   "compilerOptions": {
     "target": "ES2020",
     "module": "NodeNext",
@@ -7,12 +6,32 @@
     "lib": ["ES2020"],
     "rootDir": ".",
     "outDir": "./dist",
-    "types": ["node", "express", "express-serve-static-core"],
+    "types": ["node"],
     "resolveJsonModule": true,
     "declaration": false,
     "declarationMap": false,
-    "sourceMap": true
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["./**/*"],
-  "exclude": ["../node_modules", "./dist"]
+  "include": [
+    "index.ts",
+    "app.ts",
+    "config/**/*.ts",
+    "middleware/**/*.ts",
+    "routes/**/*.ts",
+    "services/**/*.ts",
+    "utils/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "scripts",
+    "**/__tests__",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
 }
