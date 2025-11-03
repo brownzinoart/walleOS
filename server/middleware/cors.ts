@@ -10,11 +10,25 @@ const corsOptions: CorsOptions = {
       return;
     }
 
+    // Allow if in whitelist
     if (allowedOrigins.has(origin)) {
       callback(null, true);
       return;
     }
 
+    // Allow any localhost/127.0.0.1 origin for development
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      callback(null, true);
+      return;
+    }
+
+    // Allow local network IPs for development (e.g., http://192.168.x.x:3000)
+    if (/^http:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+):\d+$/.test(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    console.error(`[CORS] Blocked origin: "${origin}". Allowed origins:`, Array.from(allowedOrigins));
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,

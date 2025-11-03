@@ -3,6 +3,8 @@ import envConfig from "../config/env.js";
 import type { ChatRequest, ChatStreamEvent } from "../types/index.js";
 import { streamGlmChatResponse } from "./glm.js";
 import { streamGeminiChatResponse } from "./gemini.js";
+import { streamOpenAIChatResponse } from "./openai.js";
+import { streamAnthropicChatResponse } from "./anthropic.js";
 
 export class ChatGatewayError extends Error {
   constructor(
@@ -31,6 +33,27 @@ async function* convertGlmStreamToChatStream(
   yield { done: true };
 }
 
+function getProviderStreamFn(providerName: string) {
+  if (providerName === "glm") {
+    return async (req: ChatRequest) => {
+      const messages: ChatMessage[] = [
+        { role: "system", content: "You are a helpful assistant." },
+        { role: "user", content: req.message },
+      ];
+      return convertGlmStreamToChatStream(
+        streamGlmChatResponse(messages),
+      );
+    };
+  } else if (providerName === "openai") {
+    return streamOpenAIChatResponse;
+  } else if (providerName === "anthropic") {
+    return streamAnthropicChatResponse;
+  } else {
+    // Default to gemini
+    return streamGeminiChatResponse;
+  }
+}
+
 export async function* streamChatResponse(
   request: ChatRequest,
   requestId?: string,
@@ -38,33 +61,15 @@ export async function* streamChatResponse(
   const providers = [
     {
       name: envConfig.llmPrimaryProvider,
-      streamFn:
-        envConfig.llmPrimaryProvider === "glm"
-          ? async (req: ChatRequest) => {
-              const messages: ChatMessage[] = [
-                { role: "system", content: "You are a helpful assistant." },
-                { role: "user", content: req.message },
-              ];
-              return convertGlmStreamToChatStream(
-                streamGlmChatResponse(messages),
-              );
-            }
-          : streamGeminiChatResponse,
+      streamFn: getProviderStreamFn(envConfig.llmPrimaryProvider),
     },
     {
       name: envConfig.llmFallbackProvider,
-      streamFn:
-        envConfig.llmFallbackProvider === "glm"
-          ? async (req: ChatRequest) => {
-              const messages: ChatMessage[] = [
-                { role: "system", content: "You are a helpful assistant." },
-                { role: "user", content: req.message },
-              ];
-              return convertGlmStreamToChatStream(
-                streamGlmChatResponse(messages),
-              );
-            }
-          : streamGeminiChatResponse,
+      streamFn: getProviderStreamFn(envConfig.llmFallbackProvider),
+    },
+    {
+      name: envConfig.llmTertiaryProvider,
+      streamFn: getProviderStreamFn(envConfig.llmTertiaryProvider),
     },
   ];
 
@@ -129,6 +134,10 @@ export async function checkChatProvidersHealth(): Promise<{
       name: envConfig.llmFallbackProvider,
       type: envConfig.llmFallbackProvider,
     },
+    {
+      name: envConfig.llmTertiaryProvider,
+      type: envConfig.llmTertiaryProvider,
+    },
   ];
 
   const results = await Promise.allSettled(
@@ -136,6 +145,20 @@ export async function checkChatProvidersHealth(): Promise<{
       if (provider.type === "glm") {
         const { checkGlmHealth } = await import("./glm.js");
         const health = await checkGlmHealth();
+        return {
+          name: provider.name,
+          ...health,
+        };
+      } else if (provider.type === "openai") {
+        const { checkOpenAIHealth } = await import("./openai.js");
+        const health = await checkOpenAIHealth();
+        return {
+          name: provider.name,
+          ...health,
+        };
+      } else if (provider.type === "anthropic") {
+        const { checkAnthropicHealth } = await import("./anthropic.js");
+        const health = await checkAnthropicHealth();
         return {
           name: provider.name,
           ...health,

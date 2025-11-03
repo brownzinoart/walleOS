@@ -20,16 +20,23 @@ vi.mock('../server/services/vectorStore.js', () => ({
 import { preprocessQuery, getCategoryPriorityMap } from '../server/services/ragService';
 
 describe('ragService preprocessQuery', () => {
-  it('expands domain synonyms for Splash/DXA', () => {
+  it('skips expansion for long queries (>= 20 chars)', () => {
     const q = preprocessQuery('Tell me about Splash and DXA');
-    expect(q).toMatch(/design system/);
-    expect(q).toMatch(/audit/);
+    // Long queries just get lowercased, no expansion for performance
+    expect(q).toBe('tell me about splash and dxa');
   });
 
-  it('expands ventures (WeReady/ListingPal) terms', () => {
-    const q = preprocessQuery('What is ListingPal vs WeReady?');
-    expect(q).toMatch(/agentselect/);
-    expect(q).toMatch(/investment readiness/);
+  it('expands short queries with known terms', () => {
+    const q = preprocessQuery('ai');
+    // Short queries get expanded
+    expect(q).toMatch(/artificial intelligence/);
+    expect(q).toMatch(/machine learning/);
+  });
+
+  it('expands weready for short queries', () => {
+    const q = preprocessQuery('weready');
+    expect(q).toMatch(/startup intelligence/);
+    expect(q).toMatch(/readiness score/);
   });
 });
 

@@ -8,6 +8,16 @@ import type { HealthCheckResponse } from "../types/index.js";
 const router = Router();
 
 router.get(
+  "/ping",
+  (
+    _req: express.Request,
+    res: express.Response,
+  ) => {
+    res.status(200).json({ status: "ok" });
+  },
+);
+
+router.get(
   "/",
   async (
     _req: express.Request,

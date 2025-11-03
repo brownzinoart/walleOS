@@ -55,3 +55,10 @@ models/**/*.zip
 
 # Local SSH deploy keys (do not commit)
 .github-ssh/
+
+# Repo hygiene additions
+API_MIGRATION_SUMMARY.md
+docs/.DS_Store
+public/.DS_Store
+projects_manu/
+*.DS_Store

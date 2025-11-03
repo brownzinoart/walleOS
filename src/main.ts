@@ -1,44 +1,15 @@
 import '@/styles/main.css';
 import '@/styles/games.css';
 import { renderLayout, initLayout } from '@/components/Layout';
-import { setActiveNavItem } from '@/components/Sidebar';
 import { renderWelcomeCard } from '@/components/WelcomeCard';
-import {
-  renderChatInput,
-  attachChatInputListeners,
-  setChatInputValue,
-  setButtonLoading,
-} from '@/components/ChatInput';
-import {
-  renderChatContainer,
-  scrollToBottom,
-  CHAT_CONTAINER_SELECTOR,
-  MESSAGE_LIST_SELECTOR,
-  computeChatContainerView,
-} from '@/components/ChatContainer';
-import {
-  renderSuggestionChips,
-  attachSuggestionChipListeners,
-  disableSuggestionChip,
-} from '@/components/SuggestionChips';
-import { renderProjectCards, attachProjectCardListeners } from '@/components/ProjectCard';
-import { clearExperienceSelection } from '@/components/Resume';
 import content, {
+  validateContent,
+  suggestionChips,
   experienceSuggestionChips,
   featuredProjects,
   getExperienceSuggestionChips,
-  suggestionChips,
-  validateContent,
 } from '@/config/content';
-import {
-  streamChatResponse,
-  ApiAbortError,
-  /* checkHealth,*/
-  type ChatRequest,
-  type ChatStreamEvent,
-} from '@/services/api';
 import { getAppSettings } from '@/config/settings';
-import type { ChatState } from '@/types';
 import {
   debounce,
   rafThrottle,
@@ -47,42 +18,70 @@ import {
   measurePerformanceWithMonitoring,
 } from '@/utils/performance';
 import { logger, errorBoundary } from '@/utils/logger';
+import { initTheme, subscribeToTheme, getTheme } from '@/utils/theme';
 import {
-  addChatMessage,
-  generateMockResponse,
-  getChatState,
-  setChatInputValueState,
-  setChatTyping,
-  subscribeToChatState,
-  addAssistantPlaceholder,
-  appendToMessage,
-  startMessageAnimation,
-  consumeInitialEnterFlags,
-} from '@/utils/chatState';
+  renderChatContainer,
+  computeChatContainerView,
+  scrollToBottom,
+  CHAT_CONTAINER_SELECTOR,
+  MESSAGE_LIST_SELECTOR,
+} from '@/components/ChatContainer';
 import {
-  clearExperienceContext,
+  renderChatInput,
+  attachChatInputListeners,
+  setChatInputValue,
+  setButtonLoading,
+} from '@/components/ChatInput';
+import {
+  renderSuggestionChips,
+  attachSuggestionChipListeners,
+  disableSuggestionChip,
+} from '@/components/SuggestionChips';
+import {
+  renderExperienceContextIndicator,
+  attachExperienceContextIndicatorListeners,
+} from '@/components/ExperienceContextIndicator';
+import { renderProjectCards, attachProjectCardListeners } from '@/components/ProjectCard';
+import { clearExperienceSelection } from '@/components/Resume';
+import { setCaseStudyReferrerRoute } from '@/components/ProjectCaseStudyPage';
+import { setReferrerRoute as setClockItReferrerRoute } from '@/components/ProjectClockItPage';
+import { setActiveNavItem } from '@/components/Sidebar';
+import {
   getExperienceContext,
   hasActiveContext,
+  clearExperienceContext,
   subscribeToExperienceContext,
 } from '@/utils/experienceContext';
-import {
-  attachExperienceContextIndicatorListeners,
-  renderExperienceContextIndicator,
-} from '@/components/ExperienceContextIndicator';
-import { initRouter, getCurrentRoute } from '@/utils/router';
-import type { RouteComponentId } from '@/utils/router';
-import { initTheme, subscribeToTheme, getTheme } from '@/utils/theme';
 import { getSelectedSuggestionChips } from '@/utils/suggestionChipSelector';
-import { loadRouteModule, hasLazyRoute } from '@/routes/registry';
+import {
+  addChatMessage,
+  addAssistantPlaceholder,
+  appendToMessage,
+  getChatState,
+  subscribeToChatState,
+  setChatInputValueState,
+  setChatTyping,
+  startMessageAnimation,
+  consumeInitialEnterFlags,
+  generateMockResponse,
+} from '@/utils/chatState';
+import type { ChatState } from '@/types';
+import { getCurrentRoute, initRouter } from '@/utils/router';
+import type { RouteComponentId } from '@/utils/router';
+import { hasLazyRoute, loadRouteModule } from '@/routes/registry';
 import type { RouteModule } from '@/routes/types';
+import {
+  streamChatResponse,
+  type ChatRequest,
+  type ChatStreamEvent,
+  ApiAbortError,
+} from '@/services/api';
 import {
   MAIN_CONTENT_BASE_CLASSES,
   MAIN_CONTENT_DEFAULT_PADDING,
   MAIN_CONTENT_PLAYGROUND_PADDING,
   getMainContentPaddingClass,
 } from '@/components/layoutConfig';
-import { setCaseStudyReferrerRoute } from '@/components/ProjectCaseStudyPage';
-import { setReferrerRoute as setClockItReferrerRoute } from '@/components/ProjectClockItPage';
 import type { CaseStudyId } from '@/config/caseStudies';
 
 const CHAT_ROOT_SELECTOR = '[data-chat-root]';
@@ -94,6 +93,7 @@ const RESUME_CONTEXT_INDICATOR_SELECTOR = '[data-resume-context-indicator]';
 const RESUME_CONTEXT_SUGGESTIONS_SELECTOR = '[data-resume-context-suggestions]';
 const MAIN_CONTENT_SELECTOR = '[data-main-content]';
 const CHAT_NEW_MESSAGE_INDICATOR_SELECTOR = '[data-chat-new-messages]';
+
 const CASE_STUDY_ROUTE_MAP: Partial<Record<RouteComponentId, CaseStudyId>> = {
   'project-weready': 'weready',
   'project-listingpal': 'listingpal',
@@ -503,15 +503,6 @@ const renderRouteContent = async (
   }
 
   applyMainContentPadding(route);
-  // Reset scroll position of the main content container before rendering
-  try {
-    const main = ensureMainContentRoot();
-    if (main) {
-      main.scrollTop = 0; // instant jump to top (ignores CSS smooth behavior)
-    }
-  } catch {
-    // no-op
-  }
 
   const module = await getRouteModule(route);
 
@@ -877,11 +868,6 @@ const handleRouteChange = () => {
 
   if (previousRoute === nextRoute) {
     return;
-  }
-
-  // Scroll to top when navigating to home route
-  if (nextRoute === 'home') {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   chatAutoScrollEnabled = true;
