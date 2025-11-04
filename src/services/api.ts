@@ -84,8 +84,23 @@ const viteMode =
     ? (import.meta as unknown as ImportMetaWithEnv).env?.MODE
     : undefined;
 const runtimeMode = nodeEnv ?? viteMode;
-const API_BASE_URL =
-  runtimeMode === "development" ? "http://localhost:3001/api" : "/api";
+
+// Get API URL from environment variable or use defaults
+const getApiBaseUrl = (): string => {
+  // Check for Vite environment variable
+  if (typeof import.meta !== "undefined") {
+    const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
+    if (viteApiUrl) {
+      // Remove trailing slash if present
+      return viteApiUrl.replace(/\/$/, "");
+    }
+  }
+
+  // Fallback to mode-based defaults
+  return runtimeMode === "development" ? "http://localhost:3001/api" : "/api";
+};
+
+const API_BASE_URL = getApiBaseUrl();
 const REQUEST_TIMEOUT = 60000; // 60 seconds - increased for first request model loading
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second base delay
