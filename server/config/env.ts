@@ -122,10 +122,11 @@ export function createServerEnvConfig(rawEnv: NodeJS.ProcessEnv = process.env): 
   const anthropicApiKey = trimOrUndefined(rawEnv['ANTHROPIC_API_KEY']);
 
   return {
+    // Railway sets PORT, local dev uses SERVER_PORT
     serverPort: parseInteger(
-      rawEnv['SERVER_PORT'],
+      rawEnv['PORT'] || rawEnv['SERVER_PORT'],
       defaultValues.SERVER_PORT,
-      'SERVER_PORT',
+      'PORT or SERVER_PORT',
     ),
     frontendUrl: parseUrl(
       rawEnv['FRONTEND_URL'],
