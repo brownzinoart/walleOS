@@ -92,7 +92,10 @@ const getApiBaseUrl = (): string => {
     const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
     if (viteApiUrl) {
       // Remove trailing slash if present
-      return viteApiUrl.replace(/\/$/, "");
+      const cleanUrl = viteApiUrl.replace(/\/$/, "");
+
+      // If the URL doesn't end with /api, append it
+      return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
     }
   }
 
