@@ -8,11 +8,13 @@
   "scripts": {
     "dev": "tsx watch index.ts",
     "build": "tsc",
+    "build:railway": "tsx scripts/prepareRailwayBuild.ts",
     "start": "node dist/index.js",
     "ingest": "tsx scripts/ingestCorpus.ts",
     "ingest:force": "tsx scripts/ingestCorpus.ts --force",
     "ingest:dry-run": "tsx scripts/ingestCorpus.ts --dry-run",
-    "test:rag": "tsx scripts/testRAG.ts"
+    "test:rag": "tsx scripts/testRAG.ts",
+    "verify:deployment": "tsx scripts/verifyDeployment.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",

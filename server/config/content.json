@@ -1,0 +1,502 @@
+{
+  "branding": {
+    "name": "WallyGPT",
+    "tagline": "where projects, speak for themselves",
+    "greeting": "Hey! I'm Wally. Ask me anything about my work, background, or what I'm building."
+  },
+  "navigation": [
+    { "id": "home", "label": "Home", "icon": "🏠" },
+    { "id": "resume", "label": "Resume", "icon": "📄" },
+    { "id": "projects", "label": "Projects", "icon": "🚀" },
+    { "id": "playground", "label": "Playground", "icon": "🎮" }
+  ],
+  "contact": {
+    "email": "[your-email@example.com]",
+    "socials": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://www.linkedin.com/in/[username]",
+        "icon": "💼"
+      },
+      {
+        "platform": "GitHub",
+        "url": "https://github.com/[username]",
+        "icon": "🐙"
+      },
+      {
+        "platform": "Twitter",
+        "url": "https://twitter.com/[username]",
+        "icon": "🐦"
+      }
+    ]
+  },
+  "suggestionChips": [
+    {
+      "id": "ai-implementation",
+      "text": "How do you implement AI workflows in real projects?",
+      "category": "ai"
+    },
+    {
+      "id": "design-systems-leadership",
+      "text": "Tell me about scaling design systems and teams",
+      "category": "leadership"
+    },
+    {
+      "id": "portfolio-awards",
+      "text": "What awards have you won for your design work?",
+      "category": "portfolio"
+    },
+    {
+      "id": "current-ventures",
+      "text": "What are WeReady and ListingPal?",
+      "category": "ventures"
+    },
+    {
+      "id": "llm-orchestration-approach",
+      "text": "Walk me through your approach to LLM orchestration",
+      "category": "ai"
+    },
+    {
+      "id": "research-vs-prototyping",
+      "text": "How do you balance user research with rapid prototyping?",
+      "category": "design"
+    },
+    {
+      "id": "growing-design-teams",
+      "text": "What's your philosophy on growing design teams effectively?",
+      "category": "leadership"
+    },
+    {
+      "id": "pharma-to-ai-journey",
+      "text": "What led you from pharma advertising to AI implementation?",
+      "category": "career"
+    },
+    {
+      "id": "current-development-toolkit",
+      "text": "What's in your current development toolkit these days?",
+      "category": "tools"
+    },
+    {
+      "id": "complex-challenge-solved",
+      "text": "Describe a complex technical challenge you've solved recently?",
+      "category": "learning"
+    },
+    {
+      "id": "ai-design-vision",
+      "text": "Where do you see AI-powered design tools heading next?",
+      "category": "future"
+    },
+    {
+      "id": "staying-current-tech",
+      "text": "How do you stay current with emerging technologies today?",
+      "category": "learning"
+    }
+  ],
+  "experienceSuggestionChips": [
+    {
+      "id": "experience-achievements",
+      "text": "What were your key achievements in this role?",
+      "category": "experience",
+      "hasAchievements": true
+    },
+    {
+      "id": "experience-technologies",
+      "text": "What technologies did you work with?",
+      "category": "experience",
+      "hasTechnologies": true
+    },
+    {
+      "id": "experience-skills",
+      "text": "What skills did you develop here?",
+      "category": "experience"
+    },
+    {
+      "id": "experience-challenges",
+      "text": "What was the biggest challenge?",
+      "category": "experience",
+      "experienceLevel": ["Senior", "Lead", "Principal"]
+    },
+    {
+      "id": "experience-impact",
+      "text": "What impact did you have on the company?",
+      "category": "experience"
+    },
+    {
+      "id": "experience-transition",
+      "text": "Why did you move on from this role?",
+      "category": "experience"
+    }
+  ],
+  "mockResponses": {
+    "ai-implementation": "I treat LLMs as collaborators in practical workflows. Every implementation starts with model selection—Codex for code, Claude for reasoning, Gemini for multimodal—then orchestration using LangChain or LlamaIndex. I focus on function calling, prompt chaining, and vector databases like LanceDB to create agentic systems that actually deliver value without the hype.",
+    "design-systems-leadership": "Scaling teams and systems starts with trust. At Kinesso, I grew our design org from 2 to 30 by building the Splash design system—500 components with atomic architecture and governance that unified 20+ products. We embedded UX into engineering and sales, cutting QA time 40% while boosting reuse 79%. The key was research discipline and weekly remix sessions that kept everyone co-owning the evolution.",
+    "portfolio-awards": "Design work has earned multiple global awards. Splash and DXA took Indigo 2023: 3× Gold, 2× Silver. DXA also won Red Dot 2021 and Indigo 2022: 2× Gold, 2× Silver, 1× Bronze. These recognize measurable impact—audit time weeks to hours, 68% YoY user growth—while validating the blend of research, systems thinking, and orchestration that defines my approach.",
+    "current-ventures": "WeReady diagnoses startup readiness using evidence-based methodology across four pillars: code quality, business viability, investment readiness, and design/UX. ListingPal generates complete real estate marketing campaigns in 90 seconds using AgentSelect™ framework—MLS-ready descriptions, social content, and paid ads. Both are through One Block Away LLC, my lab for AI MVP development and beneficial applications.",
+    "experience-achievements": "During my time as {title} at {company}, I chased outcomes that mattered. One highlight was {achievement}. It reinforced how {skill} and {technologies} came together to drive results across the team.",
+    "experience-technologies": "In that role I lived inside a toolkit that spanned {technologies}. Those choices let us move fast while staying reliable, and I experimented with pairing them alongside {skill} workflows to keep the team future-ready.",
+    "experience-skills": "That chapter sharpened my {skills}, especially while leading initiatives like {achievement}. It was a playground for blending craft with leadership and learning where to stretch next.",
+    "experience-challenges": "The biggest challenge at {company} was {challenge}. I navigated it by leaning on {skills} and close collaboration with stakeholders, which turned the obstacle into a launchpad for a stronger roadmap.",
+    "experience-impact": "Impact looked like measurable shifts—during that period we {impact}. It was the result of pairing {skills} with deliberate experimentation across the team.",
+    "experience-transition": "Leaving {company} was about following the thread of growth. After building {achievement} and scaling {skills}, I was ready to tackle problems where I could apply that momentum in new domains.",
+    "experience-default": "That role at {company} as {title} ran from {period}. It was a pivotal season where I balanced {skills} with hands-on experimentation to keep the team shipping meaningful work.",
+    "default": "That's a fun angle. Let me riff for a moment and share how I'm approaching that in my current experiments—feel free to push back or steer me elsewhere."
+  },
+  "featuredProjects": [
+    {
+      "id": "weready",
+      "title": "WeReady",
+      "description": "I built WeReady using AI agent orchestration (Claude Code + Codex CLI + Qwen Code) to create a startup intelligence platform that processes 60+ data signals for evidence-based readiness scoring.",
+      "tags": [
+        "AI Orchestration",
+        "Multi-Agent Systems",
+        "Startup Intelligence"
+      ],
+      "thumbnail": "/images/projects/weready/pic2.png",
+      "url": "https://weready.dev/",
+      "detailRoute": "project-weready"
+    },
+    {
+      "id": "listingpal",
+      "title": "ListingPal",
+      "description": "AI tool that generates complete real estate marketing campaigns in 90 seconds—MLS descriptions, social content, and paid ads from just an address.",
+      "tags": ["Marketing", "Real Estate", "Dashboard"],
+      "thumbnail": "/images/projects/listingpal/pic1.png",
+      "url": "https://listingpal.info",
+      "detailRoute": "project-listingpal"
+    },
+    {
+      "id": "echo",
+      "title": "Echo",
+      "description": "Echo is a full SaaS application that automates screenshot capture and accelerates route preparation and QA.",
+      "tags": ["Pharma", "Automation", "MLR"],
+      "thumbnail": "/images/projects/echo/pic1.png",
+      "url": "https://example.com/project-gamma",
+      "detailRoute": "project-echo"
+    },
+    {
+      "id": "briefflow",
+      "title": "BriefFlow",
+      "description": "AI tool that converts messy client inputs into structured, client-approved creative briefs in minutes to cut revision cycles and budget waste.",
+      "tags": ["Client Mgmt", "Briefs", "Collab"],
+      "thumbnail": "/images/projects/briefflow/pic1.png",
+      "url": "https://briefflow.app",
+      "detailRoute": "project-briefflow"
+    },
+    {
+      "id": "clockit",
+      "title": "ClockIt",
+      "description": "Trader Joe's clocking in compliance app ensuring employees acknowledge clocking in and adhere to schedules via notifications and digital logging",
+      "tags": ["Compliance", "Retail", "Time Management"],
+      "thumbnail": "/images/projects/clockit/clockit_main.png",
+      "url": "",
+      "detailRoute": "project-clockit"
+    },
+    {
+      "id": "hq",
+      "title": "HQ",
+      "description": "A webapp designed for myself and my business partner to communicate on the go and provide each other with up-to-the-minute updates organized by projects and initiatives",
+      "tags": ["Communication", "Sales Ops", "Executive Dashboard"],
+      "thumbnail": "/images/projects/HQ/hq.png",
+      "url": "",
+      "detailRoute": "project-hq"
+    }
+  ],
+  "resume": {
+    "summary": "AI implementation lead and UX-builder with 10+ years in account management, delivering multimillion-dollar programs. I wire LLMs into real workflows, run CLI toolchains, and ship usable prototypes fast. I combine client-facing experience with UX systems and multi-model orchestration to move projects from brief to launch.",
+    "resumeFileUrl": "/resume.pdf",
+    "experiences": [
+      {
+        "id": "founder-one-block-away",
+        "title": "Founder",
+        "company": "One Block Away LLC",
+        "period": "Jul 2023 - Present",
+        "description": "Leading AI and LLM implementation strategies to deliver MVP-ready products with practical orchestration methods. Building portfolio of AI-powered prototypes including WeReady, ListingPal, and Sagedvice.",
+        "achievements": [
+          "Drive innovation in AI and LLM implementation strategies to deliver MVP-ready products",
+          "Consult with organizations on selecting and applying optimal LLMs to existing workflows, increasing efficiency and employee output",
+          "Built and maintain portfolio of prototypes (WeReady, ListingPal, Sagedvice); currently seeking grants to scale WeReady"
+        ],
+        "skills": [
+          "AI Strategy",
+          "LLM Implementation",
+          "Product Development",
+          "Consulting",
+          "MVP Development"
+        ],
+        "experienceLevel": "Principal",
+        "technologies": [
+          "LLMs",
+          "CLI Tools",
+          "AI Orchestration",
+          "Multi-model Systems",
+          "Prototyping Tools"
+        ]
+      },
+      {
+        "id": "director-kinesso",
+        "title": "Director, Experience & Innovation",
+        "company": "Kinesso, Part of IPG",
+        "period": "Feb 2020 - Jun 2023",
+        "description": "Led design organization growth and established enterprise-wide design systems. Promoted design thinking across teams while managing comprehensive UX initiatives for SaaS products.",
+        "achievements": [
+          "Co-built Kinesso's design org from 2 to 30 in under 3 years by standardizing research and design frameworks",
+          "Launched enterprise-wide design system that unified SaaS products and accelerated go-to-market",
+          "Promoted design thinking across teams, cutting design debt with reusable components",
+          "Improved dev efficiency and boosted client satisfaction and renewals"
+        ],
+        "skills": [
+          "Design Leadership",
+          "Design Systems",
+          "UX Strategy",
+          "Team Building",
+          "Stakeholder Management"
+        ],
+        "experienceLevel": "Lead",
+        "technologies": [
+          "Figma",
+          "Design Systems",
+          "SaaS Platforms",
+          "UX Research Tools",
+          "Prototyping Tools"
+        ]
+      },
+      {
+        "id": "sr-ux-designer-heartbeat",
+        "title": "Sr. UX Designer",
+        "company": "Heartbeat Ideas",
+        "period": "Aug 2018 - Nov 2019",
+        "description": "Managed comprehensive UX initiatives from research and wireframing to design systems, improving client satisfaction and project ROI across multiple agency clients.",
+        "achievements": [
+          "Managed comprehensive UX initiatives from research to design systems",
+          "Improved client satisfaction and project ROI across agency clients",
+          "Led wireframing and prototyping for multiple concurrent projects"
+        ],
+        "skills": [
+          "UX Research",
+          "Wireframing",
+          "Design Systems",
+          "Client Management",
+          "Project Management"
+        ],
+        "experienceLevel": "Senior",
+        "technologies": [
+          "Sketch",
+          "Figma",
+          "InVision",
+          "Adobe Creative Suite",
+          "User Testing Tools"
+        ]
+      },
+      {
+        "id": "sr-freelance-ux-pharma",
+        "title": "Sr. Freelance UX Designer",
+        "company": "Pharma Ad Agencies",
+        "period": "Dec 2019 - Jan 2020",
+        "description": "Delivered UX design services for pharmaceutical advertising agencies, focusing on compliant digital experiences and user-centered design for healthcare brands.",
+        "achievements": [
+          "Delivered UX design for pharmaceutical advertising campaigns",
+          "Ensured FDA compliance in digital healthcare experiences",
+          "Collaborated with medical and regulatory teams"
+        ],
+        "skills": [
+          "UX Design",
+          "Healthcare UX",
+          "Regulatory Compliance",
+          "Freelance Management"
+        ],
+        "experienceLevel": "Senior",
+        "technologies": ["Figma", "Adobe XD", "Sketch", "Compliance Tools"]
+      },
+      {
+        "id": "account-supervisor-scout",
+        "title": "Account Supervisor",
+        "company": "Scout Marketing",
+        "period": "Jun 2015 - Nov 2017",
+        "description": "Optimized key account campaigns for Jazz Pharmaceuticals' Xyrem, leveraging digital insights and leading unbranded disease awareness initiatives that boosted consumer engagement.",
+        "achievements": [
+          "Optimized key account campaigns for Jazz Pharmaceuticals' Xyrem",
+          "Led unbranded disease awareness initiative that boosted consumer engagement",
+          "Leveraged digital insights to improve campaign performance"
+        ],
+        "skills": [
+          "Account Management",
+          "Campaign Strategy",
+          "Digital Marketing",
+          "Client Relations",
+          "Healthcare Marketing"
+        ],
+        "experienceLevel": "Senior",
+        "technologies": [
+          "Marketing Analytics",
+          "CRM Systems",
+          "Digital Platforms",
+          "Campaign Management Tools"
+        ]
+      },
+      {
+        "id": "sr-account-exec-fcb",
+        "title": "Sr. Account Executive",
+        "company": "FCB Health",
+        "period": "Jun 2014 - May 2015",
+        "description": "Supervised end-to-end production of brand commercials, coordinating FDA preclearance, network approvals, and talent management for pharmaceutical brands.",
+        "achievements": [
+          "Supervised end-to-end production of three brand commercials for Linzess",
+          "Coordinated FDA preclearance and network approvals",
+          "Managed talent and production logistics"
+        ],
+        "skills": [
+          "Production Management",
+          "FDA Compliance",
+          "Vendor Management",
+          "Budget Management"
+        ],
+        "experienceLevel": "Mid",
+        "technologies": [
+          "Project Management Software",
+          "Production Tools",
+          "Compliance Systems"
+        ]
+      },
+      {
+        "id": "barker-dzp",
+        "title": "Sr. Account Executive",
+        "company": "Barker DZP",
+        "period": "Dec 2013 - May 2014",
+        "description": "Expanded into consumer marketing while leading integrated campaigns for Barker DZP's healthcare and lifestyle clients, introducing structured mentorship for junior account staff.",
+        "achievements": [
+          "Developed integrated marketing strategies across print, digital, and social channels for clients such as Tough Mudder and PDI Healthcare",
+          "Mentored junior account staff through weekly development sessions to accelerate growth and delivery standards",
+          "Applied pharma advertising rigor to B2C campaigns, improving performance for new business pitches and packaged goods brands"
+        ],
+        "skills": [
+          "Integrated Marketing",
+          "Mentorship",
+          "Consumer Marketing",
+          "Campaign Strategy",
+          "Leadership"
+        ],
+        "experienceLevel": "Senior",
+        "technologies": [
+          "Marketing Automation Platforms",
+          "Social Analytics Tools",
+          "Project Management Tools"
+        ]
+      },
+      {
+        "id": "cdm-ny",
+        "title": "Sr. Account Executive",
+        "company": "Cline, Davis & Mann",
+        "period": "Aug 2013 - Nov 2013",
+        "description": "Advanced Pfizer's Zoloft digital marketing program through data-driven loyalty initiatives while balancing innovative digital tactics with proven in-office strategies.",
+        "achievements": [
+          "Led Pfizer Zoloft's digital marketing initiatives, combining loyalty programs with coordinated in-office experiences",
+          "Implemented custom targeting and A/B testing frameworks that improved campaign performance across channels",
+          "Partnered with Phreesia to integrate waiting room materials that connected physical and digital patient touchpoints"
+        ],
+        "skills": [
+          "Digital Marketing",
+          "Data-Driven Strategy",
+          "Healthcare Marketing",
+          "A/B Testing",
+          "Stakeholder Communication"
+        ],
+        "experienceLevel": "Senior",
+        "technologies": [
+          "Marketing Analytics",
+          "Testing Platforms",
+          "Healthcare Compliance Tools"
+        ]
+      },
+      {
+        "id": "account-exec-fcb",
+        "title": "Account Executive",
+        "company": "FCB Health",
+        "period": "Apr 2011 - Jul 2013",
+        "description": "Led unbranded campaigns and oversaw digital platform rebranding efforts, improving brand visibility and engagement for Teva Pharmaceuticals' NUVIGIL.",
+        "achievements": [
+          "Led unbranded campaigns for Teva Pharmaceuticals' NUVIGIL",
+          "Oversaw digital platform rebranding efforts",
+          "Improved brand visibility and engagement"
+        ],
+        "skills": [
+          "Campaign Management",
+          "Digital Strategy",
+          "Brand Management",
+          "Stakeholder Communication"
+        ],
+        "experienceLevel": "Mid",
+        "technologies": [
+          "Digital Marketing Platforms",
+          "Analytics Tools",
+          "CMS Systems"
+        ]
+      },
+      {
+        "id": "account-coordinator-rosetta",
+        "title": "Account Coordinator",
+        "company": "RosettaWishbone - Pfizer Prevnar 13",
+        "period": "Sep 2010 - Apr 2011",
+        "description": "Coordinated international KOL workshop in Dubai with Pfizer stakeholders for Prevnar 13, managing logistics and stakeholder communications.",
+        "achievements": [
+          "Coordinated KOL workshop in Dubai with Pfizer stakeholders for Prevnar 13",
+          "Managed international logistics and stakeholder communications",
+          "Supported account team in client deliverables"
+        ],
+        "skills": [
+          "Event Coordination",
+          "Stakeholder Management",
+          "International Logistics",
+          "Client Support"
+        ],
+        "experienceLevel": "Junior",
+        "technologies": ["Project Management Tools", "Communication Platforms"]
+      }
+    ],
+    "skills": [
+      "AI Strategy",
+      "LLM Implementation",
+      "AI Orchestration",
+      "Multi-model Systems",
+      "UX Research",
+      "UX Design",
+      "Design Systems",
+      "Wireframing",
+      "Prototyping",
+      "User Testing",
+      "Information Architecture",
+      "Interaction Design",
+      "Figma",
+      "Sketch",
+      "Adobe Creative Suite",
+      "InVision",
+      "Adobe XD",
+      "Account Management",
+      "Client Relations",
+      "Stakeholder Management",
+      "Campaign Strategy",
+      "Digital Marketing",
+      "Healthcare Marketing",
+      "Team Leadership",
+      "Design Leadership",
+      "Project Management",
+      "FDA Compliance",
+      "Regulatory Compliance",
+      "Production Management",
+      "CLI Tools",
+      "Prototyping Tools",
+      "Analytics Tools"
+    ],
+    "education": [
+      {
+        "degree": "BA Labor Studies and Employee Relations",
+        "school": "Rutgers University",
+        "year": "2010"
+      }
+    ]
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2024-01-01T00:00:00.000Z",
+    "contentSchema": "v1"
+  }
+}

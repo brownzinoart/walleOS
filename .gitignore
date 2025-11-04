@@ -19,10 +19,12 @@ test-results/
 server/**/*.js
 server/**/*.d.ts
 # Vector database and data files
-# Generated vector DB and Lance tables (large/reproducible)
-server/data/
-server/data/vectordb/
-*.lance
+# NOTE: Vector DB is now committed for Railway deployment
+# server/data/ is ignored except for vectordb/
+server/data/*
+!server/data/vectordb/
+# Keep lance files in vectordb
+!server/data/vectordb/*.lance
 
 # Local databases
 *.db
@@ -38,7 +40,9 @@ server/data/vectordb/
 *.h5
 
 # Common large data directories
+# Note: server/data/vectordb is explicitly allowed above
 data/
+!server/data/
 datasets/
 models/
 checkpoints/

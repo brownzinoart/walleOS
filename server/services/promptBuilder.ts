@@ -52,8 +52,10 @@ const resolveContentPath = (): string => {
   const fromEnv = process.env['PROMPT_CONTENT_PATH'] ?? process.env['CONTENT_JSON_PATH'];
   const candidates = [
     fromEnv,
-    resolvePath(__dirname, '../../src/config/content.json'),
+    // Railway deployment: content.json copied to server/config/
     resolvePath(__dirname, '../config/content.json'),
+    // Development: traverse up to frontend config
+    resolvePath(__dirname, '../../src/config/content.json'),
     resolvePath(process.cwd(), '..', 'src', 'config', 'content.json'),
     resolvePath(process.cwd(), 'src', 'config', 'content.json'),
   ].filter((candidate): candidate is string => Boolean(candidate));
