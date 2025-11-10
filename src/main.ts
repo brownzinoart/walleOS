@@ -704,12 +704,75 @@ const handleUserMessage = async (message: string) => {
   }
 };
 
-const handleSuggestionChipClick = (chipText: string) => {
+const handleUserMessageWithMockDelay = async (message: string, chipId: string) => {
+  const trimmed = message.trim();
+
+  if (!trimmed) {
+    return;
+  }
+
+  const matchedSuggestion = { id: chipId, text: trimmed };
+
+  const activeExperience = getActiveExperienceState();
+  const selectedExperience = activeExperience?.experience ?? null;
+  const experienceContextPayload = selectedExperience
+    ? {
+        experienceId: selectedExperience.id,
+        experience: selectedExperience,
+      }
+    : null;
+  const experienceContextMeta = selectedExperience
+    ? {
+        experienceContext: {
+          experienceId: selectedExperience.id,
+          experienceTitle: `${selectedExperience.title} @ ${selectedExperience.company}`.trim(),
+        },
+      }
+    : undefined;
+
+  pendingSuggestion = null;
+  setChatInputValueState('');
+
+  const messageAdded = addChatMessage('user', trimmed, experienceContextMeta);
+
+  if (!messageAdded) {
+    return;
+  }
+
+  disableSuggestionChip(matchedSuggestion.id);
+
+  setChatTyping(true);
+  setButtonLoading(true);
+
+  const placeholder = addAssistantPlaceholder(experienceContextMeta);
+
+  // Mock delay to simulate API call (800-1500ms for realistic feel)
+  const mockDelay = 800 + Math.random() * 700;
+  await new Promise((resolve) => setTimeout(resolve, mockDelay));
+
+  // Generate and display mock response
+  const response = generateMockResponse(trimmed, matchedSuggestion.id, experienceContextPayload);
+  appendToMessage(placeholder.id, response);
+  startMessageAnimation(placeholder.id);
+
+  setChatTyping(false);
+  setButtonLoading(false);
+
+  await waitForMessageCompletion(placeholder.id);
+};
+
+const handleSuggestionChipClick = async (chipText: string) => {
   const chip = resolveSuggestionChips().find((item) => item.text === chipText) ?? null;
   pendingSuggestion = chip ? { id: chip.id, text: chip.text } : null;
 
-  setChatInputValue(chipText);
-  setChatInputValueState(chipText);
+  // Auto-submit the message for FAQ pills with mock delay
+  if (chip) {
+    await handleUserMessageWithMockDelay(chipText, chip.id);
+  } else {
+    // Fallback to just setting the input value
+    setChatInputValue(chipText);
+    setChatInputValueState(chipText);
+  }
 };
 
 const observeChatInput = () => {
