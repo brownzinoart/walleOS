@@ -325,8 +325,13 @@ const updateExperienceTypingIndicator = (experienceId: string, isTyping: boolean
     return;
   }
 
-  runtime.typingIndicator.classList.toggle('hidden', !isTyping);
-  runtime.typingIndicator.setAttribute('aria-hidden', String(!isTyping));
+  // Hide typing indicator if there's a buffering placeholder message (which shows its own dots)
+  const messages = getExperienceChatMessages(experienceId);
+  const hasBufferingMessage = messages.some((m) => m.animationState === 'buffering');
+  const shouldShow = isTyping && !hasBufferingMessage;
+
+  runtime.typingIndicator.classList.toggle('hidden', !shouldShow);
+  runtime.typingIndicator.setAttribute('aria-hidden', String(!shouldShow));
 };
 
 const scrollExperienceMessagesToBottom = (experienceId: string): void => {
@@ -423,6 +428,13 @@ const updateExperienceMessages = (experienceId: string): void => {
   const anyAnimating = messages.some((m) => (m.animationState === 'animating' || m.animationState === 'buffering'));
   messagesContainer.setAttribute('aria-live', anyAnimating ? 'off' : 'polite');
 
+  // Hide separate typing indicator if buffering placeholder exists (which shows its own dots)
+  const hasBufferingMessage = messages.some((m) => m.animationState === 'buffering');
+  if (hasBufferingMessage && runtime.typingIndicator) {
+    runtime.typingIndicator.classList.add('hidden');
+    runtime.typingIndicator.setAttribute('aria-hidden', 'true');
+  }
+
   ensureExperienceSuggestionsState(experienceId, hasMessages);
 
   if (runtime.pendingAnimationFrame !== null) {
@@ -430,6 +442,7 @@ const updateExperienceMessages = (experienceId: string): void => {
     runtime.pendingAnimationFrame = null;
   }
 
+  // Always scroll when messages change, especially during animation to prevent text cutoff
   scrollExperienceMessagesToBottom(experienceId);
 };
 

@@ -340,6 +340,49 @@ const clearExperienceMessageDomTracker = (experienceId: string, messageId: strin
   experienceMessageDomTrackers.delete(key);
 };
 
+const escapeSelectorValue = (value: string): string => {
+  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+    return CSS.escape(value);
+  }
+
+  return value.replace(/["\\]/g, '\\$&');
+};
+
+// Scroll tracking for animation progress to batch scroll calls
+const experienceScrollPendingFrames = new Map<string, number>();
+
+const scrollExperienceMessagesContainer = (experienceId: string): void => {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  // Cancel any pending scroll frame for this experience
+  const pendingFrame = experienceScrollPendingFrames.get(experienceId);
+  if (pendingFrame !== undefined) {
+    cancelAnimationFrame(pendingFrame);
+  }
+
+  // Schedule scroll for next frame to batch multiple updates
+  const frameId = requestAnimationFrame(() => {
+    const selectorValue = escapeSelectorValue(experienceId);
+    const chatContainer = document.querySelector<HTMLElement>(
+      `[data-experience-chat][data-experience-id="${selectorValue}"]`
+    );
+    const messagesContainer = chatContainer?.querySelector<HTMLElement>('[data-experience-messages]');
+
+    if (messagesContainer) {
+      messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+
+    experienceScrollPendingFrames.delete(experienceId);
+  });
+
+  experienceScrollPendingFrames.set(experienceId, frameId);
+};
+
 const handleExperienceMessageAnimationProgress = (
   experienceId: string,
   messageId: string,
@@ -395,6 +438,8 @@ const handleExperienceMessageAnimationProgress = (
 
   if (fragment.childNodes.length > 0) {
     contentEl.appendChild(fragment);
+    // Scroll to bottom as new content is added during animation
+    scrollExperienceMessagesContainer(experienceId);
   }
 
   tracker.pointer = payload.revealedTokens;

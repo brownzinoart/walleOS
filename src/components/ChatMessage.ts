@@ -54,7 +54,20 @@ export const renderChatMessage = (message: ChatMessage): string => {
   const isAnimating = state === 'buffering' || state === 'animating';
 
   const visibleHtml = isAnimating
-    ? (message.displayContent ?? '')
+    ? (() => {
+        // Show typing dots when buffering and displayContent is empty
+        if (state === 'buffering' && !message.displayContent) {
+          return `
+            <div class="flex items-center gap-2 text-sm font-semibold">
+              <span class="typing-dot"></span>
+              <span class="typing-dot typing-dot-delay"></span>
+              <span class="typing-dot typing-dot-delay-xl"></span>
+              <span class="ml-3 uppercase tracking-widest text-xs text-secondary">thinking...</span>
+            </div>
+          `;
+        }
+        return message.displayContent ?? '';
+      })()
     : (() => {
         const { body, sources } = extractBodyAndSources(message.content);
         const safeBody = escapeHtml(body);
