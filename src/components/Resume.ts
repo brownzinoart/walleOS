@@ -332,6 +332,80 @@ const renderExperienceContent = (experience: Experience): string => {
   `;
 };
 
+const renderCoreSkills = (): string => {
+  if (!resume.coreSkills || resume.coreSkills.length === 0) {
+    return '';
+  }
+
+  return `
+    <div class="resume-core-skills mt-12 mb-12">
+      <h2 class="resume-section-title text-2xl md:text-3xl font-black tracking-tight mb-6">
+        Core Skills
+      </h2>
+      <div class="resume-core-skills__grid">
+        ${resume.coreSkills.map((category) => `
+          <article class="weready-outro__card">
+            <h3>${escapeHtml(category.category)}</h3>
+            <p>${category.items.map((item) => escapeHtml(item)).join(', ')}.</p>
+          </article>
+        `).join('')}
+      </div>
+    </div>
+  `;
+};
+
+const renderAwards = (): string => {
+  if (!resume.awards || resume.awards.length === 0) {
+    return '';
+  }
+
+  return `
+    <div class="resume-awards mt-12 mb-12">
+      <h2 class="resume-section-title text-2xl md:text-3xl font-black tracking-tight mb-6">
+        Global Awards
+      </h2>
+      <div class="resume-awards-list space-y-4">
+        ${resume.awards.map((award) => {
+          const awardTitle = award.url
+            ? `<a href="${escapeHtml(award.url)}" target="_blank" rel="noopener noreferrer" class="resume-award-link text-neon-cyan hover:text-neon-magenta underline transition-colors">${escapeHtml(award.title)} (${award.year})</a>`
+            : `<span class="resume-award-title font-bold">${escapeHtml(award.title)} (${award.year})</span>`;
+          
+          return `
+            <div class="resume-award-item">
+              <p class="resume-award-content">
+                ${awardTitle}${award.details ? `: ${escapeHtml(award.details)}` : ''}
+              </p>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+};
+
+const renderEducation = (): string => {
+  if (!resume.education || resume.education.length === 0) {
+    return '';
+  }
+
+  return `
+    <div class="resume-education mt-12 mb-12">
+      <h2 class="resume-section-title text-2xl md:text-3xl font-black tracking-tight mb-6">
+        Education
+      </h2>
+      <div class="resume-education-list space-y-3">
+        ${resume.education.map((edu) => `
+          <div class="resume-education-item">
+            <p class="resume-education-content text-secondary">
+              <span class="font-bold">${escapeHtml(edu.degree)}.</span> ${escapeHtml(edu.school)}, Class of ${escapeHtml(edu.year)}
+            </p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+};
+
 export const renderResume = (): string => `
   <section class="resume-section" data-section-id="resume">
     <div class="resume-container max-w-7xl mx-auto">
@@ -342,6 +416,7 @@ export const renderResume = (): string => `
         <p class="resume-summary text-lg text-secondary max-w-3xl leading-relaxed">
           ${resume.summary}
         </p>
+        ${renderCoreSkills()}
         <div class="resume-header-actions mt-8">
           <a
             href="${resume.resumeFileUrl || '/resume.pdf'}"
@@ -358,6 +433,9 @@ export const renderResume = (): string => `
       <div class="resume-full-experience-list">
         ${resume.experiences.map(renderExperienceContent).join('')}
       </div>
+
+      ${renderAwards()}
+      ${renderEducation()}
     </div>
   </section>
 `;

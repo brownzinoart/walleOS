@@ -11,7 +11,9 @@
     { "id": "playground", "label": "Playground", "icon": "🎮" }
   ],
   "contact": {
-    "email": "[your-email@example.com]",
+    "email": "oneblockawayllc@gmail.com",
+    "phone": "347.420.3558",
+    "location": "Raleigh Metro, NC",
     "socials": [
       {
         "platform": "LinkedIn",
@@ -169,7 +171,7 @@
     }
   ],
   "resume": {
-    "summary": "AI implementation lead and UX-builder with 10+ years in account management, delivering multimillion-dollar programs. I wire LLMs into real workflows, run CLI toolchains, and ship usable prototypes fast. I combine client-facing experience with UX systems and multi-model orchestration to move projects from brief to launch.",
+    "summary": "Senior AI implementation leader and hybrid UX/product builder with over 10 years of experience bridging client strategy, engineering workflows, and multi-million-dollar projects. Demonstrates a strong history of designing and integrating LLM systems into operational pipelines, CLI toolchains, multi-model orchestration, and rapid prototypes to develop MVP-ready products. Combines hands-on UX systems thinking with technical execution to help teams adopt AI seamlessly and improve client outcomes.",
     "resumeFileUrl": "/WallyMo_Resume_Nov'25.pdf",
     "experiences": [
       {
@@ -177,11 +179,12 @@
         "title": "Founder",
         "company": "One Block Away LLC",
         "period": "Jul 2023 - Present",
-        "description": "Leading AI and LLM implementation strategies to deliver MVP-ready products with practical orchestration methods. Building portfolio of AI-powered prototypes including WeReady, ListingPal, and Sagedvice.",
+        "location": "Remote",
+        "description": "",
         "achievements": [
-          "Drive innovation in AI and LLM implementation strategies to deliver MVP-ready products",
-          "Consult with organizations on selecting and applying optimal LLMs to existing workflows, increasing efficiency and employee output",
-          "Built and maintain portfolio of prototypes (WeReady, ListingPal, Sagedvice); currently seeking grants to scale WeReady"
+          "Develop AI and LLM implementation strategies for MVP‑ready products across multiple prototypes",
+          "Consult with organizations on selecting and integrating LLMs into existing workflows to improve efficiency and employee output",
+          "Built and maintain a portfolio of prototypes (WeReady, ListingPal, BriefFlow); currently seeking grants to scale WeReady"
         ],
         "skills": [
           "AI Strategy",
@@ -200,23 +203,46 @@
         ]
       },
       {
+        "id": "crew-manager-trader-joes",
+        "title": "Crew & Manager in Training",
+        "company": "Trader Joe's",
+        "period": "Mar 2024 - Present",
+        "location": "Raleigh Metro Area",
+        "description": "",
+        "achievements": [
+          "Train and supervise new employees, lead store sections, and participate in management training."
+        ],
+        "skills": [
+          "Training",
+          "Supervision",
+          "Leadership",
+          "Store Management",
+          "Team Development"
+        ],
+        "experienceLevel": "Mid",
+        "technologies": []
+      },
+      {
         "id": "director-kinesso",
         "title": "Director, Experience & Innovation",
         "company": "Kinesso, Part of IPG",
         "period": "Feb 2020 - Jun 2023",
-        "description": "Led design organization growth and established enterprise-wide design systems. Promoted design thinking across teams while managing comprehensive UX initiatives for SaaS products.",
+        "location": "New York, NY",
+        "description": "",
         "achievements": [
-          "Co-built Kinesso's design org from 2 to 30 in under 3 years by standardizing research and design frameworks",
-          "Launched enterprise-wide design system that unified SaaS products and accelerated go-to-market",
-          "Promoted design thinking across teams, cutting design debt with reusable components",
-          "Improved dev efficiency and boosted client satisfaction and renewals"
+          "Scaled the product design team from 2 to 30 in under three years by standardizing research and design frameworks for 7,000+ users across 22+ agencies on IPG's Marketing Intelligence Engine",
+          "Built a unified design system with a global color picker, supporting three palette modes across 22 private‑label brands and eliminating manual chart formatting",
+          "Developed modular dashboards with drag‑and‑drop widgets, enabling marketers to personalize data views without slowing load times and speeding up reusable component creation",
+          "Integrated accessibility features (adjustable fonts, color contrast, highlight cursors) for 45 user types across 22 clients, enhancing readability and inclusivity with no performance hit"
         ],
         "skills": [
           "Design Leadership",
           "Design Systems",
           "UX Strategy",
           "Team Building",
-          "Stakeholder Management"
+          "Stakeholder Management",
+          "Accessibility",
+          "Data Visualization"
         ],
         "experienceLevel": "Lead",
         "technologies": [
@@ -228,15 +254,35 @@
         ]
       },
       {
+        "id": "sr-freelance-ux-pharma",
+        "title": "Sr. Freelance UX Design",
+        "company": "Pharma Ad Agencies",
+        "period": "Dec 2019 - Jan 2020",
+        "location": "New York, NY",
+        "description": "",
+        "achievements": [
+          "Delivered UX design for pharmaceutical advertising campaigns",
+          "Ensured FDA compliance in digital healthcare experiences",
+          "Collaborated with medical and regulatory teams"
+        ],
+        "skills": [
+          "UX Design",
+          "Healthcare UX",
+          "Regulatory Compliance",
+          "Freelance Management"
+        ],
+        "experienceLevel": "Senior",
+        "technologies": ["Figma", "Adobe XD", "Sketch", "Compliance Tools"]
+      },
+      {
         "id": "sr-ux-designer-heartbeat",
         "title": "Sr. UX Designer",
         "company": "Heartbeat Ideas",
         "period": "Aug 2018 - Nov 2019",
-        "description": "Managed comprehensive UX initiatives from research and wireframing to design systems, improving client satisfaction and project ROI across multiple agency clients.",
+        "location": "New York, NY",
+        "description": "",
         "achievements": [
-          "Managed comprehensive UX initiatives from research to design systems",
-          "Improved client satisfaction and project ROI across agency clients",
-          "Led wireframing and prototyping for multiple concurrent projects"
+          "Managed end‑to‑end UX projects: from research and wireframing to design systems—improving client satisfaction and project ROI"
         ],
         "skills": [
           "UX Research",
@@ -255,15 +301,14 @@
         ]
       },
       {
-        "id": "sr-freelance-ux-pharma",
-        "title": "Sr. Freelance UX Designer",
+        "id": "freelance-ux-designer-pharma",
+        "title": "Freelance UX Designer",
         "company": "Pharma Ad Agencies",
-        "period": "Dec 2019 - Jan 2020",
-        "description": "Delivered UX design services for pharmaceutical advertising agencies, focusing on compliant digital experiences and user-centered design for healthcare brands.",
+        "period": "Dec 2017 - Jul 2018",
+        "location": "New York, NY",
+        "description": "",
         "achievements": [
-          "Delivered UX design for pharmaceutical advertising campaigns",
-          "Ensured FDA compliance in digital healthcare experiences",
-          "Collaborated with medical and regulatory teams"
+          "Delivered UX design services for pharmaceutical advertising agencies, focusing on compliant digital experiences and user-centered design for healthcare brands."
         ],
         "skills": [
           "UX Design",
@@ -279,12 +324,9 @@
         "title": "Account Supervisor",
         "company": "Scout Marketing",
         "period": "Jun 2015 - Nov 2017",
-        "description": "Optimized key account campaigns for Jazz Pharmaceuticals' Xyrem, leveraging digital insights and leading unbranded disease awareness initiatives that boosted consumer engagement.",
-        "achievements": [
-          "Optimized key account campaigns for Jazz Pharmaceuticals' Xyrem",
-          "Led unbranded disease awareness initiative that boosted consumer engagement",
-          "Leveraged digital insights to improve campaign performance"
-        ],
+        "location": "San Diego, CA",
+        "description": "",
+        "achievements": [],
         "skills": [
           "Account Management",
           "Campaign Strategy",
@@ -305,12 +347,9 @@
         "title": "Sr. Account Executive",
         "company": "FCB Health",
         "period": "Jun 2014 - May 2015",
-        "description": "Supervised end-to-end production of brand commercials, coordinating FDA preclearance, network approvals, and talent management for pharmaceutical brands.",
-        "achievements": [
-          "Supervised end-to-end production of three brand commercials for Linzess",
-          "Coordinated FDA preclearance and network approvals",
-          "Managed talent and production logistics"
-        ],
+        "location": "New York, NY",
+        "description": "",
+        "achievements": [],
         "skills": [
           "Production Management",
           "FDA Compliance",
@@ -329,11 +368,10 @@
         "title": "Sr. Account Executive",
         "company": "Barker DZP",
         "period": "Dec 2013 - May 2014",
-        "description": "Expanded into consumer marketing while leading integrated campaigns for Barker DZP's healthcare and lifestyle clients, introducing structured mentorship for junior account staff.",
+        "location": "New York, NY",
+        "description": "",
         "achievements": [
-          "Developed integrated marketing strategies across print, digital, and social channels for clients such as Tough Mudder and PDI Healthcare",
-          "Mentored junior account staff through weekly development sessions to accelerate growth and delivery standards",
-          "Applied pharma advertising rigor to B2C campaigns, improving performance for new business pitches and packaged goods brands"
+          "Expanded into consumer marketing while leading integrated campaigns for Barker DZP's healthcare and lifestyle clients, introducing structured mentorship for junior account staff."
         ],
         "skills": [
           "Integrated Marketing",
@@ -352,13 +390,12 @@
       {
         "id": "cdm-ny",
         "title": "Sr. Account Executive",
-        "company": "Cline, Davis & Mann",
+        "company": "Cline, Davis, & Mann",
         "period": "Aug 2013 - Nov 2013",
-        "description": "Advanced Pfizer's Zoloft digital marketing program through data-driven loyalty initiatives while balancing innovative digital tactics with proven in-office strategies.",
+        "location": "New York, NY",
+        "description": "",
         "achievements": [
-          "Led Pfizer Zoloft's digital marketing initiatives, combining loyalty programs with coordinated in-office experiences",
-          "Implemented custom targeting and A/B testing frameworks that improved campaign performance across channels",
-          "Partnered with Phreesia to integrate waiting room materials that connected physical and digital patient touchpoints"
+          "Advanced Pfizer's Zoloft digital marketing program through data-driven loyalty initiatives while balancing innovative digital tactics with proven in-office strategies."
         ],
         "skills": [
           "Digital Marketing",
@@ -379,11 +416,10 @@
         "title": "Account Executive",
         "company": "FCB Health",
         "period": "Apr 2011 - Jul 2013",
-        "description": "Led unbranded campaigns and oversaw digital platform rebranding efforts, improving brand visibility and engagement for Teva Pharmaceuticals' NUVIGIL.",
+        "location": "New York, NY",
+        "description": "",
         "achievements": [
-          "Led unbranded campaigns for Teva Pharmaceuticals' NUVIGIL",
-          "Oversaw digital platform rebranding efforts",
-          "Improved brand visibility and engagement"
+          "Led unbranded campaigns and oversaw digital platform rebranding efforts, improving brand visibility and engagement for Teva Pharmaceuticals' NUVIGIL."
         ],
         "skills": [
           "Campaign Management",
@@ -402,13 +438,10 @@
         "id": "account-coordinator-rosetta",
         "title": "Account Coordinator",
         "company": "RosettaWishbone - Pfizer Prevnar 13",
-        "period": "Sep 2010 - Apr 2011",
-        "description": "Coordinated international KOL workshop in Dubai with Pfizer stakeholders for Prevnar 13, managing logistics and stakeholder communications.",
-        "achievements": [
-          "Coordinated KOL workshop in Dubai with Pfizer stakeholders for Prevnar 13",
-          "Managed international logistics and stakeholder communications",
-          "Supported account team in client deliverables"
-        ],
+        "period": "Sept 2010 - Apr 2011",
+        "location": "New York, NY",
+        "description": "",
+        "achievements": [],
         "skills": [
           "Event Coordination",
           "Stakeholder Management",
@@ -419,39 +452,111 @@
         "technologies": ["Project Management Tools", "Communication Platforms"]
       }
     ],
+    "coreSkills": [
+      {
+        "category": "AI & LLM Implementation",
+        "items": [
+          "Multi‑model orchestration",
+          "Prompt engineering",
+          "CLI toolchains (Claude Code CLI, Codex CLI)",
+          "VS Code (Roo/Cline extensions)",
+          "Cursor",
+          "ChatGPT",
+          "Claude",
+          "DeepSeek",
+          "Grok"
+        ]
+      },
+      {
+        "category": "Product & Project Leadership",
+        "items": [
+          "Design systems",
+          "Roadmap development",
+          "Stakeholder management",
+          "Agile/Scrum methodologies",
+          "Team scaling"
+        ]
+      },
+      {
+        "category": "UX & Design",
+        "items": [
+          "User research",
+          "Interaction design",
+          "Design system creation",
+          "Data visualization",
+          "Accessibility standards",
+          "Figma",
+          "Adobe XD",
+          "Sketch"
+        ]
+      },
+      {
+        "category": "Communication & Tools",
+        "items": [
+          "Cross‑functional collaboration",
+          "Account management",
+          "Word",
+          "Excel",
+          "PowerPoint",
+          "Keynote",
+          "Google Workspace"
+        ]
+      }
+    ],
     "skills": [
-      "AI Strategy",
-      "LLM Implementation",
-      "AI Orchestration",
-      "Multi-model Systems",
-      "UX Research",
-      "UX Design",
-      "Design Systems",
-      "Wireframing",
-      "Prototyping",
-      "User Testing",
-      "Information Architecture",
-      "Interaction Design",
+      "AI & LLM Implementation",
+      "Multi‑model orchestration",
+      "Prompt engineering",
+      "CLI toolchains (Claude Code CLI, Codex CLI)",
+      "VS Code (Roo/Cline extensions)",
+      "Cursor",
+      "ChatGPT",
+      "Claude",
+      "DeepSeek",
+      "Grok",
+      "Product & Project Leadership",
+      "Design systems",
+      "Roadmap development",
+      "Stakeholder management",
+      "Agile/Scrum methodologies",
+      "Team scaling",
+      "UX & Design",
+      "User research",
+      "Interaction design",
+      "Design system creation",
+      "Data visualization",
+      "Accessibility standards",
       "Figma",
-      "Sketch",
-      "Adobe Creative Suite",
-      "InVision",
       "Adobe XD",
-      "Account Management",
-      "Client Relations",
-      "Stakeholder Management",
-      "Campaign Strategy",
-      "Digital Marketing",
-      "Healthcare Marketing",
-      "Team Leadership",
-      "Design Leadership",
-      "Project Management",
-      "FDA Compliance",
-      "Regulatory Compliance",
-      "Production Management",
-      "CLI Tools",
-      "Prototyping Tools",
-      "Analytics Tools"
+      "Sketch",
+      "Communication & Tools",
+      "Cross‑functional collaboration",
+      "Account management",
+      "Word",
+      "Excel",
+      "PowerPoint",
+      "Keynote",
+      "Google Workspace"
+    ],
+    "awards": [
+      {
+        "title": "Design System Data Visualization Indigo Awards",
+        "year": "2023",
+        "url": "https://www.indigoaward.com/winners/6748",
+        "details": "3x Gold [UX Interface Navigation, Digital Tools & Utilities, Graphic Design]; 2x Silver [Interaction and Interactive Design]"
+      },
+      {
+        "title": "Digital Audit Experience Indigo Awards",
+        "year": "2022",
+        "url": "https://www.indigoaward.com/winners/4629",
+        "details": "2x Gold [Digital Design, Digital Tools/Utilities]; 2x Silver [Interaction Design, UX Interface/Navigation]"
+      },
+      {
+        "title": "Red Dot Brands and Communication Awards",
+        "year": "2021",
+        "url": "https://www.red-dot.org/project/dxa-digital-experience-audit-55219",
+        "details": ""
+      }
     ],
     "education": [
       {

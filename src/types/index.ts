@@ -79,6 +79,7 @@ export interface Experience {
   title: string;
   company: string;
   period: string;
+  location?: string;
   description: string;
   achievements: string[];
   skills: string[];
@@ -88,11 +89,25 @@ export interface Experience {
 
 export type ExperienceSuggestionChip = ExperienceSuggestionChipType;
 
+export interface CoreSkillCategory {
+  category: string;
+  items: string[];
+}
+
+export interface Award {
+  title: string;
+  year: string;
+  url?: string;
+  details: string;
+}
+
 export interface ResumeData {
   experiences: Experience[];
   summary: string;
   resumeFileUrl?: string;
+  coreSkills?: CoreSkillCategory[];
   skills: string[];
+  awards?: Award[];
   education: {
     degree: string;
     school: string;

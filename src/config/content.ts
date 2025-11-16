@@ -15,6 +15,8 @@ export interface SocialLink {
 
 export interface Contact {
   email: string;
+  phone?: string;
+  location?: string;
   socials: SocialLink[];
 }
 

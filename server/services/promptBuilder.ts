@@ -289,12 +289,18 @@ export const buildUserPromptWithRAG = async (userMessage: string, experienceId?:
   }
 
   // Add experience context if specified
+  // This provides fallback context from content.json even if RAG returns no results
   if (experienceId) {
     const experienceContext = buildExperienceContextPrompt(experienceId);
     if (experienceContext) {
       sections.push('## EXPERIENCE FOCUS');
       sections.push(experienceContext);
       sections.push('---');
+    } else {
+      // Log warning if experience not found in content.json
+      serverLogger.warn('Experience not found in content.json for prompt building', {
+        experienceId,
+      });
     }
   }
 

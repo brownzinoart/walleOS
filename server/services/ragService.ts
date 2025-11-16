@@ -101,39 +101,24 @@ export function preprocessQuery(query: string): string {
 }
 
 /**
- * Rerank search results based on category priority and relevance
+ * Rerank search results based on category priority and experience relevance
  */
 function rerankResults(
   results: SearchResult[],
   rerankK: number,
   categoryPriorityMap: CategoryPriorityMap,
-  tagBoostTerms: string[] = [],
   experienceId?: string,
 ): SearchResult[] {
-  const boostSet = new Set(tagBoostTerms.map(t => t.toLowerCase()));
-
-  // Apply category priority weighting + optional tag boosts + experienceIds metadata boost
+  // Apply category priority weighting + experienceIds metadata boost
   const weightedResults = results.map(result => {
     const category = result.chunk.metadata.category;
     const categoryWeight = categoryPriorityMap[category] ?? 0.5;
     let adjustedScore = result.score * categoryWeight;
 
-    // Metadata-based experience boosting (strongest signal)
+    // Metadata-based experience boosting (primary signal)
+    // This relies on experienceIds in document frontmatter for accurate matching
     if (experienceId && result.chunk.metadata.experienceIds?.includes(experienceId)) {
-      adjustedScore *= 1.25; // Strong boost for exact experience match
-    }
-
-    // Tag/content-based boost for experience context (fallback)
-    if (boostSet.size > 0) {
-      const tags = (result.chunk.metadata.tags || []).map(t => t.toLowerCase());
-      const content = result.chunk.content.toLowerCase();
-      const hasBoostMatch = Array.from(boostSet).some(term =>
-        tags.some(t => t.includes(term)) || content.includes(term)
-      );
-
-      if (hasBoostMatch) {
-        adjustedScore *= 1.15; // modest boost
-      }
+      adjustedScore *= 1.5; // Strong boost for exact experience match
     }
 
     return { ...result, score: adjustedScore };
@@ -207,40 +192,42 @@ export async function retrieveContext(ragQuery: RAGQuery): Promise<RAGResponse> 
     // Perform vector search
     const searchResults = await vectorStore.search(queryEmbedding, searchOptions);
 
-    // Decide category priority & tag boosts
+    // Decide category priority based on context hint
     const categoryPriority = getCategoryPriorityMap(ragQuery.categoryHint);
 
-    // Light mapping of experienceId -> boost terms (updated with Resume content)
-    const experienceBoostTerms: Record<string, string[]> = {
-      'founder-one-block-away': ['weready', 'listingpal', 'agentselect', 'one block away', 'mvp', 'orchestration'],
-      'director-kinesso': ['splash', 'dxa', 'kinesso', 'design system', 'indigo', 'red dot'],
-      'sr-ux-designer-heartbeat': ['heartbeat', 'healthcare', 'compliance', 'ux'],
-      'sr-freelance-ux-pharma': ['heartbeat', 'tripscout', 'freelance', 'ux transition'],
-      'account-supervisor-scout': ['scout marketing', 'xyrem', 'unbranded', 'awareness'],
-      'sr-account-exec-fcb': ['fcb', 'linzess', 'preclearance', 'tv spot'],
-      'barker-dzp': ['tough mudder', 'pdi healthcare', 'consumer marketing', 'mentorship'],
-      'cdm-ny': ['zoloft', 'pfizer', 'digital loyalty', 'waiting room'],
-      'account-exec-fcb': ['nuvigil', 'digital platform', 'rebranding'],
-      'account-coordinator-rosetta': ['prevnar', 'kol', 'dubai', 'workshop'],
-    };
+    // Rerank results with category priority + experienceId metadata matching
+    const rerankedResults = rerankResults(
+      searchResults,
+      RAG_CONFIG.rerankK,
+      categoryPriority,
+      ragQuery.experienceId,
+    );
 
-    const tagBoostTerms = ragQuery.experienceId ? (experienceBoostTerms[ragQuery.experienceId] || []) : [];
-
-    // Rerank results with hint + boosts + experienceId metadata matching
-    const rerankedResults = rerankResults(searchResults, RAG_CONFIG.rerankK, categoryPriority, tagBoostTerms, ragQuery.experienceId);
-
+    // Validate and log experience ID matching
     const experienceIdForLogging = ragQuery.experienceId;
-    const metadataMatches = experienceIdForLogging
-      ? rerankedResults.filter(result => result.chunk.metadata.experienceIds?.includes(experienceIdForLogging)).length
-      : 0;
-    const generalMatches = rerankedResults.length - metadataMatches;
+    if (experienceIdForLogging) {
+      const metadataMatches = rerankedResults.filter(result =>
+        result.chunk.metadata.experienceIds?.includes(experienceIdForLogging),
+      ).length;
+      const generalMatches = rerankedResults.length - metadataMatches;
 
-    serverLogger.info('RAG rerank mix', {
-      experienceId: experienceIdForLogging ?? null,
-      metadataMatches,
-      generalMatches,
-      tagBoostTerms: tagBoostTerms.length,
-    });
+      // Log warning if no experience-specific chunks found
+      if (metadataMatches === 0 && rerankedResults.length > 0) {
+        serverLogger.warn('No experience-specific chunks found for experienceId', {
+          experienceId: experienceIdForLogging,
+          totalResults: rerankedResults.length,
+          suggestion: 'Verify experienceIds in document frontmatter match this experienceId',
+        });
+      }
+
+      serverLogger.info('RAG rerank mix', {
+        experienceId: experienceIdForLogging,
+        metadataMatches,
+        generalMatches,
+        totalResults: rerankedResults.length,
+        boostMethod: 'metadata-based',
+      });
+    }
 
     // Convert to RAG results
     const ragResults: RAGResult[] = rerankedResults.map((result, index) => ({
