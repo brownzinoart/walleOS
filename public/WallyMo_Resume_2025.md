@@ -18,13 +18,13 @@ Senior AI implementation leader and hybrid UX/product builder with over 10 years
 
 **Founder**
 
-_One Block Away LLC_ Remote | Jul 2023 \- Present
+_One Block Away LLC_ [**(oneblockaway,info)**](http://oneblockaway.info) Remote | Jul 2023 \- Present
 
 - Develop AI and LLM implementation strategies for MVP‑ready products across multiple prototypes.
 
 - Consult with organizations on selecting and integrating LLMs into existing workflows to improve efficiency and employee output.
 
-- Built and maintain a portfolio of prototypes (WeReady, ListingPal, BriefFlow); currently seeking grants to scale WeReady.
+- Built and maintain a portfolio of prototypes (WeReady, ListingPal, BriefFlow); currently seeking investors to scale WeReady & BriefFlow.
 
 - Portfolio Link \- [AI Showcase](https://walle-os.vercel.app/#home)
 
@@ -42,8 +42,9 @@ _Kinesso, Part of IPG_ New York, NY | Feb 2020 \- Jun 2023
 
 - Scaled the product design team from 2 to 30 in under three years by standardizing research and design frameworks for 7,000+ users across 22+ agencies on IPG’s Marketing Intelligence Engine.
 
-- Built a unified design system with a global color picker, supporting three palette modes across 22 private‑label brands and eliminating manual chart formatting.  
-  Developed modular dashboards with drag‑and‑drop widgets, enabling marketers to personalize data views without slowing load times and speeding up reusable component creation.
+- Built a unified design system with a global color picker, supporting three palette modes across 22 private‑label brands and eliminating manual chart formatting.
+
+- Developed modular dashboards with drag‑and‑drop widgets, enabling marketers to personalize data views without slowing load times and speeding up reusable component creation.
 
 - Integrated accessibility features (adjustable fonts, color contrast, highlight cursors) for 45 user types across 22 clients, enhancing readability and inclusivity with no performance hit.
 

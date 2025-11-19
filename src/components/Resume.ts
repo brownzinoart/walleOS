@@ -419,8 +419,8 @@ export const renderResume = (): string => `
         ${renderCoreSkills()}
         <div class="resume-header-actions mt-8">
           <a
-            href="${resume.resumeFileUrl || '/resume.pdf'}"
-            download="WallyMo_Resume_Nov'25.pdf"
+            href="${resume.resumeFileUrl || '/WallyMo_Resume_2025.pdf'}"
+            download="WallyMo_Resume_2025.pdf"
             class="resume-download-button inline-flex items-center gap-2 px-6 py-3 bg-surface-secondary text-primary font-bold rounded-md border-2 border-default hover:border-neon-cyan transition-all"
             aria-label="Download resume as PDF"
           >

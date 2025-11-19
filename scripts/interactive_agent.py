@@ -3,6 +3,7 @@
 Interactive CLI for Wally's Resume Agent
 """
 
+from pathlib import Path
 from agent import RecruiterAgent
 import sys
 
@@ -20,13 +21,15 @@ def main():
     )
     print("✅ Targets set: AI Implementation Lead, UX Director, Product Manager\n")
     
-    # Load Wally's resume
+    # Load Wally's resume from the 2025 markdown file
     try:
-        with open("WallyMo_Resume_Oct'25.txt", 'r') as f:
+        project_root = Path(__file__).resolve().parents[1]
+        resume_path = project_root / "public" / "WallyMo_Resume_2025.md"
+        with resume_path.open("r", encoding="utf-8") as f:
             resume_text = f.read()
         print("📄 Resume loaded successfully\n")
     except FileNotFoundError:
-        print("❌ Resume file not found. Please ensure 'WallyMo_Resume_Oct'25.txt' is in the current directory.")
+        print(f"❌ Resume file not found. Please ensure '{resume_path}' exists.")
         return
     
     while True:

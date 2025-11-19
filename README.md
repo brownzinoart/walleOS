@@ -3,18 +3,21 @@
 WallyGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neon energy with unapologetic Brutalist structure. Phase 1 establishes the technical and visual foundation for the chat-first interface described in the product requirements.
 
 ## Project Overview
+
 - Product requirements: [`docs/PRD.md`](docs/PRD.md)
 - Conversational agent architecture: [`docs/agents.md`](docs/agents.md)
 - Context7 MCP proxy walkthrough: [`docs/context7-integration.md`](docs/context7-integration.md)
 - Resume content populated from Wally's professional background, showcasing 10+ years across AI implementation, UX design leadership, and account management with highlights in AI/LLM strategy, design systems, enterprise UX, and pharmaceutical marketing
 
 ## Tech Stack
+
 - Vite for rapid development and optimized builds
 - TypeScript for type safety and future scalability
 - Tailwind CSS for a utility-first design system with custom tokens
 - Vanilla TypeScript application shell (framework-free for now)
 
 ## Getting Started
+
 1. **Install dependencies**
    ```bash
    npm install
@@ -34,6 +37,7 @@ WallyGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neo
    ```
 
 ## Backend Server
+
 > **Heads up:** The Express + Ollama backend is for local development only and is not deployed to Vercel. The frontend gracefully falls back to mock responses when no API is available.
 
 - **Prerequisites:** Node.js 18+ and [Ollama](https://ollama.com/) installed locally with the `llama3.1:8b-instruct` model pulled.
@@ -45,16 +49,19 @@ WallyGPT is Wally's conversational portfolio experience that fuses Gen Z Pop neo
 - **Further Reading:** A detailed walkthrough will live in `docs/OLLAMA_SETUP.md` in a future update.
 
 ## Vector Database Setup
+
 The vector database used for semantic retrieval is not checked into version control due to large binary sizes and because it is reproducible from source. The generated data is written to `server/data/vectordb/` and should be created locally via the ingestion script.
 
 - Source corpus: `wallymo_llm_corpus/`
 - Ingestion script: `server/scripts/ingestCorpus.ts`
 
 ### Prerequisites
+
 - Ensure [Ollama](https://ollama.com/) is installed and running locally (`ollama serve`), with the required model pulled (e.g., `ollama pull llama3.1:8b-instruct`).
 - Configure environment variables: copy `.env.example` to `.env` and set values as needed (e.g., `OLLAMA_HOST`, `FRONTEND_URL`, any corpus/model settings).
 
 ### Generate the Vector DB
+
 Run the ingestion from the project root. The recommended command is:
 
 ```bash
@@ -72,35 +79,41 @@ When running the script from within `server/`, the corpus path resolves automati
 After completion, the Lance vector database will be present under `server/data/vectordb/` and available to the backend for retrieval.
 
 #### Refreshing After Content Edits
+
 - The home chat pills now source their prompts/responses directly from [`docs/chat-pills.md`](docs/chat-pills.md). Update the markdown table and the frontend will pick up the new copy immediately.
 - Re-run the ingestion command above whenever you change that table (or any file in `wallymo_llm_corpus/`) so semantic retrieval reflects the latest content.
 - Optional quick check: `npm run test src/__tests__/chat-pills-config.test.ts` ensures every pill row hydrated correctly.
 
 ### Deployment
+
 - Only the frontend deploys to Vercel; the backend remains local or must be hosted separately on a service like Railway, Render, or DigitalOcean.
 - The longer-term plan is to swap the local Ollama integration for a production-ready provider (OpenAI, Anthropic, hosted LLM service) before shipping.
 - See `docs/DEPLOYMENT.md` for a deeper breakdown of the split deployment architecture.
 
 ## Project Structure
+
 - `src/main.ts` – application entry point and future UI bootstrapper
 - `src/styles/` – Tailwind layer setup, design tokens, and typography utilities
 - `src/config/` – JSON-driven content plus typed accessors and validation helpers
 - `docs/` – PRD, agent architecture, and foundational research materials
 
 ## Design System
+
 - **Palette:** dark neutrals anchored by neon cyan, magenta, lime, and orange accents
 - **Typography:** Space Grotesk for bold geometric expression, JetBrains Mono for technical voice
 - **Tokens:** defined in `src/styles/design-tokens.css` and surfaced through Tailwind (`tailwind.config.js`)
 - **Shadows & Radius:** offset brutalist shadows with sharp-corner defaults
 
 ## Content Management
+
 - Update structured content in `src/config/content.json`
 - Non-resume placeholder fields are wrapped in brackets (e.g., `[Your tagline here]`); replace them with real data
 - Type definitions live in `src/config/content.ts` for editor autocomplete
 - Run `npm run dev` and watch the console for `[content-warning]` messages indicating remaining placeholders
-- Resume PDF is available at `/public/resume.pdf`; keep it in sync with `src/config/content.json`
+- Resume PDF is available at `/public/WallyMo_Resume_2025.pdf`; keep it in sync with `src/config/content.json`
 
 ## Development Roadmap
+
 1. Foundation (current): tooling, tokens, and content schema
 2. Layout & Navigation: sidebar scaffold and responsive grid
 3. Chat Interface: conversation loop, prompt chips, and persona tuning
@@ -108,12 +121,14 @@ After completion, the Lance vector database will be present under `server/data/v
 5. Animations & Polish: micro-interactions, performance tuning, accessibility audit
 
 ## Performance Goals
+
 - Largest Contentful Paint (LCP): < 2.0s
 - First Input Delay (FID): < 100ms
 - Cumulative Layout Shift (CLS): < 0.1
 - Lighthouse score: 95+
 
 ## Performance Toolkit
+
 - CSS containment (`contain: layout style`) on root containers limits paint scope and keeps layout thrash under control.
 - Targeted `will-change` hints are injected and released via `@/utils/performance` helpers to avoid long-lived memory pressure.
 - Animations and drag interactions run through `requestAnimationFrame` throttles to guarantee 60fps without layout thrash.
@@ -122,6 +137,7 @@ After completion, the Lance vector database will be present under `server/data/v
 - `measurePerformance()` instrumentation logs render durations in development, making regressions easy to spot.
 
 ## Browser Compatibility
+
 - Optimised for the latest releases of Chrome, Edge, Firefox, and Safari (both desktop and iOS).
 - Graceful fallbacks:
   - `IntersectionObserver` gated features (card/chip entrances) degrade to static content when the API is unavailable.
@@ -130,6 +146,7 @@ After completion, the Lance vector database will be present under `server/data/v
 - Verified behaviour on touch devices (iOS Safari, Android Chrome) thanks to pointer-safe listeners and touch-action hints.
 
 ## Accessibility
+
 - Skip link jumps directly to `#main-content` and announces itself with a high-contrast pill.
 - Sidebar navigation announces the active section via an `aria-live` region and toggles `aria-current="page"` for assistive tech.
 - Every interactive element retains visible focus rings powered by global focus tokens.
@@ -138,12 +155,14 @@ After completion, the Lance vector database will be present under `server/data/v
 - Visual adjustments (keyboard offset, reduced motion, loader spin suppression) respect OS accessibility preferences.
 
 ## Animation Guidelines
+
 - Default micro-interactions run at 150–200 ms with ease-in-out curves to echo the brutalist snap.
 - Entrance sequences (`fadeInUp`, chip stagger, card slide-in) trigger only once per viewport entry and are skipped entirely for reduced-motion visitors.
 - 3D tilts and ripples keep transforms GPU-friendly (translate/rotate/scale) and release hints immediately after interaction.
 - Loader and spinner animations are opt-in only at boot; routine interactions avoid blocking content.
 
 ## Development Notes
+
 - Use `npm run dev` for iterative work; the loader ensures fonts are ready before interactions fire.
 - Run `npm run build && npm run preview` to generate a production bundle and spot check the static output.
 - Combine `npm run build` with Lighthouse in Chrome or `npm run preview` + `npx @lhci/cli autorun` for repeatable performance scoring.
@@ -151,6 +170,7 @@ After completion, the Lance vector database will be present under `server/data/v
 - `src/utils/performance.ts` centralises debounce, throttle, rafThrottle, and instrumentation utilities—reuse them for future features.
 
 ## Troubleshooting
+
 - **Loader never disappears** – ensure fonts load correctly; flaky network fonts can be replaced or hosted locally.
 - **Animations feel sluggish** – check for stray `will-change` assignments; `removeWillChange(element)` frees the hint immediately.
 - **Sidebar not scoring active sections** – confirm each section exposes `id` or `data-section-id` that matches the navigation config.
@@ -180,6 +200,7 @@ This project is configured for seamless deployment on Vercel.
 #### Configuration
 
 The project includes a `vercel.json` configuration file that:
+
 - Sets the correct build command with TypeScript type-checking
 - Configures SPA routing fallback
 - Optimizes caching for static assets
@@ -193,6 +214,7 @@ If your project requires environment variables, add them in the Vercel dashboard
 To add a custom domain, go to Project Settings → Domains in the Vercel dashboard.
 
 ## Contributing
+
 - Lint with `npm run lint` (ESLint + TypeScript)
 - Follow Conventional Commits
 - Branch off `main` for features, submit PRs with linked issue/context
