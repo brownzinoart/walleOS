@@ -12,7 +12,6 @@ Senior AI implementation leader and hybrid UX/product builder with over 10 years
 - **AI & LLM Implementation:** Multi‑model orchestration, prompt engineering, CLI toolchains (Claude Code CLI, Codex CLI), VS Code (Roo/Cline extensions), Cursor, ChatGPT, Claude, DeepSeek, Grok.
 - **Product & Project Leadership:** Design systems, roadmap development, stakeholder management, Agile/Scrum methodologies, team scaling.
 - **UX & Design:** User research, interaction design, design system creation, data visualization, accessibility standards, Figma, Adobe XD, Sketch.
-- **Communication & Tools:** Cross‑functional collaboration, account management, Word, Excel, PowerPoint, Keynote, Google Workspace.
 
 ## Career Experiences
 
@@ -20,19 +19,27 @@ Senior AI implementation leader and hybrid UX/product builder with over 10 years
 
 _One Block Away LLC_ [**(oneblockaway,info)**](http://oneblockaway.info) Remote | Jul 2023 \- Present
 
-- Develop AI and LLM implementation strategies for MVP‑ready products across multiple prototypes.
-
-- Consult with organizations on selecting and integrating LLMs into existing workflows to improve efficiency and employee output.
-
-- Built and maintain a portfolio of prototypes (WeReady, ListingPal, BriefFlow); currently seeking investors to scale WeReady & BriefFlow.
-
 - Portfolio Link \- [AI Showcase](https://walle-os.vercel.app/#home)
+
+- Founded One Block Away to empower Apex & RTP small businesses with integrated UX design, strategy, and AI implementation; you start with what's urgent and expand as clients grow, ensuring they own all deliverables
+
+- Lead discovery workshops that extract ideas, prioritize opportunities, and build actionable roadmaps across UX, business strategy, and AI implementation, helping clients turn scattered thoughts into clear, executable plans
+
+- Implement and orchestrate AI solutions tailored to small businesses, automating repetitive tasks and enhancing customer experiences while teaching clients to use and maintain these tools
+
+### **Partner/AI Implementation & Strategy**
+
+_Hedgehox_ Remote | Mar 2024 \- Present
+
+- Spearheaded AI and automation by closing workflow gaps and launching GPT assistants, automated screenshot tools, and banner frameworks to slash production time and costs.
+
+- Led strategy workshops to uncover bottlenecks, align teams, and prioritize high‑impact SOW initiatives.
+
+- Ran research‑driven discovery sessions, from journey mapping to audits, uncovering gaps and shaping lean, execution‑ready plans across digital channels and AI tools.
 
 ### **Crew & Manager in Training**
 
 _Trader Joe's_ Raleigh Metro Area | Mar 2024 \- Present
-
-- Train and supervise new employees, lead store sections, and participate in management training.
 
 ### **Director, Experience & Innovation**
 
@@ -66,13 +73,9 @@ _Pharma Ad Agencies_ New York, NY | Dec 2017 \- Jul 2018
 
 _Scout Marketing_ San Diego, CA | Jun 2015 \- Nov 2017
 
-- Optimized key account campaigns for Jazz Pharmaceuticals’ Xyrem, leveraging digital insights and leading an unbranded disease awareness initiative that boosted consumer engagement
-
 ### **Sr. Account Executive**
 
 _FCB Health_ New York, NY | Jun 2014 \- May 2015
-
-- Supervised end-to-end production of three brand commercials, coordinating FDA preclearance, network approvals, and talent management for Linzess
 
 ### **Sr. Account Executive**
 
@@ -89,8 +92,6 @@ _FCB Health_ New York, NY | Apr 2011 \- Jul 2013
 ### **Account Coordinator**
 
 _RosettaWishbone \- Pfizer Prevnar 13_ New York, NY | Sept 2010 \- Apr 2011
-
-- Coordinated a KOL workshop in Dubai with Pfizer stakeholders for Prevnar 13\.
 
 ## Global Awards
 
