@@ -1,0 +1,5 @@
+{
+  "name": "Gesture Galactica",
+  "description": "A next-gen hand-tracked space shooter using MediaPipe AI and Three.js. Control your ship with hand gestures: Open palm to fly, Fist to fire.",
+  "requestFramePermissions": ["camera"]
+}

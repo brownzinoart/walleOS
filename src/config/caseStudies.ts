@@ -1,6 +1,6 @@
 import type { RouteComponentId } from "@/utils/router";
 
-export type CaseStudyId = "weready" | "listingpal" | "echo" | "briefflow";
+export type CaseStudyId = "weready" | "listingpal" | "echo" | "briefflow" | "gesturegalactica";
 
 export interface CaseStudyMetaBlock {
   label: string;
@@ -1176,6 +1176,265 @@ export const caseStudyContent: CaseStudyContentMap = {
           title: "What's Next?",
           description:
             "We have begun finalizing our codebase for security and Beta testing with some of those interviewed colleagues, it seems to be a solution that everyone is very excited to try and implement within their workflows and we are excited to get the feedback to continue to iterate on the product",
+        },
+      ],
+    },
+    backLinkFallback: "projects",
+  },
+  gesturegalactica: {
+    id: "gesturegalactica",
+    heroTitleFallback: "Gesture Galactica",
+    heroDescriptionFallback:
+      "A next-generation browser-based space shooter that demonstrates the potential of the modern web stack in 2025, combining real-time AI computer vision with hardware-accelerated 3D graphics and procedural audio.",
+    heroEyebrow: "Case Study",
+    heroMeta: [
+      {
+        label: "Role",
+        value: "Creator, AI Engineer, WebGL Developer",
+      },
+      {
+        label: "Focus",
+        value:
+          "Real-time AI vision, procedural audio, zero-asset architecture",
+      },
+      {
+        label: "Built With",
+        value:
+          "React 19, Three.js, MediaPipe, Web Audio API, WebAssembly",
+      },
+    ],
+    overview: {
+      eyebrow: "Tech-Proof 2025 Architecture",
+      title: "Overview",
+      cards: [
+        {
+          title: "Problem",
+          description:
+            "Traditional browser games rely on heavy asset downloads, external plugins, and server-side processing—creating latency, privacy concerns, and slow load times that frustrate users.",
+        },
+        {
+          title: "Challenge",
+          description:
+            "Building a fully client-side game that combines AI computer vision for gesture controls, real-time 3D graphics, and dynamic audio—all without external assets or backend dependencies.",
+        },
+        {
+          title: "Solution",
+          description:
+            "Gesture Galactica uses MediaPipe for sub-millisecond hand tracking, Three.js for procedural 3D geometry, and the Web Audio API for synthesized sound—delivering instant load times and complete privacy.",
+        },
+      ],
+    },
+    problem: {
+      eyebrow: "The Vision",
+      title: "Why I Built Gesture Galactica",
+      copyHtml:
+        "I wanted to prove that modern web APIs can deliver console-quality gaming experiences without plugins, downloads, or server dependencies. The goal was a 'zero-asset' architecture where everything—graphics, audio, and AI—runs entirely in the browser.",
+      cards: [
+        {
+          title: "Privacy-First Gaming",
+          description:
+            "The video feed is processed entirely in memory using MediaPipe's Wasm backend. No image data ever leaves the device.",
+        },
+        {
+          title: "Instant Load Times",
+          description:
+            "By generating all assets via code, the game loads instantly without waiting for 3D models, textures, or audio files.",
+        },
+        {
+          title: "Future-Ready Architecture",
+          description:
+            "The Three.js setup is WebXR-ready, preparing the engine for VR headsets and AR experiences without major refactoring.",
+        },
+      ],
+    },
+    capabilities: {
+      eyebrow: "Zero-Asset Architecture",
+      title: "Everything generated via code—instant, infinite, malleable",
+      cards: [
+        {
+          title: "AI Hand Tracking",
+          description:
+            "MediaPipe Gesture Recognizer with optimized Wasm and GPU delegation for sub-millisecond inference. Open palm to navigate, fist to fire.",
+        },
+        {
+          title: "Procedural 3D Graphics",
+          description:
+            "Every ship, enemy, and bullet is generated mathematically using Three.js primitives—ConeGeometry, IcosahedronGeometry, TetrahedronGeometry.",
+        },
+        {
+          title: "Synthesized Audio",
+          description:
+            "Laser sounds via oscillator frequency sweeps (880Hz → 0Hz), generative ambient music from stereo buffer manipulation—no .mp3 or .wav files.",
+        },
+        {
+          title: "Particle System",
+          description:
+            "Custom performant particle system handles explosions by recycling geometry buffers rather than creating new DOM elements.",
+        },
+      ],
+    },
+    toolkit: {
+      eyebrow: "Modern Web Stack",
+      title: "Technologies Used",
+      cards: [
+        {
+          title: "MediaPipe Tasks-Vision",
+          description:
+            "Google's gesture recognizer with Wasm backend for privacy-first hand tracking",
+          icon: {
+            type: "image",
+            src: "https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg",
+            alt: "Google MediaPipe",
+          },
+        },
+        {
+          title: "Three.js",
+          description:
+            "WebGL 2.0 renderer for 60+ FPS with thousands of particles and dynamic lighting",
+          icon: {
+            type: "gradient",
+            label: "3D",
+            colors: ["#000000", "#049ef4"],
+          },
+        },
+        {
+          title: "Web Audio API",
+          description:
+            "Asset-free sound synthesis with spatial audio for VR/AR readiness",
+          icon: {
+            type: "gradient",
+            label: "🔊",
+            colors: ["#ff6b6b", "#4ecdc4"],
+          },
+        },
+        {
+          title: "React 19",
+          description:
+            "Hybrid loop architecture—React manages UI while game loop runs via requestAnimationFrame",
+          icon: {
+            type: "image",
+            src: "https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg",
+            alt: "React",
+          },
+        },
+        {
+          title: "WebAssembly",
+          description:
+            "Near-native performance for MediaPipe inference without plugins",
+          icon: {
+            type: "gradient",
+            label: "Wasm",
+            colors: ["#654ff0", "#00d4ff"],
+          },
+        },
+        {
+          title: "Zero-Asset Philosophy",
+          description:
+            "All visuals and audio generated procedurally—infinite resolution, instant loads",
+          icon: {
+            type: "gradient",
+            label: "∞",
+            colors: ["#00d4ff", "#ff0080"],
+          },
+        },
+      ],
+    },
+    process: {
+      eyebrow: "Development Journey",
+      title: "How I built a zero-asset space shooter",
+      lede: "From concept to playable game using AI-assisted development and modern web APIs.",
+      milestones: [
+        {
+          number: "01",
+          title: "AI Vision Integration",
+          copyHtml:
+            "Integrated <strong>MediaPipe Gesture Recognizer</strong> for real-time hand tracking. Unlike older tensor libraries, this uses optimized Wasm and GPU delegation for sub-millisecond inference—all processed locally for privacy.",
+          stats: [
+            {
+              label: "Technology:",
+              value: "@mediapipe/tasks-vision",
+            },
+            {
+              label: "Performance:",
+              value: "Sub-millisecond inference",
+            },
+          ],
+        },
+        {
+          number: "02",
+          title: "Procedural Graphics Engine",
+          copyHtml:
+            "Built the <strong>Three.js</strong> rendering pipeline with procedural geometry. Every visual element—ships, enemies, bullets, particles—is generated mathematically, keeping bundle size microscopic while enabling infinite resolution.",
+          stats: [
+            {
+              label: "Approach:",
+              value: "Zero external 3D models",
+            },
+            {
+              label: "Result:",
+              value: "60+ FPS with thousands of particles",
+            },
+          ],
+        },
+        {
+          number: "03",
+          title: "Audio Synthesis",
+          copyHtml:
+            "Implemented <strong>Web Audio API</strong> for procedural sound. Lasers use oscillator frequency sweeps, ambient music is generated from sine wave mathematics in stereo buffers—no audio files required.",
+          stats: [
+            {
+              label: "Assets:",
+              value: "Zero .mp3 or .wav files",
+            },
+            {
+              label: "Feature:",
+              value: "Spatial audio for VR readiness",
+            },
+          ],
+        },
+        {
+          number: "04",
+          title: "React Hybrid Architecture",
+          copyHtml:
+            "Designed a <strong>hybrid loop</strong> where React 19 manages UI (HUD, menus) while the 3D game loop runs outside React's reconciliation via requestAnimationFrame, preventing frame drops.",
+          stats: [
+            {
+              label: "Pattern:",
+              value: "Ref-based React/Three.js bridge",
+            },
+            {
+              label: "Benefit:",
+              value: "Smooth 60 FPS gameplay",
+            },
+          ],
+        },
+      ],
+    },
+    showcase: {
+      eyebrow: "",
+      title: "",
+      items: [],
+    },
+    results: {
+      eyebrow: "Results",
+      title: "What I achieved with zero-asset architecture",
+      copyHtml:
+        "Gesture Galactica proves that modern web APIs can deliver immersive gaming experiences without the traditional baggage of asset downloads, plugins, or backend dependencies.",
+      cards: [
+        {
+          title: "Instant Load Times",
+          description:
+            "Zero asset downloads means the game is playable immediately. No waiting for 3D models, textures, or audio files to download.",
+        },
+        {
+          title: "Complete Privacy",
+          description:
+            "All AI inference happens locally via WebAssembly. The camera feed never leaves the device—no server, no data collection.",
+        },
+        {
+          title: "Future-Ready",
+          description:
+            "The Three.js architecture is WebXR-compatible, ready for VR headsets. Dual-hand tracking and post-processing effects on the roadmap.",
         },
       ],
     },

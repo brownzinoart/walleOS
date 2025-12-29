@@ -11,24 +11,14 @@
     { "id": "playground", "label": "Playground", "icon": "🎮" }
   ],
   "contact": {
-    "email": "oneblockawayllc@gmail.com",
+    "email": "wmostafa12@gmail.com",
     "phone": "347.420.3558",
     "location": "Raleigh Metro, NC",
     "socials": [
       {
         "platform": "LinkedIn",
-        "url": "https://www.linkedin.com/in/[username]",
+        "url": "https://www.linkedin.com/in/wallymo/",
         "icon": "💼"
-      },
-      {
-        "platform": "GitHub",
-        "url": "https://github.com/[username]",
-        "icon": "🐙"
-      },
-      {
-        "platform": "Twitter",
-        "url": "https://twitter.com/[username]",
-        "icon": "🐦"
       }
     ]
   },
@@ -134,15 +124,6 @@
       "detailRoute": "project-listingpal"
     },
     {
-      "id": "echo",
-      "title": "Echo",
-      "description": "Echo is a full SaaS application that automates screenshot capture and accelerates route preparation and QA.",
-      "tags": ["Pharma", "Automation", "MLR"],
-      "thumbnail": "/images/projects/echo/pic1.png",
-      "url": "https://example.com/project-gamma",
-      "detailRoute": "project-echo"
-    },
-    {
       "id": "briefflow",
       "title": "BriefFlow",
       "description": "AI tool that converts messy client inputs into structured, client-approved creative briefs in minutes to cut revision cycles and budget waste.",
@@ -161,13 +142,13 @@
       "detailRoute": "project-clockit"
     },
     {
-      "id": "hq",
-      "title": "HQ",
-      "description": "A webapp designed for myself and my business partner to communicate on the go and provide each other with up-to-the-minute updates organized by projects and initiatives",
-      "tags": ["Communication", "Sales Ops", "Executive Dashboard"],
-      "thumbnail": "/images/projects/HQ/hq.png",
-      "url": "",
-      "detailRoute": "project-hq"
+      "id": "gesturegalactica",
+      "title": "Gesture Galactica",
+      "description": "Browser-based space shooter combining real-time AI computer vision with hardware-accelerated 3D graphics and procedural audio—all running locally without plugins or backend latency.",
+      "tags": ["AI Vision", "WebGL", "Zero-Asset"],
+      "thumbnail": "/images/projects/gesturegalactica/pic1.png",
+      "url": "/gesture-galactica/",
+      "detailRoute": "project-gesturegalactica"
     }
   ],
   "resume": {
@@ -452,57 +433,6 @@
         "technologies": ["Project Management Tools", "Communication Platforms"]
       }
     ],
-    "coreSkills": [
-      {
-        "category": "AI & LLM Implementation",
-        "items": [
-          "Multi‑model orchestration",
-          "Prompt engineering",
-          "CLI toolchains (Claude Code CLI, Codex CLI)",
-          "VS Code (Roo/Cline extensions)",
-          "Cursor",
-          "ChatGPT",
-          "Claude",
-          "DeepSeek",
-          "Grok"
-        ]
-      },
-      {
-        "category": "Product & Project Leadership",
-        "items": [
-          "Design systems",
-          "Roadmap development",
-          "Stakeholder management",
-          "Agile/Scrum methodologies",
-          "Team scaling"
-        ]
-      },
-      {
-        "category": "UX & Design",
-        "items": [
-          "User research",
-          "Interaction design",
-          "Design system creation",
-          "Data visualization",
-          "Accessibility standards",
-          "Figma",
-          "Adobe XD",
-          "Sketch"
-        ]
-      },
-      {
-        "category": "Communication & Tools",
-        "items": [
-          "Cross‑functional collaboration",
-          "Account management",
-          "Word",
-          "Excel",
-          "PowerPoint",
-          "Keynote",
-          "Google Workspace"
-        ]
-      }
-    ],
     "skills": [
       "AI & LLM Implementation",
       "Multi‑model orchestration",
@@ -563,6 +493,57 @@
         "degree": "BA Labor Studies and Employee Relations",
         "school": "Rutgers University",
         "year": "2010"
+      }
+    ],
+    "coreSkills": [
+      {
+        "category": "AI & LLM Implementation",
+        "items": [
+          "Multi‑model orchestration",
+          "Prompt engineering",
+          "CLI toolchains (Claude Code CLI, Codex CLI)",
+          "VS Code (Roo/Cline extensions)",
+          "Cursor",
+          "ChatGPT",
+          "Claude",
+          "DeepSeek",
+          "Grok"
+        ]
+      },
+      {
+        "category": "Product & Project Leadership",
+        "items": [
+          "Design systems",
+          "Roadmap development",
+          "Stakeholder management",
+          "Agile/Scrum methodologies",
+          "Team scaling"
+        ]
+      },
+      {
+        "category": "UX & Design",
+        "items": [
+          "User research",
+          "Interaction design",
+          "Design system creation",
+          "Data visualization",
+          "Accessibility standards",
+          "Figma",
+          "Adobe XD",
+          "Sketch"
+        ]
+      },
+      {
+        "category": "Communication & Tools",
+        "items": [
+          "Cross‑functional collaboration",
+          "Account management",
+          "Word",
+          "Excel",
+          "PowerPoint",
+          "Keynote",
+          "Google Workspace"
+        ]
       }
     ]
   },

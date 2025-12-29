@@ -416,7 +416,6 @@ export const renderResume = (): string => `
         <p class="resume-summary text-lg text-secondary max-w-3xl leading-relaxed">
           ${resume.summary}
         </p>
-        ${renderCoreSkills()}
         <div class="resume-header-actions mt-8">
           <a
             href="${resume.resumeFileUrl || '/WallyMo_Resume_2025.pdf'}"
@@ -435,6 +434,7 @@ export const renderResume = (): string => `
       </div>
 
       ${renderAwards()}
+      ${renderCoreSkills()}
       ${renderEducation()}
     </div>
   </section>

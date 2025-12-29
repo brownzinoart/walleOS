@@ -11,22 +11,12 @@
     { "id": "playground", "label": "Playground", "icon": "🎮" }
   ],
   "contact": {
-    "email": "[your-email@example.com]",
+    "email": "wmostafa12@gmail.com",
     "socials": [
       {
         "platform": "LinkedIn",
-        "url": "https://www.linkedin.com/in/[username]",
+        "url": "https://www.linkedin.com/in/wallymo/",
         "icon": "💼"
-      },
-      {
-        "platform": "GitHub",
-        "url": "https://github.com/[username]",
-        "icon": "🐙"
-      },
-      {
-        "platform": "Twitter",
-        "url": "https://twitter.com/[username]",
-        "icon": "🐦"
       }
     ]
   },

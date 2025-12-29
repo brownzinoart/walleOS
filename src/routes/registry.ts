@@ -17,6 +17,8 @@ const lazyRouteLoaders: LazyRouteMap = {
   "project-clockit": () =>
     import("./projectClockIt").then((mod) => mod.default),
   "project-hq": () => import("./projectHQ").then((mod) => mod.default),
+  "project-gesturegalactica": () =>
+    import("./projectGestureGalactica").then((mod) => mod.default),
   resume: () => import("./resume").then((mod) => mod.default),
   "playground": () => import("./playground/index"),
   "art-gallery": () => import("./artGallery").then((mod) => mod.default),

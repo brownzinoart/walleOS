@@ -161,8 +161,19 @@ export const renderProjectCaseStudyPage = (projectId: CaseStudyId): string => {
   const projectUrl = project?.url ?? '';
   const tagsMarkup = renderTags(project?.tags ?? []);
   const metaMarkup = renderMetaBlocks(content.heroMeta);
+  const hasEmbeddedDemo = projectId === 'gesturegalactica' && projectUrl;
   const externalLinkMarkup = projectUrl
-    ? `
+    ? hasEmbeddedDemo
+      ? `
+          <button
+            type="button"
+            class="weready-cta"
+            data-scroll-to="${projectId}-demo"
+          >
+            View live build
+          </button>
+        `
+      : `
           <a
             class="weready-cta"
             href="${escapeHtml(projectUrl)}"
@@ -273,6 +284,7 @@ export const renderProjectCaseStudyPage = (projectId: CaseStudyId): string => {
         </div>
       </section>
 
+      ${content.showcase.items.length > 0 ? `
       <section class="weready-showcase" aria-labelledby="${showcaseId}">
         <div class="weready-showcase__header">
           <p class="weready-showcase__eyebrow">${escapeHtml(content.showcase.eyebrow)}</p>
@@ -284,6 +296,7 @@ export const renderProjectCaseStudyPage = (projectId: CaseStudyId): string => {
           ${renderShowcaseItems(content.showcase.items)}
         </div>
       </section>
+      ` : ''}
 
       <section class="weready-outro">
         <div class="weready-outro__inner">
@@ -303,6 +316,30 @@ export const renderProjectCaseStudyPage = (projectId: CaseStudyId): string => {
           </button>
         </div>
       </section>
+
+      ${hasEmbeddedDemo ? `
+      <section class="weready-demo" id="${projectId}-demo">
+        <div class="weready-demo__inner">
+          <div class="weready-demo__header">
+            <p class="weready-overview__eyebrow">Play Now</p>
+            <h2 class="weready-demo__title">Try Gesture Galactica</h2>
+            <p class="weready-demo__instructions">
+              <strong>Controls:</strong> Open palm to navigate • Fist to fire • Allow camera access when prompted
+            </p>
+          </div>
+          <div class="weready-demo__iframe-wrapper">
+            <iframe
+              src="${escapeHtml(projectUrl)}"
+              class="weready-demo__iframe"
+              allow="camera; microphone; autoplay"
+              allowfullscreen
+              loading="lazy"
+              title="Gesture Galactica - Playable Demo"
+            ></iframe>
+          </div>
+        </div>
+      </section>
+      ` : ''}
     </article>
   `;
 };
@@ -400,6 +437,19 @@ export const initProjectCaseStudyPage = (projectId: CaseStudyId): void => {
   window.scrollTo(0, 0);
 
   setupBackNavigation(projectId, root);
+
+  // Setup scroll-to buttons for embedded demos
+  const scrollButtons = root.querySelectorAll<HTMLButtonElement>('[data-scroll-to]');
+  scrollButtons.forEach((button) => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = button.dataset.scrollTo;
+      if (targetId) {
+        const target = document.getElementById(targetId);
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
 };
 
 export const cleanupProjectCaseStudyPage = (projectId: CaseStudyId): void => {

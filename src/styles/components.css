@@ -2842,6 +2842,97 @@
   color: rgba(var(--color-text-secondary-rgb, 160, 166, 178), 0.9);
 }
 
+/* Demo Section (Embedded iframe) */
+.weready-demo {
+  padding: clamp(3.5rem, 7vw, 7rem) clamp(3rem, 8vw, 8rem);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--color-bg-secondary-rgb), 0.04) 0%,
+    rgba(var(--color-neon-cyan-rgb), 0.03) 50%,
+    rgba(var(--color-bg-secondary-rgb), 0.06) 100%
+  );
+  position: relative;
+  scroll-margin-top: 2rem;
+}
+
+.weready-demo::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--color-neon-cyan-rgb), 0.3) 50%,
+    transparent
+  );
+}
+
+.weready-demo__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.weready-demo__header {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+  max-width: 720px;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+  animation: fadeInUp 0.7s var(--transition-base) backwards;
+}
+
+.weready-demo__title {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: var(--font-weight-black, 900);
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.weready-demo__instructions {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.weready-demo__instructions strong {
+  color: var(--color-neon-cyan);
+}
+
+.weready-demo__iframe-wrapper {
+  position: relative;
+  width: 100%;
+  height: 90vh;
+  min-height: 800px;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow:
+    0 24px 48px rgba(12, 12, 28, 0.4),
+    0 0 0 1px rgba(var(--color-neon-cyan-rgb), 0.2);
+  border: 2px solid rgba(var(--color-neon-cyan-rgb), 0.3);
+  background: rgba(var(--color-bg-secondary-rgb), 0.9);
+  animation: fadeInScale 0.8s var(--transition-base) backwards;
+  animation-delay: 0.2s;
+}
+
+.weready-demo__iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+}
+
+@media (max-width: 768px) {
+  .weready-demo__iframe-wrapper {
+    height: 70vh;
+    min-height: 400px;
+    border-radius: 1rem;
+  }
+}
+
 .project-card:focus-visible {
   outline: var(--focus-ring-width, 3px) solid var(--focus-ring-color);
   outline-offset: var(--focus-ring-offset, 2px);

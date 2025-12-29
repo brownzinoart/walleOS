@@ -7,6 +7,7 @@ export type RouteComponentId =
   | "project-briefflow"
   | "project-clockit"
   | "project-hq"
+  | "project-gesturegalactica"
   | "resume"
   | "playground"
   | "art-gallery"
@@ -76,6 +77,14 @@ const routerState: RouterState = {
     [
       "#project-hq",
       { path: "#project-hq", component: "project-hq", title: "HQ Case Study" },
+    ],
+    [
+      "#project-gesturegalactica",
+      {
+        path: "#project-gesturegalactica",
+        component: "project-gesturegalactica",
+        title: "Gesture Galactica Case Study",
+      },
     ],
     ["#resume", { path: "#resume", component: "resume", title: "Resume" }],
     ["#playground", { path: "#playground", component: "playground", title: "Playground" }],
