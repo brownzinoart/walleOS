@@ -443,7 +443,7 @@ export const initProjectCaseStudyPage = (projectId: CaseStudyId): void => {
   scrollButtons.forEach((button) => {
     button.addEventListener('click', (e) => {
       e.preventDefault();
-      const targetId = button.dataset.scrollTo;
+      const targetId = button.dataset['scrollTo'];
       if (targetId) {
         const target = document.getElementById(targetId);
         target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
