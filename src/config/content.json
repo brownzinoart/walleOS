@@ -133,15 +133,6 @@
       "detailRoute": "project-briefflow"
     },
     {
-      "id": "clockit",
-      "title": "ClockIt",
-      "description": "Trader Joe's clocking in compliance app ensuring employees acknowledge clocking in and adhere to schedules via notifications and digital logging",
-      "tags": ["Compliance", "Retail", "Time Management"],
-      "thumbnail": "/images/projects/clockit/clockit_main.png",
-      "url": "",
-      "detailRoute": "project-clockit"
-    },
-    {
       "id": "gesturegalactica",
       "title": "Gesture Galactica",
       "description": "Browser-based space shooter combining real-time AI computer vision with hardware-accelerated 3D graphics and procedural audio—all running locally without plugins or backend latency.",
